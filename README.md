@@ -75,3 +75,4 @@ Our target with this app is erasing any financial friction between people living
 * As a group member, I want to receive a notification when a new expense is added so that I stay informed.
 * As a group member, I want to see who created or modified an expense so that transparency is maintained.
 * As a group member, I want to see a timestamp for each expense so that records are traceable.
+* As a group member, I want to choose who participates in an expense so that only people involved share the costs.
