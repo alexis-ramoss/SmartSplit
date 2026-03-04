@@ -6,7 +6,7 @@ SmartSplit is an automated expense-tracking and bill-splitting application desig
 
 ## Vision
 
-Our target with this app is to eliminate financial friction and preserve friendships in shared living spaces. We believe that tracking shared expenses—from a late-night pizza run to monthly Wi-Fi bills—should be transparent, automated, and stress-free. SmartSplit acts as a neutral, automated financial mediator, so roommates can focus on living together rather than arguing over spreadsheets and loose receipts.
+Our target with this app is erasing any financial friction between people living in the same space and preserving friendships at the same time. We know that finances are one of the leading causes of tension among roommates, resentment can easily build over forgotten grocery runs, unequal utility bills, or even the awkwardness of constantly asking someone to pay you back. So we believe that tracking shared expenses all the way from a late-night pizza run to monthly Wi-Fi bills, for example, should be transparent, automated, and stress-free. Well organized expense tracking shouldn't need a degree in accounting or a complex, color-coded spreadsheet. That's where our application comes in, it acts as a neutral, automated financial mediator, so roommates can forget arguing over spreadsheets and loose receipts and only need to enter the app from time to time and check if the are owing money to any of their living partners.
 
 ---
 
