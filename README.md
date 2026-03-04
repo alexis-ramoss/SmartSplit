@@ -61,10 +61,10 @@ Our target with this app is erasing any financial friction between people living
 
 ### Dependencies
 * The application depends on the React Native framework for cross-platform mobile development.
+---
 
 ## Requirements
 
----
 ### User Stories
 * As a user, I want to create a new group so that I can manage expenses with specific people.
 * As a user, I want to join a group using an invitation code so that I can participate in shared expenses.
