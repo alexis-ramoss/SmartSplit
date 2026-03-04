@@ -59,8 +59,11 @@ Our target with this app is erasing any financial friction between people living
 * Honor System: Because the app doesn't verify bank balances, you assume users trust one another. Settling a debt relies entirely on one user tapping "Mark as Paid" and the other acknowledging that the money was actually received.
 * Wi-fi access: users have access to wi-fi.
 
+### Dependencies
+* The application depends on the React Native framework for cross-platform mobile development.
+
 ## Requirements
-*
+
 ---
 ### User Stories
 * As a user, I want to create a new group so that I can manage expenses with specific people.
