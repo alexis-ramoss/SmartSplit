@@ -52,12 +52,12 @@ Our target with this app is erasing any financial friction between people living
 ## Assumptions & Dependencies
 
 ### Assumptions
-* All household members have a compatible smartphone (iOS or Android) to download and use the app.
-* Users are willing to link a payment method or bank account for automated tracking and settlement.
-* Roommates agree on the predefined split percentages and recurring schedules established within a shared "House" group.
 
-### Dependencies
-* The application depends on the React Native framework for cross-platform mobile development.
+* Household harmony: roommates agree on the predefined split percentages and recurring schedules established within a shared "House" group.
+* Single Currency: all users within a specific group operate using the same currency.
+* Basic Categorization: have a predefined set of categories or icons, for users to have a basic breakdown of where their money is going (e.g., Rent, Utilities, Groceries, Drinks).
+* Honor System: Because the app doesn't verify bank balances, you assume users trust one another. Settling a debt relies entirely on one user tapping "Mark as Paid" and the other acknowledging that the money was actually received.
+* Wi-fi access: users have access to wi-fi.
 
 ## Requirements
 
