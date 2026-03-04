@@ -60,6 +60,7 @@ Our target with this app is erasing any financial friction between people living
 * Wi-fi access: users have access to wi-fi.
 
 ## Requirements
+*
 
 ### User Stories
 * As a user, I want to create a new group so that I can manage expenses with specific people.
