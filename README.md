@@ -12,12 +12,41 @@ Our target with this app is to eliminate financial friction and preserve friends
 
 ## List of Features
 
-* **Automated Expense Splitting:** Instantly divide supermarket receipts, shared household items, and utility bills without manual math.
-* **Custom Percentage Splits:** Easily accommodate different living arrangements by setting specific percentage splits (e.g., Roommate A pays 60% of rent for the master bedroom, Roommate B pays 40%).
-* **Recurring Expense Management:** Set it and forget it. Automatically log monthly rent, streaming subscriptions (Netflix, Spotify), and utility bills on a regular schedule.
-* **Dynamic Adjustments:** Easily modify balances on the fly. If someone covers a one-off expense or pays a portion directly, balances update instantly in real-time.
-* **Smart Debt Simplification ("Who Owes Who"):** An intelligent algorithm minimizes the number of transactions needed to settle up, providing a clear, simple dashboard showing exactly who needs to pay whom at the end of the month.
+* **Expense Creation and Recording:** Users can quickly add shared expenses such as groceries, rent, utilities, or household purchases. Each expense includes details such as the payer, amount, description, category, and which roommates participated in the expense.
 
+* **Automated Expense Splitting:** Instantly divide shared expenses among roommates without manual calculations. The system automatically determines how much each person owes based on the selected split configuration.
+
+* **Equal and Custom Splits:** Expenses can be divided equally among all roommates or using custom percentage distributions depending on the living arrangement.
+
+* **Custom Percentage Configuration:** Users can define fixed percentage contributions for recurring expenses such as rent or utilities (e.g., one roommate pays a higher share for a larger bedroom).
+
+* **Selective Expense Participation:** Users can select which roommates are involved in a particular expense, allowing accurate tracking when not everyone participates in the same purchase.
+
+* **Recurring Expense Management:** Automatically log recurring expenses such as rent, internet, electricity, or streaming subscriptions on a weekly or monthly schedule.
+
+* **Real-Time Balance Tracking:** The system continuously updates balances whenever expenses or payments are added, allowing roommates to instantly see who owes money and who should receive it.
+
+* **Smart Debt Simplification ("Who Owes Who"):** An algorithm calculates the most efficient way to settle debts, minimizing the number of transactions needed between roommates.
+
+* **Settlement Tracking:** Users can mark payments as completed when debts are settled outside the app (e.g., bank transfer, MBWay, PayPal, or cash).
+
+* **Expense Editing and Corrections:** Users can modify or remove expenses if mistakes are made, with balances automatically recalculated to reflect the changes.
+
+* **Expense History and Activity Log:** The application keeps a complete history of all recorded expenses, payments, and modifications, ensuring transparency between roommates.
+
+* **Expense Categories:** Expenses can be categorized (e.g., groceries, rent, utilities, entertainment, household items) to help users better understand shared spending patterns.
+
+* **Dashboard Overview:** A clear dashboard summarizes current balances, recent expenses, and outstanding debts so roommates can quickly understand the household’s financial situation.
+
+* **Roommate Group Management:** Users can create or join a shared household group where all roommates participate and track expenses together.
+
+* **User Accounts and Authentication:** Each roommate has a secure personal account to access their shared household group and manage expenses.
+
+* **Notifications and Reminders:** The system can notify users when new expenses are added, when balances change, or when payments are pending.
+
+* **Data Persistence and Synchronization:** All expenses and balances are securely stored and synchronized so every roommate sees the most up-to-date information.
+
+* **Cross-Platform Accessibility:** The application is designed to run on modern smartphones, allowing roommates to manage expenses conveniently from their devices.
 ---
 
 ## Assumptions & Dependencies
