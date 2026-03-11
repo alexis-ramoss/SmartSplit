@@ -35,7 +35,7 @@ Thank you!
 * **Luís Kong** - up202409115@up.pt
 * **Luís Guimarães** - up202403752@up.pt
 * **Clara Correia** - up202404979@up.pt
-* **Team Member Name** - email@example.com
+* **Kleiton Soares** - up202409108@up.pt
 
 ---
 
