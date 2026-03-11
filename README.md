@@ -33,7 +33,7 @@ Thank you!
 
 * **Aléxis Ramos** - up202404977@up.pt
 * **Luís Kong** - up202409115@up.pt
-* **Team Member Name** - email@example.com
+* **Luís Guimarães** - up202403752@up.pt
 * **Team Member Name** - email@example.com
 * **Team Member Name** - email@example.com
 
