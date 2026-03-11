@@ -1,16 +1,55 @@
-# SmartSplit
+# SmartSplit Development Report
 
-SmartSplit is an automated expense-tracking and bill-splitting application designed specifically for college roommates and shared households. It takes the awkwardness out of shared living by effortlessly managing groceries, rent, utilities, and subscriptions, ensuring everyone pays exactly their fair share.
+Welcome to the documentation of **SmartSplit**!
+
+This Software Development Report, tailored for LEIC-ES-2025-26, provides comprehensive details about **SmartSplit**, starting from an high-level vision and going into low-level implementation decisions.
+
+It is organised by the following activities:
+
+* [Business modeling](#Business-Modelling) 
+  * [Product Vision](#Product-Vision)
+  * [Features and Assumptions](#Features-and-Assumptions)
+* [Requirements](#Requirements)
+  * [User stories](#User-stories)
+  * [Domain model](#Domain-model)
+  * [User interfaces](#User-interfaces)
+* [Architecture and Design](#Architecture-And-Design)
+  * [Logical architecture](#Logical-Architecture)
+  * [Physical architecture](#Physical-Architecture)
+  * [Functional prototype](#Functional-Prototype)
+* [Project management](#Project-Management)
+  * [Sprint 0](#Sprint-0)
+  * [Sprint 1](#Sprint-1)
+  * [Sprint 2](#Sprint-2)
+  * [Sprint 3](#Sprint-3)
+  * [Final Release](#Final-Release)
+
+
+Contributions are expected to be made exclusively by the initial team, but we may open them to the community, after the course, in all areas and topics: requirements, technologies, development, experimentation, testing, etc.
+
+Please contact us!
+
+Thank you!
+
+* **Aléxis Ramos** - up202404977@up.pt
+* **Luís Kong** - up202409115@up.pt
+* **Team Member Name** - email@example.com
+* **Team Member Name** - email@example.com
+* **Team Member Name** - email@example.com
 
 ---
 
-## Vision
+## Business Modelling
 
-Our target with this app is erasing any financial friction between people living in the same space and preserving friendships at the same time. We know that finances are one of the leading causes of tension among roommates, resentment can easily build over forgotten grocery runs, unequal utility bills, or even the awkwardness of constantly asking someone to pay you back. So we believe that tracking shared expenses all the way from a late-night pizza run to monthly Wi-Fi bills, for example, should be transparent, automated, and stress-free. Well organized expense tracking shouldn't need a degree in accounting or a complex, color-coded spreadsheet. That's where our application comes in, it acts as a neutral, automated financial mediator, so roommates can forget arguing over spreadsheets and loose receipts and only need to enter the app from time to time and check if the are owing money to any of their living partners.
+Business modeling in software development involves defining the product's vision, understanding market needs, aligning features with user expectations, and setting the groundwork for strategic planning and execution.
 
----
+### Product Vision
 
-## List of Features
+  Our target with this app is erasing any financial friction between people living in the same space and preserving friendships at the same time. We know that finances are one of the leading causes of tension among roommates, resentment can easily build over forgotten grocery runs, unequal utility bills, or even the awkwardness of constantly asking someone to pay you back.
+
+  So we believe that tracking shared expenses all the way from a late-night pizza run to monthly Wi-Fi bills, for example, should be transparent, automated, and stress-free. Well organized expense tracking shouldn't need a degree in accounting or a complex, color-coded spreadsheet. That's where our application comes in, it acts as a neutral, automated financial mediator, so roommates can forget arguing over spreadsheets and loose receipts and only need to enter the app from time to time and check if the are owing money to any of their living partners.
+
+### Features and Assumptions
 
 * **Expense Creation and Recording:** Users can quickly add shared expenses such as groceries, rent, utilities, or household purchases. Each expense includes details such as the payer, amount, description, category, and which roommates participated in the expense.
 
@@ -47,9 +86,6 @@ Our target with this app is erasing any financial friction between people living
 * **Data Persistence and Synchronization:** All expenses and balances are securely stored and synchronized so every roommate sees the most up-to-date information.
 
 * **Cross-Platform Accessibility:** The application is designed to run on modern smartphones, allowing roommates to manage expenses conveniently from their devices.
----
-
-## Assumptions & Dependencies
 
 ### Assumptions
 
@@ -61,11 +97,13 @@ Our target with this app is erasing any financial friction between people living
 
 ### Dependencies
 * The application depends on the React Native framework for cross-platform mobile development.
+
 ---
 
 ## Requirements
 
 ### User Stories
+
 * As a user, I want to create a new group so that I can manage expenses with specific people.
 * As a user, I want to join a group using an invitation code so that I can participate in shared expenses.
 * As a user, I want to leave a group so that I am no longer responsible for its expenses.
@@ -80,3 +118,37 @@ Our target with this app is erasing any financial friction between people living
 * As a group member, I want to see who created or modified an expense so that transparency is maintained.
 * As a group member, I want to see a timestamp for each expense so that records are traceable.
 * As a group member, I want to choose who participates in an expense so that only people involved share the costs.
+
+
+### Domain model
+
+The SmartSplit domain focuses on the relationship between **Users**, **Groups**, and **Expenses**. A `Group` consists of multiple `Users`. An `Expense` is created within a `Group`, paid by one `User`, and split among several `Participants` (Users) according to a `SplitLogic`.
+
+* **User:** Represents an individual with an account.
+* **Group:** A shared household entity containing members.
+* **Expense:** A financial record containing amount, date, and category.
+* **Split:** The logic defining how an expense is distributed (Equal, Percentage).
+
+---
+
+## Architecture and Design
+
+### Logical architecture
+
+### Physical architecture
+
+### Functional prototype
+
+---
+
+## Project management
+
+### Sprint 0
+
+### Sprint 1
+### Sprint 2
+### Sprint 3
+
+### Final Release
+
+---
