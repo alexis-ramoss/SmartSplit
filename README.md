@@ -118,6 +118,10 @@ Business modeling in software development involves defining the product's vision
 * As a group member, I want to see who created or modified an expense so that transparency is maintained.
 * As a group member, I want to see a timestamp for each expense so that records are traceable.
 * As a group member, I want to choose who participates in an expense so that only people involved share the costs.
+* As a group owner, I want to remove old users from my group.
+* As a group owner, I want to accept new users that entered my group's code.
+* As a group owner, I want to delete old groups that I created.
+* As a group owner, I want to change the settings of my group so that the expenses get automatically confirmed as soon as they are registered.
 
 
 ### Domain model
