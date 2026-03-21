@@ -133,6 +133,10 @@ The SmartSplit domain focuses on the relationship between **Users**, **Groups**,
 * **Expense:** A financial record containing amount, date, and category.
 * **Split:** The logic defining how an expense is distributed (Equal, Percentage).
 
+#### UML Diagram
+
+![uml-diagram](logical_uml.png)
+
 ---
 
 ## Architecture and Design
