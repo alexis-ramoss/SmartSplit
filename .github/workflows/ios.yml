@@ -28,4 +28,4 @@ jobs:
           token: ${{ secrets.TOKEN_EXPO_IOS }}
 
       - name: 🚀 Build iOS
-        run: npx eas build --platform ios --profile preview --non-interactive
+        run: eas build --platform ios --profile preview --non-interactive
