@@ -102,28 +102,6 @@ Business modeling in software development involves defining the product's vision
 
 ## Requirements
 
-### User Stories
-
-* As a user, I want to create a new group so that I can manage expenses with specific people.
-* As a user, I want to join a group using an invitation code so that I can participate in shared expenses.
-* As a user, I want to leave a group so that I am no longer responsible for its expenses.
-* As a group member, I want to add a new expense so that shared costs are recorded.
-* As a group member, I want to specify who paid for an expense so that the system can calculate balances correctly.
-* As a group member, I want to edit an expense so that I can correct mistakes.
-* As a group member, I want to create a recurring expense so that regular payments (e.g., rent, utilities) are automatically recorded.
-* As a group member, I want to define the recurrence frequency so that the system matches real payment cycles.
-* As a group member, I want to see my current balance so that I know how much I owe or am owed.
-* As a group member, I want to see a breakdown of who owes whom so that settlements are clear.
-* As a group member, I want to receive a notification when a new expense is added so that I stay informed.
-* As a group member, I want to see who created or modified an expense so that transparency is maintained.
-* As a group member, I want to see a timestamp for each expense so that records are traceable.
-* As a group member, I want to choose who participates in an expense so that only people involved share the costs.
-* As a group owner, I want to remove old users from my group.
-* As a group owner, I want to accept new users that entered my group's code.
-* As a group owner, I want to delete old groups that I created.
-* As a group owner, I want to change the settings of my group so that the expenses get automatically confirmed as soon as they are registered.
-
-
 ### Domain model
 
 The SmartSplit domain focuses on the relationship between **Users**, **Groups**, and **Expenses**. A `Group` consists of multiple `Users`. An `Expense` is created within a `Group`, paid by one `User`, and split among several `Participants` (Users) according to a `SplitLogic`.
