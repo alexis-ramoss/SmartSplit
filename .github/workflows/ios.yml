@@ -21,9 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Expo & EAS
-        run: npm install -g expo-cli eas-cli@latest
-
       - name: Login to Expo
         run: eas whoami
         env:
