@@ -113,7 +113,7 @@ The SmartSplit domain focuses on the relationship between **Users**, **Groups**,
 
 #### UML Diagram
 
-![uml-diagram](logical_uml.png)
+![uml-diagram](logical-uml.png)
 
 ---
 
