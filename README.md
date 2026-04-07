@@ -148,6 +148,31 @@ Because the user enabled "Automatic Transaction Confirmation," the Ledger skips 
 
 ### Physical architecture
 
+#### 1. Group Admin (Access & Identity)
+   - A Role-Based Access Control (RBAC) service. When a user creates a group, they are assigned an "Admin" role in the database. Invitation codes are generated and temporarily cached.
+   - The goal is to achieve security and state management. We need a strict boundary so only Admins can approve joins, remove members, or delete the group. Caching the invite codes prevents unnecessary database hits.
+
+#### 2. Core Expenses (Transactional Data)
+   - For the transactions we are going with a relational data model using strict ACID (Atomicity, Consistency, Isolation, Durability) database transactions. Every expense creation ties a Creator ID, Payer ID, and multiple Participant IDs to a single Timestamped ledger entry.
+   - It's important we follow this model because money requires absolute precision. If a user adds an expense, the database must guarantee that the payer's balance increases and the participants' balances decrease simultaneously. If one part fails, the whole transaction must roll back.
+
+#### 3. Automation (Background Processing)
+   - Mainly for the recurring expenses, for now, a distributed task queue and a CRON scheduler completely separated from the main API server is what we are using.
+   - This aproach is good performance wise. If an API endpoint was responsible for checking and creating 10,000 recurring expenses at midnight, the app would crash or slow down for active users. Offloading this to a background worker ensures the app stays fast while transactions auto-confirm in the background.
+
+#### The technologies implemented for this project where the following:
+
+- Frontend: React Native, group apps only work if everyone can use them, regardless of their phone. This framework lets us build iOS and Android apps from a single codebase, drastically speeding up development.
+
+- Database: PostgreSQL, whe choose SQL because for financial ledgers whe needed fairly complex table joins and NoSQL is a poor fit for this level of relational tracking, and the Postgre choice was because it's the most solid and best fitted for our needs.
+
+- Backend / API: Node.js: Again it's a solid and well documented language, besides that it's highly scalable and excellent at handling thousands of concurrent I/O operations (like users constantly syncing group balances).
+
+- Background Jobs (Automation): Redis + BullMQ (or AWS SQS), Redis acts as a lightning-fast queue. It reliably stores your recurring expense triggers and pushes them to your Node.js workers to process exactly when defined.
+
+- Authentication: Firebase Auth or Supabase Auth, don't build password hashing and token management from scratch. These services securely handle user sign-ups, logins, and session management out of the box.
+
+
 ### Functional prototype
 
 ---
