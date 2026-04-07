@@ -121,6 +121,31 @@ The SmartSplit domain focuses on the relationship between **Users**, **Groups**,
 
 ### Logical architecture
 
+We divided the logic into four distinct components/services, aiming to keep the system organized and scalable, which are the following:
+
+ 1. Identity and Access Manager (IAM): Handles user sessions and permissions. It knows who is an Admin, who is a regular member, and handles the "Approve Users Joining a Group" logic.
+ 2. Group Service: Manages the lifecycle and boundaries of a group. It handles "Join/Leave/Delete Group", generates invitation codes, and maintains the list of active members.
+ 3. Expense Engine: The financial core. It processes the "Add new expense", records the "Expense Payer", tracks the "Creator", logs the "Timestamp", and calculates the debts each user has.
+ 4. Automation Engine: The background worker. It strictly handles the "Recurring expense", "Frequency rules", and "Automatic Confirmation" stories.
+
+The components interact with each other during key user actions following these relationships:
+
+ - Scenario 1: Managing Group Access (Ex.: Joining a group, Approve via Code, Remove Members, Delete Group)
+A user submits an Invitation Code to the Group Service.
+The Group Service validates the code and flags the request as "Pending".
+The Identity and Access Manager notifies the Group Admin. Once the Admin approves, it then tells the Group Service to officially add the user.
+If an Admin deletes the group, the Group Service first asks the Ledger if all balances are settled. If yes, it removes the group and tells the IAM to revoke all access.
+
+- Scenario 2: Processing a Standard Expense (Ex.: Add expense, Select participants, Payer ID, See creator, Timestamp Tracking)
+A user submits an expense. The IAM instantly attaches their ID as the "Creator" and logs the exact "Timestamp".
+The Ledger receives the request and cross-checks with the Group Service to ensure the "Payer" and all selected "Participants" actually belong to that specific group.
+Once verified, the Expense Engine locks the database, updates the financial balances for everyone involved, and saves the transaction.
+
+- Scenario 3: Triggering Automations (Ex.: Add recurring, Define frequency, Auto-confirm)
+A user sets up a $50 monthly internet bill. The Ledger tells the Automation Engine to save this rule ("Frequency: Monthly").
+The Automation Engine runs quietly in the background. When the 1st of the month hits, it pings the Ledger and says, "Execute the $50 internet bill now."
+Because the user enabled "Automatic Transaction Confirmation," the Ledger skips the pending state, instantly posts the expense, and updates the group's balances without requiring manual approval.
+
 ### Physical architecture
 
 ### Functional prototype
