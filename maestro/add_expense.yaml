@@ -1,0 +1,17 @@
+appId: host.exp.exponent
+---
+- launchApp:
+    clearState: true
+- tapOn: "Add expense"
+- tapOn: "e.g., Coffee"
+- inputText: "Cinema tickets"
+- tapOn: "0.00"
+- inputText: "18.50"
+- tapOn: "08/03/2026"
+- inputText: "08/04/2026"
+- tapOn: "Person 2"
+- tapOn: "Add"
+- assertVisible: "Cinema tickets"
+- assertVisible: "Paid by Person 2"
+- assertVisible: "Date: 08/04/2026"
+- assertVisible: "EUR 18.50"

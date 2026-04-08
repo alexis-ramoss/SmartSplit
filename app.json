@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "smartsplit",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.luiskong.smartsplit"
@@ -43,8 +43,7 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
     },
     "extra": {
       "router": {},
