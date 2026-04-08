@@ -113,7 +113,7 @@ The SmartSplit domain focuses on the relationship between **Users**, **Groups**,
 
 #### UML Diagram
 
-![uml-diagram](logical-uml.png)
+![logical-uml](graphs/logical-uml.png)
 
 ---
 
@@ -145,6 +145,8 @@ Once verified, the Expense Ledger locks the database, updates the financial bala
 A user sets up a $50 monthly internet bill. The Ledger tells the Automation Engine to save this rule ("Frequency: Monthly").
 The Automation Engine runs quietly in the background. When the 1st of the month hits, it pings the Ledger and says, "Execute the $50 internet bill now."
 Because the user enabled "Automatic Transaction Confirmation," the Ledger skips the pending state, instantly posts the expense, and updates the group's balances without requiring manual approval.
+
+![package-uml](graphs/package-uml.png)
 
 ### Physical architecture
 
