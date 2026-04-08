@@ -7,10 +7,10 @@
     "icon": "./assets/images/icon.png",
     "scheme": "smartsplit",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.luiskong.smartsplit"
+      "bundleIdentifier": "com.es-2025-26-2leic04-t5.smartsplit"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +21,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.alexisramoss.SmartSplit"
+      "package": "com.es-2025-26-2leic04-t5.SmartSplit"
     },
     "web": {
       "output": "static",
