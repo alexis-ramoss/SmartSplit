@@ -113,7 +113,7 @@ The SmartSplit domain focuses on the relationship between **Users**, **Groups**,
 
 #### UML Diagram
 
-![uml-diagram](logical-uml.png)
+![logical-uml](graphs/logical-uml.png)
 
 ---
 
@@ -121,7 +121,62 @@ The SmartSplit domain focuses on the relationship between **Users**, **Groups**,
 
 ### Logical architecture
 
+We divided the logic into four distinct components/services, aiming to keep the system organized and scalable, which are the following:
+
+ 1. Identity and Access Manager (IAM): This works has a handler for the user sessions and permissions,. It knows who is an Admin, who is a regular member, and also handles Logins or Registrations.
+ 2. Group Service: This service manages the lifecycle and boundaries of a group. It handles "Join/Leave/Delete Group" requests, generates invitation codes, and maintains the list of members that belong to each group.
+ 3. Expense Ledger: The financial core. It processes the "Add new expense", records the "Expense Payer", tracks the "Creator", logs the "Timestamp", and needs to calculate the debts each user has.
+ 4. Automation Engine: The background worker. It strictly handles the "Recurring expense", "Frequency rules", and "Automatic Confirmation" stories.
+
+The components interact with each other during key user actions following these relationships:
+
+ - Scenario 1: Managing Group Access (Ex.: Joining a group, Approve via Code, Remove Members, Delete Group)
+A user submits an Invitation Code to the Group Service.
+The Group Service validates the code and flags the request as "Pending".
+The Identity and Access Manager notifies the Group Admin. Once the Admin approves, it then tells the Group Service that the user can be added.
+If an Admin deletes the group, the Group Service removes the group and tells the IAM to revoke all access.
+
+- Scenario 2: Processing a Standard Expense (Ex.: Add expense, Select participants, Payer ID, See creator, Timestamp Tracking)
+A user submits an expense. The IAM instantly attaches their ID as the "Creator" and logs the exact "Timestamp".
+The Ledger receives the request and cross-checks with the Group Service to ensure the "Payer" and all selected "Participants" actually belong to that specific group.
+Once verified, the Expense Ledger locks the database, updates the financial balances for everyone involved, and saves the transaction.
+
+- Scenario 3: Triggering Automations (Ex.: Add recurring, Define frequency, Auto-confirm)
+A user sets up a $50 monthly internet bill. The Ledger tells the Automation Engine to save this rule ("Frequency: Monthly").
+The Automation Engine runs quietly in the background. When the 1st of the month hits, it pings the Ledger and says, "Execute the $50 internet bill now."
+Because the user enabled "Automatic Transaction Confirmation," the Ledger skips the pending state, instantly posts the expense, and updates the group's balances without requiring manual approval.
+
+![package-uml](graphs/package-uml.png)
+
 ### Physical architecture
+
+#### 1. Group Admin (Access & Identity)
+   - A Role-Based Access Control (RBAC) service. When a user creates a group, they are assigned an "Admin" role in the database. Invitation codes are generated and temporarily cached.
+   - The goal is to achieve security and state management. We need a strict boundary so only Admins can approve joins, remove members, or delete the group. Caching the invite codes prevents unnecessary database hits.
+
+#### 2. Core Expenses (Transactional Data)
+   - For the transactions we are going with a relational data model using strict ACID (Atomicity, Consistency, Isolation, Durability) database transactions. Every expense creation ties a Creator ID, Payer ID, and multiple Participant IDs to a single Timestamped ledger entry.
+   - It's important we follow this model because money requires absolute precision. If a user adds an expense, the database must guarantee that the payer's balance increases and the participants' balances decrease simultaneously. If one part fails, the whole transaction must roll back.
+
+#### 3. Automation (Background Processing)
+   - Mainly for the recurring expenses, for now, a distributed task queue and a CRON scheduler completely separated from the main API server is what we are using.
+   - This aproach is good performance wise. If an API endpoint was responsible for checking and creating 10,000 recurring expenses at midnight, the app would crash or slow down for active users. Offloading this to a background worker ensures the app stays fast while transactions auto-confirm in the background.
+
+#### The technologies implemented for this project where the following:
+
+- Frontend: React Native with Expo platform, group apps only work if everyone can use them, regardless of their phone. This framework lets us build iOS and Android apps from a single codebase, also using the Expo platform on it enables a drastic speed up in development.
+
+- Database: PostgreSQL, whe choose SQL because for financial ledgers whe needed fairly complex table joins and NoSQL is a poor fit for this level of relational tracking, and the Postgre choice was because it's the most solid and best fitted for our needs, even though we've worked with SQLite before in the course, we learned it had some flawed features and ambiguity while also having unexpected behaviour with some queries.
+
+- Backend / API: Node.js: Again it's a solid and well documented language, besides that it's highly scalable and excellent at handling thousands of concurrent I/O operations (like users constantly syncing group balances).
+
+- Background Jobs (Automation): Redis + BullMQ (or AWS SQS), Redis acts as a lightning-fast queue. It reliably stores your recurring expense triggers and pushes them to your Node.js workers to process exactly when defined.
+
+- Authentication: Firebase Auth or Supabase Auth, don't build password hashing and token management from scratch. These services securely handle user sign-ups, logins, and session management out of the box.
+
+- Testing: We have used Maestro to produce automated unit and integration tests following the user acceptance tests we envisioned.
+
+![deployment-uml](graphs/deployment-uml.png)
 
 ### Functional prototype
 
