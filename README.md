@@ -186,6 +186,16 @@ Because the user enabled "Automatic Transaction Confirmation," the Ledger skips 
 
 ### Sprint 0
 
+During Sprint 0 we established the foundations of SmartSplit. We defined the product vision, main features, assumptions, and domain model, then validated the core idea through user interviews documented in [docs/validation.md](/Users/rafaelkong06/Documents/UNI/ESOF/project/docs/validation.md). Based on that feedback, we refined priorities around simple expense creation, reminders, real-time balance updates, and trust-related features such as payment confirmation.
+
+At the same time, we designed the system at a high level by producing the logical, package, and deployment UML diagrams available in [README.md](/Users/rafaelkong06/Documents/UNI/ESOF/project/README.md), [logical-uml.png](/Users/rafaelkong06/Documents/UNI/ESOF/project/docs/graphs/logical-uml.png), [package-uml.png](/Users/rafaelkong06/Documents/UNI/ESOF/project/docs/graphs/package-uml.png), and [deployment-uml.png](/Users/rafaelkong06/Documents/UNI/ESOF/project/docs/graphs/deployment-uml.png). We also set up the initial Expo/React Native project structure and implemented a first functional prototype for adding shared expenses with participant selection and custom split percentages in [index.tsx](/Users/rafaelkong06/Documents/UNI/ESOF/project/app/index.tsx) and [expense-utils.ts](/Users/rafaelkong06/Documents/UNI/ESOF/project/app/expense-utils.ts).
+
+To support quality from the start, we added automated validation through unit, integration, and acceptance-oriented tests using Jest and Maestro, as seen in [expense-utils.test.ts](/Users/rafaelkong06/Documents/UNI/ESOF/project/__tests__/expense-utils.test.ts), [add-expense.acceptance.test.tsx](/Users/rafaelkong06/Documents/UNI/ESOF/project/__tests__/add-expense.acceptance.test.tsx), and [add_expense.yaml](/Users/rafaelkong06/Documents/UNI/ESOF/project/maestro/add_expense.yaml). In short, Sprint 0 was used to align the team on the product, validate the problem with users, define the architecture, and deliver the first tested prototype of the application.
+
+One aspect that could have gone better was the depth of early validation and prototype coverage. Although the initial interviews and tests were useful, in future sprints we should involve more users, validate more realistic roommate scenarios, and expand the prototype to cover additional flows such as group management, settlements, and recurring expenses earlier in the process.
+
+From an organizational perspective, we can also improve task coordination within the team. During the next sprint, we should define responsibilities earlier, break the work into smaller tasks with clearer deadlines, and keep more frequent progress checkpoints so that integration happens more smoothly and less work accumulates near the end of the sprint.
+
 ### Sprint 1
 ### Sprint 2
 ### Sprint 3
