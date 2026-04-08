@@ -113,7 +113,7 @@ The SmartSplit domain focuses on the relationship between **Users**, **Groups**,
 
 #### UML Diagram
 
-![logical-uml](graphs/logical-uml.png)
+![logical-uml](docs/graphs/logical-uml.png)
 
 ---
 
@@ -146,7 +146,7 @@ A user sets up a $50 monthly internet bill. The Ledger tells the Automation Engi
 The Automation Engine runs quietly in the background. When the 1st of the month hits, it pings the Ledger and says, "Execute the $50 internet bill now."
 Because the user enabled "Automatic Transaction Confirmation," the Ledger skips the pending state, instantly posts the expense, and updates the group's balances without requiring manual approval.
 
-![package-uml](graphs/package-uml.png)
+![package-uml](docs/graphs/package-uml.png)
 
 ### Physical architecture
 
@@ -176,7 +176,7 @@ Because the user enabled "Automatic Transaction Confirmation," the Ledger skips 
 
 - Testing: We have used Maestro to produce automated unit and integration tests following the user acceptance tests we envisioned.
 
-![deployment-uml](graphs/deployment-uml.png)
+![deployment-uml](docs/graphs/deployment-uml.png)
 
 ### Functional prototype
 
