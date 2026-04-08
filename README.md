@@ -174,7 +174,10 @@ Because the user enabled "Automatic Transaction Confirmation," the Ledger skips 
 
 - Authentication: Firebase Auth or Supabase Auth, don't build password hashing and token management from scratch. These services securely handle user sign-ups, logins, and session management out of the box.
 
-- Testing
+- Testing: We have used Maestro to produce automated unit and integration tests following the user acceptance tests we envisioned.
+
+![deployment-uml](graphs/deployment-uml.png)
+
 ### Functional prototype
 
 ---
