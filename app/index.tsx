@@ -80,6 +80,7 @@ export default function Index() {
   const [payer, setPayer] = useState("Person 1");
   const [participants, setParticipants] = useState(defaultParticipants);
   const [error, setError] = useState<string | null>(null);
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
 
   const activeGroup = groups.find((group) => group.id === activeGroupId) || groups[0];
   const activeExpenses = useMemo(
@@ -132,6 +133,43 @@ export default function Index() {
     setPayer("Person 1");
     setParticipants(defaultParticipants);
     setError(null);
+    setEditingExpenseId(null);
+  }
+
+  function getParticipantInputsFromExpense(expense: ExpenseEntry): ParticipantInput[] {
+    return GROUP_MEMBERS.map((member) => {
+      const existingParticipant = expense.participants.find(
+        (participant) => participant.name === member
+      );
+
+      return {
+        name: member,
+        selected: Boolean(existingParticipant),
+        percentage: existingParticipant ? String(existingParticipant.percentage) : "0",
+      };
+    });
+  }
+
+  function handleOpenAddExpense() {
+    if (showForm) {
+      setShowForm(false);
+      resetForm();
+      return;
+    }
+
+    resetForm();
+    setShowForm(true);
+  }
+
+  function handleEditExpense(expense: ExpenseEntry) {
+    setName(expense.name);
+    setAmount(String(expense.amount));
+    setDate(expense.date);
+    setPayer(expense.payer);
+    setParticipants(getParticipantInputsFromExpense(expense));
+    setEditingExpenseId(expense.id);
+    setError(null);
+    setShowForm(true);
   }
 
   function generateInviteCode(groupNameValue: string) {
@@ -233,10 +271,26 @@ export default function Index() {
       return;
     }
 
-    setExpenses((current) => [
-      { ...(result.expense as ExpenseEntry), groupId: activeGroup.id },
-      ...current,
-    ]);
+    if (editingExpenseId) {
+      setExpenses((current) =>
+        current.map((expense) =>
+          expense.id === editingExpenseId
+            ? {
+                ...(result.expense as ExpenseEntry),
+                id: expense.id,
+                groupId: expense.groupId,
+                createdAt: expense.createdAt,
+              }
+            : expense
+        )
+      );
+    } else {
+      setExpenses((current) => [
+        { ...(result.expense as ExpenseEntry), groupId: activeGroup.id },
+        ...current,
+      ]);
+    }
+
     setShowForm(false);
     resetForm();
   }
@@ -438,7 +492,7 @@ export default function Index() {
                 styles.primaryButton,
                 pressed && styles.buttonPressed,
               ]}
-              onPress={() => setShowForm((value) => !value)}
+              onPress={handleOpenAddExpense}
             >
               <Text style={styles.primaryButtonText}>
                 {showForm ? "Close form" : "Add expense"}
@@ -448,7 +502,9 @@ export default function Index() {
 
           {showForm ? (
             <View style={styles.form}>
-              <Text style={styles.formTitle}>Add New Expense</Text>
+              <Text style={styles.formTitle}>
+                {editingExpenseId ? "Edit Expense" : "Add New Expense"}
+              </Text>
 
               <Text style={styles.formLabel}>Expense Name</Text>
               <TextInput
@@ -608,7 +664,9 @@ export default function Index() {
                   ]}
                   onPress={handleSaveExpense}
                 >
-                  <Text style={styles.saveButtonText}>Add</Text>
+                  <Text style={styles.saveButtonText}>
+                    {editingExpenseId ? "Save" : "Add"}
+                  </Text>
                 </Pressable>
               </View>
             </View>
@@ -625,7 +683,20 @@ export default function Index() {
                     Split: {expense.participants.map((p) => `${p.name} ${p.percentage}%`).join(", ")}
                   </Text>
                 </View>
-                <Text style={styles.expenseAmount}>EUR {expense.amount.toFixed(2)}</Text>
+                <View style={styles.expenseActions}>
+                  <Text style={styles.expenseAmount}>EUR {expense.amount.toFixed(2)}</Text>
+                  <Pressable
+                    accessibilityLabel={`Edit ${expense.name}`}
+                    testID={`edit-expense-${expense.id}`}
+                    style={({ pressed }) => [
+                      styles.editButton,
+                      pressed && styles.buttonPressed,
+                    ]}
+                    onPress={() => handleEditExpense(expense)}
+                  >
+                    <Text style={styles.editButtonText}>Edit</Text>
+                  </Pressable>
+                </View>
               </View>
             ))}
           </View>
@@ -1011,6 +1082,22 @@ const styles = StyleSheet.create({
   expenseAmount: {
     color: "#12324C",
     fontSize: 17,
+    fontWeight: "800",
+    textAlign: "right",
+  },
+  expenseActions: {
+    alignItems: "flex-end",
+    gap: 8,
+  },
+  editButton: {
+    backgroundColor: "#E9F1F8",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  editButtonText: {
+    color: "#12324C",
+    fontSize: 13,
     fontWeight: "800",
   },
 });
