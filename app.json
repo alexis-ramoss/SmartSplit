@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.es-2025-26-2leic04-t5.smartsplit"
+      "bundleIdentifier": "com.es_2025_26_2leic04_t5.smartsplit"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +21,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.es-2025-26-2leic04-t5.SmartSplit"
+      "package": "com.es_2025_26_2leic04_t5.smartsplit"
     },
     "web": {
       "output": "static",
