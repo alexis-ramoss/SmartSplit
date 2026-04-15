@@ -146,7 +146,47 @@ A user sets up a $50 monthly internet bill. The Ledger tells the Automation Engi
 The Automation Engine runs quietly in the background. When the 1st of the month hits, it pings the Ledger and says, "Execute the $50 internet bill now."
 Because the user enabled "Automatic Transaction Confirmation," the Ledger skips the pending state, instantly posts the expense, and updates the group's balances without requiring manual approval.
 
-![package-uml](docs/graphs/package-uml.png)
+```mermaid
+flowchart TB
+ subgraph ClientTier["Client Application Layer"]
+        UI["User Interfaces"]
+  end
+ subgraph ExternalTier["External Integrations"]
+        IdP["External Identity Provider"]
+  end
+ subgraph SecurityDomain["Security & Access Package"]
+        IAM["Identity & Access Manager"]
+  end
+ subgraph CoreDomain["Core Business Package"]
+        Grp["Group Service"]
+        Ldg["Expense Ledger"]
+  end
+ subgraph AutomationDomain["Background Processing Package"]
+        Auto["Automation Engine"]
+  end
+ subgraph ApplicationTier["Application Logic Layer"]
+    direction TB
+        SecurityDomain
+        CoreDomain
+        AutomationDomain
+  end
+ subgraph DataTier["Persistence & State Layer"]
+        DB[("Relational Database")]
+        Queue[("Message Queue / Event Bus")]
+  end
+    UI -- Authenticates --> IAM
+    UI -- Manages Groups --> Grp
+    UI -- Manages Expenses --> Ldg
+    IAM -- Delegates Credentials --> IdP
+    Grp -- Verifies Admin Role --> IAM
+    Ldg -- Verifies Membership --> Grp
+    IAM -- Reads/Writes Profiles --> DB
+    Grp -- Reads/Writes Groups --> DB
+    Ldg -- Reads/Writes Ledgers --> DB
+    Ldg -- Schedules Rule --> Queue
+    Queue -- Triggers Execution --> Auto
+    Auto -- "Posts Auto-Transaction" --> Ldg
+```
 
 ### Physical architecture
 
