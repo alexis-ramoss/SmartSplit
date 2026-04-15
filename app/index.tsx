@@ -9,12 +9,22 @@ import {
   View,
 } from "react-native";
 import {
+  calculateMemberBalances,
+  calculateSettlementSuggestions,
   createExpenseEntry,
   ExpenseEntry,
   ParticipantInput,
 } from "./expense-utils";
 
 const GROUP_MEMBERS = ["Person 1", "Person 2", "Person 3"];
+const CURRENT_USER = "Person 1";
+
+type Group = {
+  id: string;
+  name: string;
+  inviteCode: string;
+  members: string[];
+};
 
 const defaultParticipants: ParticipantInput[] = [
   { name: "Person 1", selected: true, percentage: "50" },
@@ -32,6 +42,7 @@ function formatDate(date: Date): string {
 const initialExpenses: ExpenseEntry[] = [
   {
     id: "seed-1",
+    groupId: "home",
     name: "Groceries",
     amount: 24.5,
     date: formatDate(new Date()),
@@ -44,9 +55,25 @@ const initialExpenses: ExpenseEntry[] = [
   },
 ];
 
+const initialGroups: Group[] = [
+  {
+    id: "home",
+    name: "Household",
+    inviteCode: "HOME123",
+    members: GROUP_MEMBERS,
+  },
+];
+
 export default function Index() {
+  const [groups, setGroups] = useState(initialGroups);
+  const [activeGroupId, setActiveGroupId] = useState(initialGroups[0].id);
   const [expenses, setExpenses] = useState(initialExpenses);
   const [showForm, setShowForm] = useState(false);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [showJoinGroup, setShowJoinGroup] = useState(false);
+  const [groupName, setGroupName] = useState("");
+  const [joinCode, setJoinCode] = useState("");
+  const [groupMessage, setGroupMessage] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(formatDate(new Date()));
@@ -54,9 +81,40 @@ export default function Index() {
   const [participants, setParticipants] = useState(defaultParticipants);
   const [error, setError] = useState<string | null>(null);
 
+  const activeGroup = groups.find((group) => group.id === activeGroupId) || groups[0];
+  const activeExpenses = useMemo(
+    () => expenses.filter((expense) => expense.groupId === activeGroup.id),
+    [activeGroup.id, expenses]
+  );
+  const memberBalances = useMemo(
+    () => calculateMemberBalances(activeExpenses, activeGroup.members),
+    [activeExpenses, activeGroup.members]
+  );
+  const participatingMemberNames = useMemo(() => {
+    const names = new Set<string>();
+
+    activeExpenses.forEach((expense) => {
+      names.add(expense.payer);
+      expense.participants.forEach((participant) => names.add(participant.name));
+    });
+
+    return names;
+  }, [activeExpenses]);
+  const visibleMemberBalances = useMemo(
+    () => memberBalances.filter((balance) => participatingMemberNames.has(balance.name)),
+    [memberBalances, participatingMemberNames]
+  );
+  const settlementSuggestions = useMemo(
+    () => calculateSettlementSuggestions(visibleMemberBalances),
+    [visibleMemberBalances]
+  );
+  const currentUserBalance =
+    visibleMemberBalances.find((balance) => balance.name === CURRENT_USER)?.balance || 0;
+  const shouldShowBalanceBreakdown = visibleMemberBalances.length > 0;
+
   const totalSpent = useMemo(
-    () => expenses.reduce((sum, expense) => sum + expense.amount, 0),
-    [expenses]
+    () => activeExpenses.reduce((sum, expense) => sum + expense.amount, 0),
+    [activeExpenses]
   );
 
   const selectedPercentageTotal = useMemo(
@@ -74,6 +132,54 @@ export default function Index() {
     setPayer("Person 1");
     setParticipants(defaultParticipants);
     setError(null);
+  }
+
+  function generateInviteCode(groupNameValue: string) {
+    const prefix = groupNameValue.replace(/[^a-zA-Z]/g, "").slice(0, 4).toUpperCase() || "GRP";
+    return `${prefix}${groups.length + 1}${Date.now().toString().slice(-2)}`;
+  }
+
+  function handleCreateGroup() {
+    const trimmedName = groupName.trim();
+
+    if (!trimmedName) {
+      setGroupMessage("Enter a group name to create a group.");
+      return;
+    }
+
+    const group: Group = {
+      id: `${Date.now()}`,
+      name: trimmedName,
+      inviteCode: generateInviteCode(trimmedName),
+      members: GROUP_MEMBERS,
+    };
+
+    setGroups((current) => [group, ...current]);
+    setActiveGroupId(group.id);
+    setGroupName("");
+    setShowCreateGroup(false);
+    setGroupMessage(`Created ${group.name}. Share code ${group.inviteCode}.`);
+  }
+
+  function handleJoinGroup() {
+    const normalizedCode = joinCode.trim().toUpperCase();
+
+    if (!normalizedCode) {
+      setGroupMessage("Enter an invite code to join a group.");
+      return;
+    }
+
+    const matchingGroup = groups.find((group) => group.inviteCode === normalizedCode);
+
+    if (!matchingGroup) {
+      setGroupMessage("No group was found for that invite code.");
+      return;
+    }
+
+    setActiveGroupId(matchingGroup.id);
+    setJoinCode("");
+    setShowJoinGroup(false);
+    setGroupMessage(`Joined ${matchingGroup.name}.`);
   }
 
   function updateParticipantSelection(member: string) {
@@ -127,7 +233,10 @@ export default function Index() {
       return;
     }
 
-    setExpenses((current) => [result.expense as ExpenseEntry, ...current]);
+    setExpenses((current) => [
+      { ...(result.expense as ExpenseEntry), groupId: activeGroup.id },
+      ...current,
+    ]);
     setShowForm(false);
     resetForm();
   }
@@ -139,7 +248,7 @@ export default function Index() {
           <Text style={styles.kicker}>SmartSplit</Text>
           <Text style={styles.title}>Shared expenses, in one place</Text>
           <Text style={styles.subtitle}>
-            Add a new expense with participants and split percentages in one flow.
+            Create or join a household group, record shared expenses, and see balances.
           </Text>
 
           <View style={styles.summaryRow}>
@@ -149,10 +258,172 @@ export default function Index() {
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Recorded</Text>
-              <Text style={styles.summaryValue}>{expenses.length}</Text>
+              <Text style={styles.summaryValue}>{activeExpenses.length}</Text>
             </View>
           </View>
         </View>
+
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={styles.sectionTitle}>{activeGroup.name}</Text>
+              <Text style={styles.sectionSubtitle}>
+                Invite code: {activeGroup.inviteCode}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.groupActionsRow}>
+            <Pressable
+              accessibilityLabel="Create group"
+              testID="open-create-group-button"
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={() => {
+                setShowCreateGroup((value) => !value);
+                setShowJoinGroup(false);
+                setGroupMessage(null);
+              }}
+            >
+              <Text style={styles.secondaryButtonText}>Create group</Text>
+            </Pressable>
+            <Pressable
+              accessibilityLabel="Join group"
+              testID="open-join-group-button"
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={() => {
+                setShowJoinGroup((value) => !value);
+                setShowCreateGroup(false);
+                setGroupMessage(null);
+              }}
+            >
+              <Text style={styles.secondaryButtonText}>Join group</Text>
+            </Pressable>
+          </View>
+
+          {showCreateGroup ? (
+            <View style={styles.inlineForm}>
+              <Text style={styles.formLabel}>Group name</Text>
+              <TextInput
+                accessibilityLabel="Group name"
+                placeholder="e.g., Apartment 2B"
+                placeholderTextColor="#8B95A7"
+                style={styles.input}
+                value={groupName}
+                onChangeText={(value) => {
+                  setGroupName(value);
+                  setGroupMessage(null);
+                }}
+                testID="group-name-input"
+              />
+              <Pressable
+                accessibilityLabel="Save group"
+                testID="save-group-button"
+                style={({ pressed }) => [
+                  styles.saveButton,
+                  pressed && styles.buttonPressed,
+                ]}
+                onPress={handleCreateGroup}
+              >
+                <Text style={styles.saveButtonText}>Create</Text>
+              </Pressable>
+            </View>
+          ) : null}
+
+          {showJoinGroup ? (
+            <View style={styles.inlineForm}>
+              <Text style={styles.formLabel}>Invite code</Text>
+              <TextInput
+                accessibilityLabel="Invite code"
+                autoCapitalize="characters"
+                placeholder="HOME123"
+                placeholderTextColor="#8B95A7"
+                style={styles.input}
+                value={joinCode}
+                onChangeText={(value) => {
+                  setJoinCode(value.toUpperCase());
+                  setGroupMessage(null);
+                }}
+                testID="join-code-input"
+              />
+              <Pressable
+                accessibilityLabel="Join saved group"
+                testID="join-group-button"
+                style={({ pressed }) => [
+                  styles.saveButton,
+                  pressed && styles.buttonPressed,
+                ]}
+                onPress={handleJoinGroup}
+              >
+                <Text style={styles.saveButtonText}>Join</Text>
+              </Pressable>
+            </View>
+          ) : null}
+
+          {groupMessage ? (
+            <Text style={styles.infoText} testID="group-status-message">
+              {groupMessage}
+            </Text>
+          ) : null}
+        </View>
+
+        {shouldShowBalanceBreakdown ? (
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text style={styles.sectionTitle}>Balance breakdown</Text>
+                <Text style={styles.sectionSubtitle}>
+                  {currentUserBalance > 0.01
+                    ? `People owe you EUR ${currentUserBalance.toFixed(2)}.`
+                    : currentUserBalance < -0.01
+                      ? `You owe EUR ${Math.abs(currentUserBalance).toFixed(2)}.`
+                      : "You are settled up."}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.balanceList} testID="balance-breakdown">
+              {visibleMemberBalances.map((balance) => (
+                <View key={balance.name} style={styles.balanceRow}>
+                  <Text style={styles.balanceName}>
+                    {balance.name === CURRENT_USER ? "You" : balance.name}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.balanceAmount,
+                      balance.balance > 0.01 && styles.positiveBalance,
+                      balance.balance < -0.01 && styles.negativeBalance,
+                    ]}
+                  >
+                    {balance.balance > 0.01
+                      ? `Gets EUR ${balance.balance.toFixed(2)}`
+                      : balance.balance < -0.01
+                        ? `Owes EUR ${Math.abs(balance.balance).toFixed(2)}`
+                        : "Settled"}
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.settlementBox}>
+              <Text style={styles.settlementTitle}>Suggested payments</Text>
+              {settlementSuggestions.length > 0 ? (
+                settlementSuggestions.map((settlement) => (
+                  <Text key={`${settlement.from}-${settlement.to}`} style={styles.settlementText}>
+                    {settlement.from} pays {settlement.to} EUR {settlement.amount.toFixed(2)}
+                  </Text>
+                ))
+              ) : (
+                <Text style={styles.settlementText}>No payments needed.</Text>
+              )}
+            </View>
+          </View>
+        ) : null}
 
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
@@ -344,7 +615,7 @@ export default function Index() {
           ) : null}
 
           <View style={styles.list} testID="expense-list">
-            {expenses.map((expense) => (
+            {activeExpenses.map((expense) => (
               <View key={expense.id} style={styles.expenseItem}>
                 <View style={styles.expenseTextArea}>
                   <Text style={styles.expenseName}>{expense.name}</Text>
@@ -456,8 +727,86 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
   },
+  secondaryButton: {
+    flex: 1,
+    backgroundColor: "#E9F1F8",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignItems: "center",
+  },
+  secondaryButtonText: {
+    color: "#12324C",
+    fontSize: 14,
+    fontWeight: "800",
+  },
   buttonPressed: {
     opacity: 0.88,
+  },
+  groupActionsRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 16,
+  },
+  inlineForm: {
+    marginTop: 14,
+    gap: 8,
+  },
+  infoText: {
+    color: "#12324C",
+    fontSize: 14,
+    fontWeight: "700",
+    backgroundColor: "#E9F1F8",
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+  },
+  balanceList: {
+    marginTop: 16,
+    gap: 8,
+  },
+  balanceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "#F7FAFD",
+    borderRadius: 12,
+    padding: 12,
+  },
+  balanceName: {
+    color: "#152B3C",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  balanceAmount: {
+    color: "#5F6C7B",
+    fontSize: 15,
+    fontWeight: "800",
+    textAlign: "right",
+  },
+  positiveBalance: {
+    color: "#087443",
+  },
+  negativeBalance: {
+    color: "#B42318",
+  },
+  settlementBox: {
+    marginTop: 12,
+    backgroundColor: "#F7F8FA",
+    borderRadius: 12,
+    padding: 12,
+    gap: 6,
+  },
+  settlementTitle: {
+    color: "#34495E",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  settlementText: {
+    color: "#5F6C7B",
+    fontSize: 13,
+    fontWeight: "600",
   },
   form: {
     marginTop: 18,

@@ -1,4 +1,9 @@
-import { createExpenseEntry, validateExpenseInput } from "../app/expense-utils";
+import {
+  calculateMemberBalances,
+  calculateSettlementSuggestions,
+  createExpenseEntry,
+  validateExpenseInput,
+} from "../app/expense-utils";
 
 const baseInput = {
   name: "Pizza",
@@ -56,5 +61,34 @@ describe("expense-utils", () => {
         { name: "Person 2", percentage: 50 },
       ],
     });
+  });
+
+  it("calculates member balances and settlement suggestions", () => {
+    const balances = calculateMemberBalances(
+      [
+        {
+          id: "expense-1",
+          name: "Dinner",
+          amount: 30,
+          date: "08/04/2026",
+          payer: "Person 1",
+          participants: [
+            { name: "Person 1", percentage: 50 },
+            { name: "Person 2", percentage: 50 },
+          ],
+          createdAt: "2026-04-08T12:00:00.000Z",
+        },
+      ],
+      ["Person 1", "Person 2", "Person 3"]
+    );
+
+    expect(balances).toEqual([
+      { name: "Person 1", balance: 15 },
+      { name: "Person 2", balance: -15 },
+      { name: "Person 3", balance: 0 },
+    ]);
+    expect(calculateSettlementSuggestions(balances)).toEqual([
+      { from: "Person 2", to: "Person 1", amount: 15 },
+    ]);
   });
 });
