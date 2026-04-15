@@ -19,12 +19,24 @@ export type ExpenseSplit = {
 
 export type ExpenseEntry = {
   id: string;
+  groupId?: string;
   name: string;
   amount: number;
   date: string;
   payer: string;
   participants: ExpenseSplit[];
   createdAt: string;
+};
+
+export type MemberBalance = {
+  name: string;
+  balance: number;
+};
+
+export type SettlementSuggestion = {
+  from: string;
+  to: string;
+  amount: number;
 };
 
 function isValidDate(date: string): boolean {
@@ -119,4 +131,72 @@ export function createExpenseEntry(input: ExpenseInput): {
     },
     error: null,
   };
+}
+
+export function calculateMemberBalances(
+  expenses: ExpenseEntry[],
+  members: string[]
+): MemberBalance[] {
+  const balances = members.reduce<Record<string, number>>((current, member) => {
+    current[member] = 0;
+    return current;
+  }, {});
+
+  expenses.forEach((expense) => {
+    balances[expense.payer] = (balances[expense.payer] || 0) + expense.amount;
+
+    expense.participants.forEach((participant) => {
+      const share = expense.amount * (participant.percentage / 100);
+      balances[participant.name] = (balances[participant.name] || 0) - share;
+    });
+  });
+
+  return Object.entries(balances).map(([name, balance]) => ({
+    name,
+    balance: roundCurrency(balance),
+  }));
+}
+
+export function calculateSettlementSuggestions(
+  balances: MemberBalance[]
+): SettlementSuggestion[] {
+  const debtors = balances
+    .filter((balance) => balance.balance < -0.01)
+    .map((balance) => ({ name: balance.name, amount: Math.abs(balance.balance) }));
+  const creditors = balances
+    .filter((balance) => balance.balance > 0.01)
+    .map((balance) => ({ name: balance.name, amount: balance.balance }));
+  const suggestions: SettlementSuggestion[] = [];
+
+  let debtorIndex = 0;
+  let creditorIndex = 0;
+
+  while (debtorIndex < debtors.length && creditorIndex < creditors.length) {
+    const debtor = debtors[debtorIndex];
+    const creditor = creditors[creditorIndex];
+    const amount = Math.min(debtor.amount, creditor.amount);
+
+    suggestions.push({
+      from: debtor.name,
+      to: creditor.name,
+      amount: roundCurrency(amount),
+    });
+
+    debtor.amount = roundCurrency(debtor.amount - amount);
+    creditor.amount = roundCurrency(creditor.amount - amount);
+
+    if (debtor.amount <= 0.01) {
+      debtorIndex += 1;
+    }
+
+    if (creditor.amount <= 0.01) {
+      creditorIndex += 1;
+    }
+  }
+
+  return suggestions;
+}
+
+function roundCurrency(value: number): number {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
 }

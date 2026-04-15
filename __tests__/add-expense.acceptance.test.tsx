@@ -47,4 +47,43 @@ describe("Add Expense screen acceptance", () => {
     expect(getByText("Participant percentages must total 100%.")).toBeTruthy();
     expect(String(getByTestId("participants-total").props.children)).toContain("90");
   });
+
+  it("creates and joins groups by invite code", () => {
+    const { getByPlaceholderText, getByTestId, getByText } = render(<Index />);
+
+    fireEvent.press(getByTestId("open-create-group-button"));
+    fireEvent.changeText(getByPlaceholderText("e.g., Apartment 2B"), "Apartment 2B");
+    fireEvent.press(getByTestId("save-group-button"));
+
+    expect(getByText("Apartment 2B")).toBeTruthy();
+    expect(getByTestId("group-status-message").props.children).toContain(
+      "Created Apartment 2B."
+    );
+
+    fireEvent.press(getByTestId("open-join-group-button"));
+    fireEvent.changeText(getByPlaceholderText("HOME123"), "HOME123");
+    fireEvent.press(getByTestId("join-group-button"));
+
+    expect(getByText("Household")).toBeTruthy();
+    expect(getByText("Joined Household.")).toBeTruthy();
+  });
+
+  it("shows the group balance breakdown", () => {
+    const { getByTestId, getByText, queryByText } = render(<Index />);
+
+    expect(getByTestId("balance-breakdown")).toBeTruthy();
+    expect(getByText("People owe you EUR 12.25.")).toBeTruthy();
+    expect(getByText("Person 2 pays Person 1 EUR 12.25")).toBeTruthy();
+    expect(queryByText("Person 3")).toBeNull();
+  });
+
+  it("hides the balance breakdown until the active group has participants", () => {
+    const { getByPlaceholderText, getByTestId, queryByTestId } = render(<Index />);
+
+    fireEvent.press(getByTestId("open-create-group-button"));
+    fireEvent.changeText(getByPlaceholderText("e.g., Apartment 2B"), "Apartment 2B");
+    fireEvent.press(getByTestId("save-group-button"));
+
+    expect(queryByTestId("balance-breakdown")).toBeNull();
+  });
 });
