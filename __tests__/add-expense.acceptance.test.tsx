@@ -88,10 +88,13 @@ describe("Add Expense screen acceptance", () => {
   });
 
   it("shows the group balance breakdown", () => {
-    const { getByTestId, getByText, queryByText } = render(<Index />);
+    const { getAllByText, getByTestId, getByText, queryByText } = render(<Index />);
 
     expect(getByTestId("balance-breakdown")).toBeTruthy();
-    expect(getByText("People owe you EUR 12.25.")).toBeTruthy();
+    expect(getByTestId("debt-breakdown-list")).toBeTruthy();
+    expect(getByText("+ EUR 12.25.")).toBeTruthy();
+    expect(getByText("Your debt breakdown")).toBeTruthy();
+    expect(getAllByText("+ EUR 12.25").length).toBeGreaterThan(0);
     expect(getByText("Person 2 pays Person 1 EUR 12.25")).toBeTruthy();
     expect(queryByText("Person 3")).toBeNull();
   });

@@ -39,6 +39,14 @@ export type SettlementSuggestion = {
   amount: number;
 };
 
+export type DebtBreakdownItem = {
+  id: string;
+  expenseName: string;
+  payer: string;
+  amount: number;
+  direction: "plus" | "minus";
+};
+
 function isValidDate(date: string): boolean {
   const match = date.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   if (!match) {
@@ -195,6 +203,50 @@ export function calculateSettlementSuggestions(
   }
 
   return suggestions;
+}
+
+export function calculateDebtBreakdownForMember(
+  expenses: ExpenseEntry[],
+  memberName: string
+): DebtBreakdownItem[] {
+  return expenses.flatMap<DebtBreakdownItem>((expense) => {
+    const memberShare =
+      expense.participants.find((participant) => participant.name === memberName)
+        ?.percentage || 0;
+    const memberShareAmount = roundCurrency(expense.amount * (memberShare / 100));
+
+    if (expense.payer === memberName) {
+      const paidForOthers = roundCurrency(expense.amount - memberShareAmount);
+
+      if (paidForOthers <= 0.01) {
+        return [];
+      }
+
+      return [
+        {
+          id: expense.id,
+          expenseName: expense.name,
+          payer: expense.payer,
+          amount: paidForOthers,
+          direction: "plus" as const,
+        },
+      ];
+    }
+
+    if (memberShareAmount <= 0.01) {
+      return [];
+    }
+
+    return [
+      {
+        id: expense.id,
+        expenseName: expense.name,
+        payer: expense.payer,
+        amount: memberShareAmount,
+        direction: "minus" as const,
+      },
+    ];
+  });
 }
 
 function roundCurrency(value: number): number {

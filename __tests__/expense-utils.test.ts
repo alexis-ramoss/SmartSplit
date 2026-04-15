@@ -1,4 +1,5 @@
 import {
+  calculateDebtBreakdownForMember,
   calculateMemberBalances,
   calculateSettlementSuggestions,
   createExpenseEntry,
@@ -89,6 +90,55 @@ describe("expense-utils", () => {
     ]);
     expect(calculateSettlementSuggestions(balances)).toEqual([
       { from: "Person 2", to: "Person 1", amount: 15 },
+    ]);
+  });
+
+  it("calculates plus and minus debt breakdown items for a member", () => {
+    const breakdown = calculateDebtBreakdownForMember(
+      [
+        {
+          id: "expense-1",
+          name: "Dinner",
+          amount: 30,
+          date: "08/04/2026",
+          payer: "Person 1",
+          participants: [
+            { name: "Person 1", percentage: 50 },
+            { name: "Person 2", percentage: 50 },
+          ],
+          createdAt: "2026-04-08T12:00:00.000Z",
+        },
+        {
+          id: "expense-2",
+          name: "Taxi",
+          amount: 18,
+          date: "08/04/2026",
+          payer: "Person 2",
+          participants: [
+            { name: "Person 1", percentage: 50 },
+            { name: "Person 2", percentage: 50 },
+          ],
+          createdAt: "2026-04-08T13:00:00.000Z",
+        },
+      ],
+      "Person 1"
+    );
+
+    expect(breakdown).toEqual([
+      {
+        id: "expense-1",
+        expenseName: "Dinner",
+        payer: "Person 1",
+        amount: 15,
+        direction: "plus",
+      },
+      {
+        id: "expense-2",
+        expenseName: "Taxi",
+        payer: "Person 2",
+        amount: 9,
+        direction: "minus",
+      },
     ]);
   });
 });
