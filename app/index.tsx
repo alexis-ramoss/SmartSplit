@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import {
+  calculateDebtBreakdownForMember,
   calculateMemberBalances,
   calculateSettlementSuggestions,
   createExpenseEntry,
@@ -37,6 +38,11 @@ function formatDate(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();
   return `${day}/${month}/${year}`;
+}
+
+function formatSignedCurrency(amount: number): string {
+  const sign = amount > 0 ? "+" : "-";
+  return `${sign} EUR ${Math.abs(amount).toFixed(2)}`;
 }
 
 const initialExpenses: ExpenseEntry[] = [
@@ -108,6 +114,10 @@ export default function Index() {
   const settlementSuggestions = useMemo(
     () => calculateSettlementSuggestions(visibleMemberBalances),
     [visibleMemberBalances]
+  );
+  const currentUserDebtBreakdown = useMemo(
+    () => calculateDebtBreakdownForMember(activeExpenses, CURRENT_USER),
+    [activeExpenses]
   );
   const currentUserBalance =
     visibleMemberBalances.find((balance) => balance.name === CURRENT_USER)?.balance || 0;
@@ -433,15 +443,45 @@ export default function Index() {
                 <Text style={styles.sectionTitle}>Balance breakdown</Text>
                 <Text style={styles.sectionSubtitle}>
                   {currentUserBalance > 0.01
-                    ? `People owe you EUR ${currentUserBalance.toFixed(2)}.`
+                    ? `${formatSignedCurrency(currentUserBalance)}.`
                     : currentUserBalance < -0.01
-                      ? `You owe EUR ${Math.abs(currentUserBalance).toFixed(2)}.`
+                      ? `${formatSignedCurrency(currentUserBalance)}.`
                       : "You are settled up."}
                 </Text>
               </View>
             </View>
 
             <View style={styles.balanceList} testID="balance-breakdown">
+              {currentUserDebtBreakdown.length > 0 ? (
+                <View style={styles.debtBreakdownBox} testID="debt-breakdown-list">
+                  <Text style={styles.debtBreakdownTitle}>Your debt breakdown</Text>
+                  {currentUserDebtBreakdown.map((item) => (
+                    <View key={item.id} style={styles.debtBreakdownRow}>
+                      <View style={styles.debtBreakdownTextArea}>
+                        <Text style={styles.debtBreakdownName}>
+                          For {item.expenseName}
+                        </Text>
+                        <Text style={styles.debtBreakdownMeta}>
+                          {item.direction === "plus"
+                            ? "Paid by you"
+                            : `Covered by ${item.payer}`}
+                        </Text>
+                      </View>
+                      <Text
+                        style={[
+                          styles.debtBreakdownAmount,
+                          item.direction === "plus"
+                            ? styles.positiveBalance
+                            : styles.negativeBalance,
+                        ]}
+                      >
+                        {`${item.direction === "plus" ? "+" : "-"} EUR ${item.amount.toFixed(2)}`}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+
               {visibleMemberBalances.map((balance) => (
                 <View key={balance.name} style={styles.balanceRow}>
                   <Text style={styles.balanceName}>
@@ -455,9 +495,9 @@ export default function Index() {
                     ]}
                   >
                     {balance.balance > 0.01
-                      ? `Gets EUR ${balance.balance.toFixed(2)}`
+                      ? formatSignedCurrency(balance.balance)
                       : balance.balance < -0.01
-                        ? `Owes EUR ${Math.abs(balance.balance).toFixed(2)}`
+                        ? formatSignedCurrency(balance.balance)
                         : "Settled"}
                   </Text>
                 </View>
@@ -835,6 +875,45 @@ const styles = StyleSheet.create({
   balanceList: {
     marginTop: 16,
     gap: 8,
+  },
+  debtBreakdownBox: {
+    backgroundColor: "#F7F8FA",
+    borderRadius: 12,
+    padding: 12,
+    gap: 8,
+  },
+  debtBreakdownTitle: {
+    color: "#34495E",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  debtBreakdownRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#E4EAF1",
+    paddingTop: 8,
+  },
+  debtBreakdownTextArea: {
+    flex: 1,
+  },
+  debtBreakdownName: {
+    color: "#152B3C",
+    fontSize: 15,
+    fontWeight: "800",
+  },
+  debtBreakdownMeta: {
+    color: "#5F6C7B",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+  debtBreakdownAmount: {
+    fontSize: 15,
+    fontWeight: "900",
+    textAlign: "right",
   },
   balanceRow: {
     flexDirection: "row",
