@@ -113,7 +113,42 @@ The SmartSplit domain focuses on the relationship between **Users**, **Groups**,
 
 #### UML Diagram
 
-![logical-uml](docs/graphs/logical-uml.png)
+```mermaid
+---
+config:
+  theme: dark
+  look: classic
+---
+classDiagram
+direction RL
+    class User {
+	    +name
+	    +email
+    }
+
+    class Group {
+	    +name
+	    +inviteCode
+    }
+
+    class Expense {
+	    +description
+	    +amount
+	    +timestamp
+    }
+
+    class Split {
+	    +isSettled
+	    +amount
+    }
+
+    User "1..*" --o "0..*" Group : belongs to
+    Group "1" *-- "0..*" Expense : hosts
+    Expense "1" *-- "1..*" Split : is divided into
+    User "1" <-- Expense : paid by
+    User "1" <-- Split : owes to
+    User "1" <-- Expense : created by
+```
 
 ---
 
