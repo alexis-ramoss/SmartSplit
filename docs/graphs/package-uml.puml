@@ -1,0 +1,22 @@
+@startuml
+
+folder "App Interface" as AI
+folder "Identity and Access Manager" as IAM
+folder "Expense Tracker" as ET
+folder "Group Service" as GS
+folder "Automated Engine" as AE
+folder "System Data Store" as SDS
+
+AI ..> IAM : <<use>>
+AI ..> GS : <<use>>
+AI ..> ET : <<use>>
+
+GS ..> IAM : <<use>>
+ET ..> GS : <<use>>
+
+IAM ..> SDS : <<access>>
+GS ..> SDS : <<access>>
+ET ..> SDS : <<access>>
+
+AE ..> ET : <<use>>
+@enduml
