@@ -1,0 +1,40 @@
+@startuml
+
+node "Client Device" <<device>> {
+  node "Mobile OS" <<executionEnvironment>> {
+    artifact "React Native App" <<artifact>>
+  }
+}
+
+node "Application Server" <<device>> {
+  node "Node.js" <<executionEnvironment>> {
+    artifact "Core API" <<artifact>>
+    artifact "Background Jobs" <<artifact>>
+  }
+}
+
+node "Database Server" <<device>> {
+  node "PostgreSQL" <<database system>> {
+    artifact "Users" <<schema>>
+    artifact "Expenses" <<schema>>
+  }
+}
+
+node "Queue Server" <<device>> {
+  node "Redis" <<executionEnvironment>> {
+    artifact "BullMQ" <<artifact>>
+  }
+}
+
+node "Auth Provider" <<device>> {
+  node "Firebase / Supabase" <<executionEnvironment>> {
+    artifact "Identity Service" <<artifact>>
+  }
+}
+
+"Client Device" -- "Application Server" : <<protocol>>\nHTTPS
+"Client Device" -- "Auth Provider" : <<protocol>>\nHTTPS
+"Application Server" -- "Database Server" : <<protocol>>\nTCP/IP
+"Application Server" -- "Queue Server" : <<protocol>>\nTCP/IP
+
+@enduml
