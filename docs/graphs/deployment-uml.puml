@@ -1,5 +1,4 @@
 @startuml
-
 node "Client Device" <<device>> {
   node "Mobile OS" <<executionEnvironment>> {
     artifact "React Native App" <<artifact>>
@@ -14,21 +13,21 @@ node "Application Server" <<device>> {
 }
 
 node "Database Server" <<device>> {
-  node "PostgreSQL" <<database system>> {
+  node "PostgreSQL " <<database system>> {
     artifact "Users" <<schema>>
     artifact "Expenses" <<schema>>
   }
 }
 
 node "Queue Server" <<device>> {
-  node "Redis" <<executionEnvironment>> {
-    artifact "BullMQ" <<artifact>>
+  node "Node-Cron & PostgreSQL" <<executionEnvironment>> {
+    artifact "CRON Job" <<artifact>>
   }
 }
 
 node "Auth Provider" <<device>> {
-  node "Firebase / Supabase" <<executionEnvironment>> {
-    artifact "Identity Service" <<artifact>>
+  node "JWT & PostgreSQL" <<executionEnvironment>> {
+    artifact "Email/Password" <<artifact>>
   }
 }
 
@@ -36,5 +35,4 @@ node "Auth Provider" <<device>> {
 "Client Device" -- "Auth Provider" : <<protocol>>\nHTTPS
 "Application Server" -- "Database Server" : <<protocol>>\nTCP/IP
 "Application Server" -- "Queue Server" : <<protocol>>\nTCP/IP
-
 @enduml
