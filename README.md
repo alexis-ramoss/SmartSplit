@@ -207,9 +207,9 @@ Because the user enabled "Automatic Transaction Confirmation," the Tracker skips
 
 - Backend / API: Node.js: Again it's a solid and well documented language, besides that it's highly scalable and excellent at handling thousands of concurrent I/O operations (like users constantly syncing group balances).
 
-- Background Jobs (Automation): Redis + BullMQ (or AWS SQS), Redis acts as a lightning-fast queue. It reliably stores your recurring expense triggers and pushes them to your Node.js workers to process exactly when defined.
+- Background Jobs (Automation): For monthly recurring expenses, whe are using a simple CRON job running inside a Node.js process, that's going to use the node-cron, also creating a table in the database.
 
-- Authentication: Firebase Auth or Supabase Auth, don't build password hashing and token management from scratch. These services securely handle user sign-ups, logins, and session management out of the box.
+- Authentication: Using the technologies we already have, we are only going to use the bcrypt library to hash passwords and jsonwebtoken (JWT) for session management, so when a user sends email/password, Node.js checks the database, if they're valid, Node.js sends back a "token" (JWT), the app stores that token and sends it in the header for every future request.
 
 - Testing: We have used Maestro to produce automated unit and integration tests following the user acceptance tests we envisioned.
 
