@@ -13,20 +13,20 @@ node "Application Server" <<device>> {
 }
 
 node "Database Server" <<device>> {
-  node "PostgreSQL " <<database system>> {
+  node "Firebase " <<database system>> {
     artifact "Users" <<schema>>
     artifact "Expenses" <<schema>>
   }
 }
 
 node "Queue Server" <<device>> {
-  node "Node-Cron & PostgreSQL" <<executionEnvironment>> {
+  node " Firebase " <<executionEnvironment>> {
     artifact "CRON Job" <<artifact>>
   }
 }
 
 node "Auth Provider" <<device>> {
-  node "JWT & PostgreSQL" <<executionEnvironment>> {
+  node "Firebase" <<executionEnvironment>> {
     artifact "Email/Password" <<artifact>>
   }
 }
