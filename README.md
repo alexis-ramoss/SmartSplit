@@ -223,6 +223,7 @@ Because the user enabled "Automatic Transaction Confirmation," the Tracker skips
 
 ## Project management
 
+### Scrumboard at end of Sprint 1
 ![scrumboard_sprint1-end](docs/scrumboard_sprint1-end.png)
 
 ### Sprint 0
@@ -238,6 +239,17 @@ One aspect that could have gone better was the depth of early validation and pro
 From an organizational perspective, we can also improve task coordination within the team. During the next sprint, we should define responsibilities earlier, break the work into smaller tasks with clearer deadlines, and keep more frequent progress checkpoints so that integration happens more smoothly and less work accumulates near the end of the sprint.
 
 ### Sprint 1
+
+#### Sprint Retrospective
+
+The team successfully completed 6 User Stories (T5 #7, 8, 9, 10, 11, and 18). These are functional and in the "Accepted" column. We showed a strong "Product Pride" in delivering key initial features for the expense tracker app.
+
+During the Sprint we also identified several impediments to our workflow and product quality.
+
+- Workflow and Processes: Multiple Pull Requests were merged without an assigned owner or a clear description. This created unclarity and risk regarding code ownership. Some User Stories are marked "Done" in the project board, but the corresponding entries in the Product Backlog are missing documentation or acceptance criteria. They are "Done" but not fully transparent.
+
+- Product Quality & Feedback: The Debt Breakdown Feature (T5 #10): The primary piece of stakeholder feedback from the teacher’s review was that the "View debt breakdown" feature is not clear and lacks clarity in its current implementation. This suggests we may have missed the intended need during Sprint Planning. For this we will create a new user story that better indicates how the feature should work.
+
 ### Sprint 2
 ### Sprint 3
 
