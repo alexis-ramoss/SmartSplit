@@ -203,13 +203,13 @@ Because the user enabled "Automatic Transaction Confirmation," the Tracker skips
 
 - Frontend: React Native with Expo platform, group apps only work if everyone can use them, regardless of their phone. This framework lets us build iOS and Android apps from a single codebase, also using the Expo platform on it enables a drastic speed up in development.
 
-- Database: PostgreSQL, whe choose SQL because for financial Trackers whe needed fairly complex table joins and NoSQL is a poor fit for this level of relational tracking, and the Postgre choice was because it's the most solid and best fitted for our needs, even though we've worked with SQLite before in the course, we learned it had some flawed features and ambiguity while also having unexpected behaviour with some queries.
+- Database: Firebase, whe choose NoSQL because for financial Trackers it's fairly simpler to create and manage like this, and the Firebase choice was because it's a very solid choice and also can be used for the authentication, thus not needing to introduce more unnecessary complication, even though we've worked with SQLite before in the course, we learned it had some flawed features and ambiguity while also having unexpected behaviour with some queries.
 
 - Backend / API: Node.js: Again it's a solid and well documented language, besides that it's highly scalable and excellent at handling thousands of concurrent I/O operations (like users constantly syncing group balances).
 
 - Background Jobs (Automation): For monthly recurring expenses, whe are using a simple CRON job running inside a Node.js process, that's going to use the node-cron, also creating a table in the database.
 
-- Authentication: Using the technologies we already have, we are only going to use the bcrypt library to hash passwords and jsonwebtoken (JWT) for session management, so when a user sends email/password, Node.js checks the database, if they're valid, Node.js sends back a "token" (JWT), the app stores that token and sends it in the header for every future request.
+- Authentication: Using Firebase, the same technology we used for the database, we built an authentication logic, so when a user sends email/password, we can register or verify if the user already exists, logging user in.
 
 - Testing: We have used Maestro to produce automated unit and integration tests following the user acceptance tests we envisioned.
 
