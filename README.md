@@ -223,6 +223,8 @@ Because the user enabled "Automatic Transaction Confirmation," the Tracker skips
 
 ## Project management
 
+![scrumboard_sprint1-end](docs/scrumboard_sprint1-end.png)
+
 ### Sprint 0
 
 During Sprint 0 we established the foundations of SmartSplit. We defined the product vision, main features, assumptions, and domain model, then validated the core idea through user interviews documented in [docs/validation.md](/Users/rafaelkong06/Documents/UNI/ESOF/project/docs/validation.md). Based on that feedback, we refined priorities around simple expense creation, reminders, real-time balance updates, and trust-related features such as payment confirmation.
