@@ -221,6 +221,16 @@ Because the user enabled "Automatic Transaction Confirmation," the Tracker skips
 
 ---
 
+## Development Environment
+
+### How to setup development environment
+
+
+
+### Tools and prompts used
+
+---
+
 ## Project management
 
 ### Scrumboard at end of Sprint 1
