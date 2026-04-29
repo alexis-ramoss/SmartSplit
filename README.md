@@ -228,7 +228,7 @@ Because the user enabled "Automatic Transaction Confirmation," the Tracker skips
 
 ### How to setup development environment
 
-
+For this project we used React Native with a framework called Expo, for that it's needed to install the following dependencies: Node.js, OpenJDK, Android Studio. Then configure Android Studio like the React Native guide suggests (https://reactnative.dev/docs/environment-setup), after that setup the only step needed is to open any IDE or the terminal in the project's directory and run "npx expo start".
 
 ### Tools and prompts used
 
