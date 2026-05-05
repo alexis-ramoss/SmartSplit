@@ -16,6 +16,8 @@ import {
   ExpenseEntry,
   ParticipantInput,
 } from "./expense-utils";
+import { Redirect } from "expo-router";
+import { useAuth } from "../auth-context";
 
 const GROUP_MEMBERS = ["Person 1", "Person 2", "Person 3"];
 const CURRENT_USER = "Person 1";
@@ -71,6 +73,7 @@ const initialGroups: Group[] = [
 ];
 
 export default function Index() {
+  const { user, loading, signOutUser } = useAuth();
   const [groups, setGroups] = useState(initialGroups);
   const [activeGroupId, setActiveGroupId] = useState(initialGroups[0].id);
   const [expenses, setExpenses] = useState(initialExpenses);
@@ -127,6 +130,14 @@ export default function Index() {
     () => activeExpenses.reduce((sum, expense) => sum + expense.amount, 0),
     [activeExpenses]
   );
+
+  if (loading) {
+    return <SafeAreaView style={styles.safeArea} />;
+  }
+
+  if (!user) {
+    return <Redirect href="/login" />;
+  }
 
   const selectedPercentageTotal = useMemo(
     () =>
@@ -314,6 +325,23 @@ export default function Index() {
           <Text style={styles.subtitle}>
             Create or join a household group, record shared expenses, and see balances.
           </Text>
+
+          <Pressable
+            accessibilityLabel="Sign out"
+            style={({ pressed }) => [
+              styles.signOutButton,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={async () => {
+              try {
+                await signOutUser();
+              } catch {
+                setGroupMessage("Could not sign out. Please try again.");
+              }
+            }}
+          >
+            <Text style={styles.signOutButtonText}>Sign out</Text>
+          </Pressable>
 
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
@@ -759,6 +787,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#12324C",
     borderRadius: 24,
     padding: 24,
+  },
+  signOutButton: {
+    alignSelf: "flex-start",
+    marginTop: 14,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderRadius: 999,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  signOutButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
   },
   kicker: {
     color: "#B7C9D8",
