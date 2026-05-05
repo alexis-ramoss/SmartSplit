@@ -223,7 +223,7 @@ Because the user enabled "Automatic Transaction Confirmation," the Tracker skips
 
 ## Project management
 
-### Scrumboard at end of Sprint 1
+#### Scrumboard at end of Sprint 1
 ![scrumboard_sprint1-end](docs/scrumboard_sprint1-end.png)
 
 ### Sprint 0
@@ -251,6 +251,10 @@ During the Sprint we also identified several impediments to our workflow and pro
 - Product Quality & Feedback: The Debt Breakdown Feature (T5 #10): The primary piece of stakeholder feedback from the teacher’s review was that the "View debt breakdown" feature is not clear and lacks clarity in its current implementation. This suggests we may have missed the intended need during Sprint Planning. For this we will create a new user story that better indicates how the feature should work.
 
 ### Sprint 2
+
+#### Scrumboard at begining of Sprint 2
+![Scrumboard begining sprint 2](docs/scrumboard%20begining%20sprint%202.png)
+
 ### Sprint 3
 
 ### Final Release
