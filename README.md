@@ -253,7 +253,7 @@ During the Sprint we also identified several impediments to our workflow and pro
 ### Sprint 2
 
 #### Scrumboard at begining of Sprint 2
-![Scrumboard begining sprint 2](docs/scrumboard%20begining%20sprint%202.png)
+![Scrumboard begining sprint 2](docs/scrumboard_sprint2-begining.png)
 
 ### Sprint 3
 
