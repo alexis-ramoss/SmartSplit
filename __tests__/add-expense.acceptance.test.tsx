@@ -1,6 +1,14 @@
 import { fireEvent, render } from "@testing-library/react-native";
 import Index from "../app/index";
 
+jest.mock("../auth-context", () => ({
+  useAuth: () => ({
+    user: { uid: "123", email: "test@example.com" },
+    loading: false,
+    signOutUser: jest.fn(),
+  }),
+}));
+
 describe("Add Expense screen acceptance", () => {
   it("saves a valid expense and shows it in the group list", () => {
     const { getByTestId, getByPlaceholderText, getByText, queryByText } = render(
