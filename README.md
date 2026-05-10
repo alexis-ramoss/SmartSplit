@@ -232,6 +232,23 @@ For this project we used React Native with a framework called Expo, for that it'
 
 ### Tools and prompts used
 
+During development we used AI assistance mainly to speed up implementation, testing, and documentation tasks. The AI output was reviewed and validated by the team before being kept in the repository.
+
+#### AI tools used
+
+- OpenAI ChatGPT / Codex: used as a coding assistant to inspect the repository, suggest implementation changes, rewrite tests, and prepare documentation text.
+- Git and GitHub: used together with the AI assistant to inspect branches, review diffs, commit changes, and push updates to the remote repository.
+- Jest and React Native Testing Library: used to validate AI-assisted test changes locally.
+- Terminal tools such as `rg`, `sed`, `git diff`, `git status`, and `npx jest`: used by the AI assistant to navigate the project and verify the final result.
+
+#### Prompts used
+
+- "Improve the project tests so they better match the expected acceptance criteria."
+- "Check if the tests are all in Gherkin, make them better, and make the Thens more expressive in terms of outcome."
+- "Run the tests and fix any issues found."
+- "Run the app and fix any problems or dead code."
+- "Commit the modified tests and push them to the remote repository."
+
 ---
 
 ## Project management
