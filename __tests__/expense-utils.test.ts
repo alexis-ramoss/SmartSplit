@@ -18,8 +18,8 @@ const baseInput = {
   ],
 };
 
-describe("expense-utils", () => {
-  it("rejects invalid expense amounts", () => {
+describe("Feature: Validate and calculate expenses", () => {
+  it("Scenario: Given expense details contain a blank or negative amount, When the expense is validated, Then the user receives an amount-specific validation message", () => {
     expect(
       validateExpenseInput({
         ...baseInput,
@@ -35,7 +35,7 @@ describe("expense-utils", () => {
     ).toBe("Please enter a valid expense amount.");
   });
 
-  it("rejects participant weights when total is not 100%", () => {
+  it("Scenario: Given participant percentages add up to less than 100, When the expense is validated, Then the user receives a split-total validation message", () => {
     expect(
       validateExpenseInput({
         ...baseInput,
@@ -48,7 +48,7 @@ describe("expense-utils", () => {
     ).toBe("Participant percentages must total 100%.");
   });
 
-  it("creates an expense entry when input is valid", () => {
+  it("Scenario: Given valid expense details, When an expense entry is created, Then the saved expense contains normalized numeric values and selected participants only", () => {
     const result = createExpenseEntry(baseInput);
 
     expect(result.error).toBeNull();
@@ -64,7 +64,7 @@ describe("expense-utils", () => {
     });
   });
 
-  it("calculates member balances and settlement suggestions", () => {
+  it("Scenario: Given one member paid for a shared expense, When balances and settlements are calculated, Then the payer is credited, the participant is debited, and the settlement clears the debt", () => {
     const balances = calculateMemberBalances(
       [
         {
@@ -93,7 +93,7 @@ describe("expense-utils", () => {
     ]);
   });
 
-  it("calculates plus and minus debt breakdown items for a member", () => {
+  it("Scenario: Given the current member both paid for and benefited from shared expenses, When their debt breakdown is calculated, Then covered amounts are marked positive and amounts owed to others are marked negative", () => {
     const breakdown = calculateDebtBreakdownForMember(
       [
         {
