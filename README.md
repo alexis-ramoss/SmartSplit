@@ -17,6 +17,9 @@ It is organised by the following activities:
   * [Logical architecture](#Logical-Architecture)
   * [Physical architecture](#Physical-Architecture)
   * [Functional prototype](#Functional-Prototype)
+* [Development Environment](#Development-Environment)
+  * [How to setup development environment](#How-to-setup-development-environment)
+  * [Tools and prompts used](#Tools-and-prompts-used)
 * [Project management](#Project-Management)
   * [Sprint 0](#Sprint-0)
   * [Sprint 1](#Sprint-1)
@@ -218,6 +221,35 @@ Because the user enabled "Automatic Transaction Confirmation," the Tracker skips
 ![deployment-uml](docs/graphs/deployment-uml.png)
 
 ### Functional prototype
+
+---
+
+## Development Environment
+
+### How to setup development environment
+
+For this project we used React Native with a framework called Expo, for that it's needed to install the following dependencies: Node.js, OpenJDK, Android Studio. Then configure Android Studio like the React Native guide suggests (https://reactnative.dev/docs/environment-setup), after that setup the only step needed is to open any IDE or the terminal in the project's directory and run "npx expo start".
+
+### Tools and prompts used
+
+During development we used AI assistance mainly to speed up implementation, testing, and documentation tasks. The AI output was reviewed and validated by the team before being kept in the repository.
+
+#### AI tools used
+
+- OpenAI ChatGPT / Codex: used as a coding assistant to inspect the repository, suggest implementation changes, rewrite tests, and prepare documentation text.
+- Git and GitHub: used together with the AI assistant to inspect branches, review diffs, commit changes, and push updates to the remote repository.
+- Jest and React Native Testing Library: used to validate AI-assisted test changes locally.
+- Terminal tools such as `rg`, `sed`, `git diff`, `git status`, and `npx jest`: used by the AI assistant to navigate the project and verify the final result.
+- Google Gemini: coding agent to suggest and write code and tests.
+
+#### Prompts used
+
+- "Improve the project tests so they better match the expected acceptance criteria."
+- "Check if the tests are all in Gherkin, make them better, and make the Thens more expressive in terms of outcome."
+- "Run the tests and fix any issues found."
+- "Run the app and fix any problems or dead code."
+- "Commit the modified tests and push them to the remote repository."
+- "create a plan to implement the following feature described in this user story: Statement As a group owner I want to accept new users that entered my group's code So that I can control who joins the group"
 
 ---
 
