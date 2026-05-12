@@ -240,6 +240,7 @@ During development we used AI assistance mainly to speed up implementation, test
 - Git and GitHub: used together with the AI assistant to inspect branches, review diffs, commit changes, and push updates to the remote repository.
 - Jest and React Native Testing Library: used to validate AI-assisted test changes locally.
 - Terminal tools such as `rg`, `sed`, `git diff`, `git status`, and `npx jest`: used by the AI assistant to navigate the project and verify the final result.
+- Google Gemini: coding agent to suggest and write code and tests.
 
 #### Prompts used
 
@@ -248,6 +249,7 @@ During development we used AI assistance mainly to speed up implementation, test
 - "Run the tests and fix any issues found."
 - "Run the app and fix any problems or dead code."
 - "Commit the modified tests and push them to the remote repository."
+- "create a plan to implement the following feature described in this user story: Statement As a group owner I want to accept new users that entered my group's code So that I can control who joins the group"
 
 ---
 
