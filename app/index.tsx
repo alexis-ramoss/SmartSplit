@@ -27,6 +27,8 @@ type Group = {
   name: string;
   inviteCode: string;
   members: string[];
+  owner: string;
+  joinRequests: string[];
 };
 
 const defaultParticipants: ParticipantInput[] = [
@@ -69,6 +71,8 @@ const initialGroups: Group[] = [
     name: "Household",
     inviteCode: "HOME123",
     members: GROUP_MEMBERS,
+    owner: "Person 1",
+    joinRequests: ["Person 4", "Person 5"],
   },
 ];
 
@@ -131,14 +135,6 @@ export default function Index() {
     [activeExpenses]
   );
 
-  if (loading) {
-    return <SafeAreaView style={styles.safeArea} />;
-  }
-
-  if (!user) {
-    return <Redirect href="/login" />;
-  }
-
   const selectedPercentageTotal = useMemo(
     () =>
       participants
@@ -147,18 +143,32 @@ export default function Index() {
     [participants]
   );
 
+  if (loading) {
+    return <SafeAreaView style={styles.safeArea} />;
+  }
+
+  if (!user) {
+    return <Redirect href="/login" />;
+  }
+
   function resetForm() {
     setName("");
     setAmount("");
     setDate(formatDate(new Date()));
-    setPayer("Person 1");
-    setParticipants(defaultParticipants);
+    setPayer(CURRENT_USER);
+    setParticipants(
+      activeGroup.members.map((member, index) => ({
+        name: member,
+        selected: index < 2,
+        percentage: index < 2 ? "50" : "0",
+      }))
+    );
     setError(null);
     setEditingExpenseId(null);
   }
 
   function getParticipantInputsFromExpense(expense: ExpenseEntry): ParticipantInput[] {
-    return GROUP_MEMBERS.map((member) => {
+    return activeGroup.members.map((member) => {
       const existingParticipant = expense.participants.find(
         (participant) => participant.name === member
       );
@@ -211,6 +221,8 @@ export default function Index() {
       name: trimmedName,
       inviteCode: generateInviteCode(trimmedName),
       members: GROUP_MEMBERS,
+      owner: CURRENT_USER,
+      joinRequests: [],
     };
 
     setGroups((current) => [group, ...current]);
@@ -235,10 +247,52 @@ export default function Index() {
       return;
     }
 
-    setActiveGroupId(matchingGroup.id);
+    if (matchingGroup.members.includes(CURRENT_USER)) {
+      setActiveGroupId(matchingGroup.id);
+      setJoinCode("");
+      setShowJoinGroup(false);
+      setGroupMessage(`Joined ${matchingGroup.name}.`);
+      return;
+    }
+
+    setGroups((current) =>
+      current.map((g) =>
+        g.id === matchingGroup.id
+          ? { ...g, joinRequests: [...new Set([...(g.joinRequests || []), CURRENT_USER])] }
+          : g
+      )
+    );
+
     setJoinCode("");
     setShowJoinGroup(false);
-    setGroupMessage(`Joined ${matchingGroup.name}.`);
+    setGroupMessage(`Requested to join ${matchingGroup.name}. Waiting for approval.`);
+  }
+
+  function handleAcceptJoinRequest(requester: string) {
+    setGroups((current) =>
+      current.map((g) =>
+        g.id === activeGroup.id
+          ? {
+              ...g,
+              members: [...g.members, requester],
+              joinRequests: g.joinRequests.filter((r) => r !== requester),
+            }
+          : g
+      )
+    );
+  }
+
+  function handleRejectJoinRequest(requester: string) {
+    setGroups((current) =>
+      current.map((g) =>
+        g.id === activeGroup.id
+          ? {
+              ...g,
+              joinRequests: g.joinRequests.filter((r) => r !== requester),
+            }
+          : g
+      )
+    );
   }
 
   function updateParticipantSelection(member: string) {
@@ -255,7 +309,7 @@ export default function Index() {
     );
 
     if (payer === member) {
-      const fallback = GROUP_MEMBERS.find((person) => person !== member) || "Person 1";
+      const fallback = activeGroup.members.find((person) => person !== member) || CURRENT_USER;
       setPayer(fallback);
     }
 
@@ -463,6 +517,42 @@ export default function Index() {
             </Text>
           ) : null}
         </View>
+
+        {activeGroup.owner === CURRENT_USER && activeGroup.joinRequests && activeGroup.joinRequests.length > 0 ? (
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text style={styles.sectionTitle}>Join requests</Text>
+                <Text style={styles.sectionSubtitle}>
+                  People waiting to join your group.
+                </Text>
+              </View>
+            </View>
+            <View style={{ marginTop: 16, gap: 12 }}>
+              {activeGroup.joinRequests.map((requester) => (
+                <View key={requester} style={styles.expenseItem}>
+                  <Text style={styles.participantName}>{requester}</Text>
+                  <View style={[styles.groupActionsRow, { marginTop: 0 }]}>
+                    <Pressable
+                      style={[styles.primaryButton, { marginVertical: 0 }]}
+                      onPress={() => handleAcceptJoinRequest(requester)}
+                      testID={`accept-request-${requester}`}
+                    >
+                      <Text style={styles.primaryButtonText}>Accept</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.cancelButton, { paddingVertical: 12, paddingHorizontal: 16, flex: 0, minWidth: 80 }]}
+                      onPress={() => handleRejectJoinRequest(requester)}
+                      testID={`reject-request-${requester}`}
+                    >
+                      <Text style={[styles.cancelButtonText, { fontSize: 14 }]}>Reject</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
 
         {shouldShowBalanceBreakdown ? (
           <View style={styles.sectionCard}>

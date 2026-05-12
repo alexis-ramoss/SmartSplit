@@ -1,13 +1,13 @@
+import { Redirect, useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Pressable,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
-import { Redirect, useRouter } from "expo-router";
 import { useAuth } from "../auth-context";
 import { auth } from "../firebase";
 
