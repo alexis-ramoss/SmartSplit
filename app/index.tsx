@@ -22,6 +22,7 @@ import {
     canRemoveMember,
     createGroup,
     deleteGroup,
+    joinGroupByInviteCode,
     leaveGroupFromGroup,
     loadAccessibleGroups,
     removeMemberFromGroup,
@@ -144,7 +145,15 @@ export default function Index() {
           return;
         }
 
-        setGroups(remoteGroups);
+        setGroups((currentGroups) => {
+          return remoteGroups.map((group) => {
+            const existingGroup = currentGroups.find((g) => g.id === group.id);
+            return {
+              ...group,
+              joinRequests: existingGroup?.joinRequests ?? ["Alice (Demo)", "Bob (Demo)"],
+            };
+          });
+        });
 
         const nextActiveGroup =
           remoteGroups.find((group) => group.id === preferredGroupId) ||
@@ -357,7 +366,15 @@ export default function Index() {
 
     try {
       const refreshedGroups = await loadAccessibleGroups(currentUser.uid);
-      setGroups(refreshedGroups);
+      setGroups((currentGroups) => {
+        return refreshedGroups.map((group) => {
+          const existingGroup = currentGroups.find((g) => g.id === group.id);
+          return {
+            ...group,
+            joinRequests: existingGroup?.joinRequests ?? ["Alice (Demo)", "Bob (Demo)"],
+          };
+        });
+      });
 
       const nextActiveGroup =
         refreshedGroups.find((group) => group.id === preferredGroupId) ||
@@ -400,6 +417,7 @@ export default function Index() {
         },
       ],
       expenses: [],
+      joinRequests: ["Alice (Demo)", "Bob (Demo)"],
     };
 
     setGroups((current) => [optimisticGroup, ...current.filter((group) => group.id !== optimisticGroup.id)]);
@@ -434,12 +452,34 @@ export default function Index() {
 
     const matchingGroup = groups.find((group) => group.inviteCode === normalizedCode) || null;
 
-    if (matchingGroup) {
-      setGroups((current) => [matchingGroup, ...current.filter((group) => group.id !== matchingGroup.id)]);
-      setActiveGroupId(matchingGroup.id);
-      setExpenses(matchingGroup.expenses || []);
-      setParticipants(buildDefaultParticipants(matchingGroup.members.map((member) => member.name)));
+    if (!matchingGroup) {
+      try {
+        const joinedGroup = await joinGroupByInviteCode({
+          userId: currentUser.uid,
+          userName: currentUserName,
+          userEmail: currentUser.email || "",
+          inviteCode: normalizedCode,
+        });
+        if (joinedGroup) {
+          setGroups((current) => [joinedGroup, ...current.filter((group) => group.id !== joinedGroup.id)]);
+          setActiveGroupId(joinedGroup.id);
+          setExpenses(joinedGroup.expenses || []);
+          setParticipants(buildDefaultParticipants(joinedGroup.members.map((member) => member.name)));
+          setJoinCode("");
+          setShowJoinGroup(false);
+          setGroupMessage(`Joined ${joinedGroup.name}.`);
+        }
+        return;
+      } catch (err) {
+        setGroupMessage(err instanceof Error ? err.message : "No group found with that invite code.");
+        return;
+      }
     }
+
+    setGroups((current) => [matchingGroup, ...current.filter((group) => group.id !== matchingGroup.id)]);
+    setActiveGroupId(matchingGroup.id);
+    setExpenses(matchingGroup.expenses || []);
+    setParticipants(buildDefaultParticipants(matchingGroup.members.map((member) => member.name)));
 
     if (matchingGroup.members.some((m) => m.userId === currentUser.uid)) {
       setActiveGroupId(matchingGroup.id);
