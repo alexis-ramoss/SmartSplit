@@ -4,7 +4,7 @@ import {
   calculateSettlementSuggestions,
   createExpenseEntry,
   validateExpenseInput,
-} from "../app/expense-utils";
+} from "../lib/_expense-utils";
 
 const baseInput = {
   name: "Pizza",

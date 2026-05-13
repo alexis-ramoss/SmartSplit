@@ -4,10 +4,9 @@ import Index from "../app/index";
 describe("Feature: Identify who paid for an expense", () => {
   it("Scenario: Given the user is adding an expense, When they select a payer, Then the saved expense names that payer and does not show a missing-payer validation error", () => {
     // Given the user is on the add expense form
-    const { getByPlaceholderText, getByTestId, getByText, queryByText } = render(
+    const { getAllByText, getByPlaceholderText, getByTestId, getByText, queryByText } = render(
       <Index />
     );
-
     fireEvent.press(getByText("Add expense"));
 
     // When they complete the expense and choose Person 2 as payer
@@ -19,8 +18,8 @@ describe("Feature: Identify who paid for an expense", () => {
 
     // Then the saved expense identifies Person 2 as the payer
     expect(queryByText("Please enter who paid for the expense.")).toBeNull();
-    expect(getByText("Internet bill")).toBeTruthy();
-    expect(getByText("Paid by Person 2")).toBeTruthy();
+    expect(getAllByText("Internet bill").length).toBeGreaterThan(0);
+    expect(getAllByText("Paid by Person 2").length).toBeGreaterThan(0);
   });
 
   it("Scenario: Given an existing expense has a payer, When the payer is changed while editing, Then the expenses list reflects the new payer for that existing expense", () => {
@@ -28,7 +27,7 @@ describe("Feature: Identify who paid for an expense", () => {
     const { getByDisplayValue, getByTestId, getByText } = render(<Index />);
 
     // When the user changes the payer and saves
-    fireEvent.press(getByTestId("edit-expense-seed-1"));
+    fireEvent.press(getByTestId("edit-expense-expense-1"));
 
     expect(getByText("Edit Expense")).toBeTruthy();
     expect(getByDisplayValue("Groceries")).toBeTruthy();

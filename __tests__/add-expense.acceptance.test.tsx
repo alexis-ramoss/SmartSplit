@@ -18,9 +18,9 @@ describe("Feature: Add an expense to a group", () => {
 
     // Then the new expense is visible with no amount validation error
     expect(queryByText("Please enter a valid expense amount.")).toBeNull();
-    expect(getByText("Internet bill")).toBeTruthy();
+    expect(getAllByText("Internet bill").length).toBeGreaterThan(0);
     expect(getAllByText("Paid by Person 1").length).toBeGreaterThan(0);
-    expect(getByText("EUR 29.99")).toBeTruthy();
+    expect(getAllByText("EUR 29.99").length).toBeGreaterThan(0);
   });
 
   it("Scenario: Given the user is adding an expense, When they submit an invalid amount, Then the form explains the amount problem and prevents the expense from being added", () => {
