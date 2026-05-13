@@ -284,6 +284,31 @@ During the Sprint we also identified several impediments to our workflow and pro
 
 ### Sprint 2
 
+#### Sprint Retrospective
+
+**Did Well**
+
+Collaboration improved noticeably compared to Sprint 1. The team communicated more openly, coordination felt smoother, and there was a clearer shared sense of ownership over the work being done. Members were more proactive in picking up tasks and unblocking each other, which helped maintain a steady delivery pace throughout the sprint without the usual last-minute pressure. Sprint Planning also felt more grounded this time around — the team had a better sense of what was realistically achievable within the timebox, which reduced the uncertainty that affected Sprint 1. Overall, the team dynamic matured and the working environment felt more cohesive and focused.
+
+**Do Differently**
+
+While the team dynamic improved, we can still be more deliberate about keeping the Scrum board up to date during the sprint rather than only at the end. Story statuses were not always reflecting the actual state of work in progress, which made it harder to identify blockers early and gave a skewed picture of sprint health during daily standups. We should treat the board as a live tool, not a reporting artifact. Additionally, code reviews still happened somewhat informally — in the next sprint we should make sure every PR has a designated reviewer and that reviews are completed promptly rather than being left open for extended periods, which can cause integration friction later.
+
+**Puzzles**
+
+It is still not entirely clear how we should handle stories that are technically implemented but need design or UX refinement before they can truly be considered "Accepted". In Sprint 2 some features were functional but lacked polish or clarity from a user perspective, and the team was unsure whether to mark them as done or keep them open. We should discuss and agree on where that line sits within our Definition of Done, so the whole team applies the same standard consistently. It is also worth reflecting on how much time should be spent on refinement of existing features versus pushing forward with new ones — finding the right balance between quality and velocity is something we have not yet fully resolved as a team.
+
+**Improvements**
+
+- Update story statuses on the board continuously throughout the sprint, not just at the end, and use it actively during standups to identify blockers.
+- Enforce a clear PR review process: every pull request must have a designated reviewer assigned before it can be merged, and reviews should be completed within a reasonable timeframe.
+- Establish a stronger and shared Definition of Done that explicitly accounts for UX clarity and acceptance criteria, not just technical functionality.
+- Dedicate time in Sprint Planning to backlog refinement, ensuring stories entering the sprint are well-defined with clear acceptance criteria so the team does not have to stop mid-sprint to clarify scope.
+
+#### Sprint Review
+
+During the Sprint Review, 7 new features were demonstrated: approve users joining via invitation code, user login, remove members from a group, leave a group, delete a group, see who created an expense, and expense timestamp tracking.
+
 #### Scrumboard at begining of Sprint 2
 ![Scrumboard begining sprint 2](docs/scrumboard_sprint2-begining.png)
 
