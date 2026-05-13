@@ -1,10 +1,17 @@
 import { fireEvent, render } from "@testing-library/react-native";
 import Index from "../app/index";
 
-describe("Feature: Add an expense to a group", () => {
-  it("Scenario: Given the user is adding an expense, When they submit valid details, Then the group expense list includes the new expense with the submitted amount and payer", () => {
-    // Given the user is on the add expense form
-    const { getAllByText, getByPlaceholderText, getByText, queryByText } = render(
+jest.mock("../auth-context", () => ({
+  useAuth: () => ({
+    user: { uid: "123", email: "test@example.com" },
+    loading: false,
+    signOutUser: jest.fn(),
+  }),
+}));
+
+describe("Add Expense screen acceptance", () => {
+  it("saves a valid expense and shows it in the group list", () => {
+    const { getByTestId, getByPlaceholderText, getByText, queryByText } = render(
       <Index />
     );
 

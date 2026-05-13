@@ -102,6 +102,33 @@ function formatSignedCurrency(amount: number): string {
   return `${sign} EUR ${Math.abs(amount).toFixed(2)}`;
 }
 
+const initialExpenses: ExpenseEntry[] = [
+  {
+    id: "seed-1",
+    groupId: "home",
+    name: "Groceries",
+    amount: 24.5,
+    date: formatDate(new Date()),
+    payer: "Person 1",
+    participants: [
+      { name: "Person 1", percentage: 50 },
+      { name: "Person 2", percentage: 50 },
+    ],
+    createdAt: new Date().toISOString(),
+  },
+];
+
+const initialGroups: Group[] = [
+  {
+    id: "home",
+    name: "Household",
+    inviteCode: "HOME123",
+    members: GROUP_MEMBERS,
+    owner: "Person 1",
+    joinRequests: ["Person 4", "Person 5"],
+  },
+];
+
 export default function Index() {
   const { user, loading, signOutUser, firestoreWritable } = useAuth();
   const currentUserName = user?.displayName || user?.email?.split("@")[0] || "You";
@@ -243,12 +270,26 @@ export default function Index() {
 
   const currentUser = user;
 
+  if (loading) {
+    return <SafeAreaView style={styles.safeArea} />;
+  }
+
+  if (!user) {
+    return <Redirect href="/login" />;
+  }
+
   function resetForm() {
     setName("");
     setAmount("");
     setDate(formatDate(new Date()));
-    setPayer(currentUserName);
-    setParticipants(buildDefaultParticipants(activeMemberNames));
+    setPayer(CURRENT_USER);
+    setParticipants(
+      activeGroup.members.map((member, index) => ({
+        name: member,
+        selected: index < 2,
+        percentage: index < 2 ? "50" : "0",
+      }))
+    );
     setError(null);
     setEditingExpenseId(null);
   }
@@ -435,22 +476,52 @@ export default function Index() {
       setParticipants(buildDefaultParticipants(matchingGroup.members.map((member) => member.name)));
     }
 
+    if (matchingGroup.members.includes(CURRENT_USER)) {
+      setActiveGroupId(matchingGroup.id);
+      setJoinCode("");
+      setShowJoinGroup(false);
+      setGroupMessage(`Joined ${matchingGroup.name}.`);
+      return;
+    }
+
+    setGroups((current) =>
+      current.map((g) =>
+        g.id === matchingGroup.id
+          ? { ...g, joinRequests: [...new Set([...(g.joinRequests || []), CURRENT_USER])] }
+          : g
+      )
+    );
+
     setJoinCode("");
     setShowJoinGroup(false);
-    setGroupMessage(`Joined ${matchingGroup?.name || "the group"}.`);
+    setGroupMessage(`Requested to join ${matchingGroup.name}. Waiting for approval.`);
+  }
 
-    try {
-      const joinedGroup = await joinGroupByInviteCode({
-        userId: currentUser.uid,
-        userName: currentUserName,
-        userEmail: currentUser.email || "",
-        inviteCode: normalizedCode,
-      });
+  function handleAcceptJoinRequest(requester: string) {
+    setGroups((current) =>
+      current.map((g) =>
+        g.id === activeGroup.id
+          ? {
+              ...g,
+              members: [...g.members, requester],
+              joinRequests: g.joinRequests.filter((r) => r !== requester),
+            }
+          : g
+      )
+    );
+  }
 
-      void refreshActiveGroups(joinedGroup?.id || matchingGroup?.id || null);
-    } catch (error) {
-      setGroupMessage(error instanceof Error ? error.message : "No group was found for that invite code.");
-    }
+  function handleRejectJoinRequest(requester: string) {
+    setGroups((current) =>
+      current.map((g) =>
+        g.id === activeGroup.id
+          ? {
+              ...g,
+              joinRequests: g.joinRequests.filter((r) => r !== requester),
+            }
+          : g
+      )
+    );
   }
 
   function updateParticipantSelection(member: string) {
@@ -801,6 +872,42 @@ export default function Index() {
             </Text>
           ) : null}
         </View>
+
+        {activeGroup.owner === CURRENT_USER && activeGroup.joinRequests && activeGroup.joinRequests.length > 0 ? (
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text style={styles.sectionTitle}>Join requests</Text>
+                <Text style={styles.sectionSubtitle}>
+                  People waiting to join your group.
+                </Text>
+              </View>
+            </View>
+            <View style={{ marginTop: 16, gap: 12 }}>
+              {activeGroup.joinRequests.map((requester) => (
+                <View key={requester} style={styles.expenseItem}>
+                  <Text style={styles.participantName}>{requester}</Text>
+                  <View style={[styles.groupActionsRow, { marginTop: 0 }]}>
+                    <Pressable
+                      style={[styles.primaryButton, { marginVertical: 0 }]}
+                      onPress={() => handleAcceptJoinRequest(requester)}
+                      testID={`accept-request-${requester}`}
+                    >
+                      <Text style={styles.primaryButtonText}>Accept</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.cancelButton, { paddingVertical: 12, paddingHorizontal: 16, flex: 0, minWidth: 80 }]}
+                      onPress={() => handleRejectJoinRequest(requester)}
+                      testID={`reject-request-${requester}`}
+                    >
+                      <Text style={[styles.cancelButtonText, { fontSize: 14 }]}>Reject</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
 
         {shouldShowBalanceBreakdown ? (
           <View style={styles.sectionCard}>
