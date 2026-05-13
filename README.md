@@ -271,13 +271,28 @@ From an organizational perspective, we can also improve task coordination within
 
 #### Sprint Retrospective
 
-The team successfully completed 6 User Stories (T5 #7, 8, 9, 10, 11, and 18). These are functional and in the "Accepted" column. We showed a strong "Product Pride" in delivering key initial features for the expense tracker app.
+**Did Well**
 
-During the Sprint we also identified several impediments to our workflow and product quality.
+The team maintained a consistent delivery pace and managed to collaborate without major communication breakdowns. Members showed initiative in picking up tasks and the overall atmosphere remained constructive throughout the sprint. For a first real sprint, the team demonstrated a good level of commitment and was able to deliver functional features end-to-end, which built confidence going into the next iteration.
 
-- Workflow and Processes: Multiple Pull Requests were merged without an assigned owner or a clear description. This created unclarity and risk regarding code ownership. Some User Stories are marked "Done" in the project board, but the corresponding entries in the Product Backlog are missing documentation or acceptance criteria. They are "Done" but not fully transparent.
+**Do Differently**
 
-- Product Quality & Feedback: The Debt Breakdown Feature (T5 #10): The primary piece of stakeholder feedback from the teacher’s review was that the "View debt breakdown" feature is not clear and lacks clarity in its current implementation. This suggests we may have missed the intended need during Sprint Planning. For this we will create a new user story that better indicates how the feature should work.
+Multiple Pull Requests were merged without an assigned owner or a meaningful description, creating ambiguity around code ownership and making it harder to track who was responsible for what. This also made code reviews less effective and introduced risk around integration. In the next sprint, we will enforce a PR checklist requiring a clear title, description, and at least one assigned reviewer before merging. Additionally, some items were marked "Done" on the board without matching documentation or acceptance criteria in the backlog, making it difficult to verify whether a story was truly complete or just functionally implemented.
+
+**Puzzles**
+
+Sprint Planning felt uncertain at times — it was not always clear how much work the team could realistically commit to within the sprint, which led to some stories being harder to scope than expected. It was also unclear how to handle the gap between a feature being "working" and a feature being "ready", and the team struggled to draw a consistent line between the two. This is something we need to address by building a shared Definition of Done.
+
+**Improvements**
+
+- Enforce PR ownership and descriptions before merging, and assign at least one reviewer to every pull request.
+- Apply a shared Definition of Done to all User Stories before moving them to "Accepted", including documentation and acceptance criteria.
+- Improve Sprint Planning by discussing team capacity upfront and breaking stories into smaller, estimable tasks to reduce mid-sprint uncertainty.
+- Keep the Scrum board updated continuously so it reflects the real state of work at any point during the sprint, not just at delivery time.
+
+#### Sprint Review
+
+The Sprint Review highlighted that the "View debt breakdown" feature lacked clarity in its current implementation, suggesting the intended user need may not have been fully captured during Sprint Planning. As a result, a new user story will be created to better specify how the feature should work and what the expected outcome looks like from the user's perspective.
 
 #### Scrumboard at end of Sprint 1
 ![scrumboard_sprint1-end](docs/scrumboard_sprint1-end.png)
