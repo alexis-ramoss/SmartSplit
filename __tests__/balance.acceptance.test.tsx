@@ -21,7 +21,7 @@ describe("Feature: View group balances", () => {
     expect(getByText("+ EUR 12.25.")).toBeTruthy();
 
     // When the seeded expense amount is changed
-    fireEvent.press(getByTestId("edit-expense-seed-1"));
+    fireEvent.press(getByTestId("edit-expense-expense-1"));
     fireEvent.changeText(getByTestId("expense-amount-input"), "40");
     fireEvent.press(getByTestId("save-expense-button"));
 

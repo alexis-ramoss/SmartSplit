@@ -12,6 +12,7 @@ type AuthContextValue = {
   user: FirebaseUser | null;
   loading: boolean;
   firebaseReady: boolean;
+  firestoreWritable: boolean;
   signOutUser: () => Promise<void>;
 };
 
@@ -19,12 +20,14 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   loading: true,
   firebaseReady: false,
+  firestoreWritable: false,
   signOutUser: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [firestoreWritable, setFirestoreWritable] = useState(false);
 
   useEffect(() => {
     if (!auth) {
@@ -47,17 +50,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (db) {
-        void db.collection("users").doc(nextUser.uid).set(
-          {
-            uid: nextUser.uid,
-            name: nextUser.displayName || nextUser.email?.split("@")[0] || "User",
-            email: nextUser.email || "",
-            photo: nextUser.photoURL || "",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          { merge: true }
-        );
+        void db
+          .collection("users")
+          .doc(nextUser.uid)
+          .set(
+            {
+              uid: nextUser.uid,
+              name: nextUser.displayName || nextUser.email?.split("@")[0] || "User",
+              email: nextUser.email || "",
+              photo: nextUser.photoURL || "",
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            },
+            { merge: true }
+          )
+          .then(() => {
+            setFirestoreWritable(true);
+          })
+          .catch(() => {
+            setFirestoreWritable(false);
+          });
       }
       setLoading(false);
     });
@@ -70,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       firebaseReady: hasRequiredConfig,
+      firestoreWritable,
       signOutUser: async () => {
         if (!auth) {
           return;
@@ -78,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await auth.signOut();
       },
     }),
-    [loading, user]
+    [firestoreWritable, loading, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

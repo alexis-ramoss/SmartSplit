@@ -9,7 +9,7 @@ describe("Feature: Edit an expense", () => {
     );
 
     // When they open the expense for editing and save corrected values
-    fireEvent.press(getByTestId("edit-expense-seed-1"));
+    fireEvent.press(getByTestId("edit-expense-expense-1"));
 
     expect(getByText("Edit Expense")).toBeTruthy();
     expect(getByDisplayValue("Groceries")).toBeTruthy();
