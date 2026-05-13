@@ -50,7 +50,11 @@ type ExpenseDoc = {
   payer?: string;
   participants?: ExpenseEntry["participants"];
   createdAt?: string;
+  createdBy?: string;
+  createdByName?: string;
   updatedAt?: string;
+  updatedBy?: string;
+  updatedByName?: string;
 };
 
 function requireDb() {
@@ -114,6 +118,11 @@ async function loadGroupDetails(groupId: string): Promise<LoadedGroup | null> {
       payer: expenseData.payer || "",
       participants: expenseData.participants || [],
       createdAt: expenseData.createdAt || new Date().toISOString(),
+      createdBy: expenseData.createdBy || "",
+      createdByName: expenseData.createdByName || "",
+      updatedAt: expenseData.updatedAt,
+      updatedBy: expenseData.updatedBy,
+      updatedByName: expenseData.updatedByName,
     } satisfies ExpenseEntry;
   });
 
@@ -279,6 +288,8 @@ export async function joinGroupByInviteCode(input: {
 export async function saveExpenseToGroup(input: {
   groupId: string;
   expense: ExpenseEntry;
+  userId: string;
+  userName: string;
 }) {
   const firestore = requireDb();
   const expenseRef = firestore.collection("groups").doc(input.groupId).collection("expenses").doc(input.expense.id);
@@ -290,7 +301,11 @@ export async function saveExpenseToGroup(input: {
     {
       ...input.expense,
       createdAt: existingData?.createdAt || input.expense.createdAt || now,
+      createdBy: existingData?.createdBy || input.userId,
+      createdByName: existingData?.createdByName || input.userName,
       updatedAt: now,
+      updatedBy: input.userId,
+      updatedByName: input.userName,
     },
     { merge: true }
   );

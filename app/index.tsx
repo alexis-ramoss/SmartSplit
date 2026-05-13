@@ -573,6 +573,8 @@ export default function Index() {
       date,
       payer,
       participants,
+      userId: currentUser.uid,
+      userName: currentUser.displayName || currentUser.email?.split("@")[0] || "Unknown",
     });
 
     if (result.error || !result.expense) {
@@ -586,8 +588,11 @@ export default function Index() {
     };
 
     if (editingExpenseId) {
+      const existingExpense = activeExpenses.find((expense) => expense.id === editingExpenseId);
       expenseToSave.id = editingExpenseId;
-      expenseToSave.createdAt = activeExpenses.find((expense) => expense.id === editingExpenseId)?.createdAt || expenseToSave.createdAt;
+      expenseToSave.createdAt = existingExpense?.createdAt || expenseToSave.createdAt;
+      expenseToSave.createdBy = existingExpense?.createdBy || expenseToSave.createdBy;
+      expenseToSave.createdByName = existingExpense?.createdByName || expenseToSave.createdByName;
     }
 
     setExpenses((current) => {
@@ -601,7 +606,12 @@ export default function Index() {
     resetForm();
 
     try {
-      await saveExpenseToGroup({ groupId: activeGroup.id, expense: expenseToSave });
+      await saveExpenseToGroup({
+        groupId: activeGroup.id,
+        expense: expenseToSave,
+        userId: currentUser.uid,
+        userName: currentUser.displayName || currentUser.email?.split("@")[0] || "Unknown",
+      });
       void refreshActiveGroups(activeGroup.id);
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Could not save expense.");
@@ -1195,6 +1205,12 @@ export default function Index() {
                   <Text style={styles.expenseMeta}>
                     Split: {expense.participants.map((p) => `${p.name} ${p.percentage}%`).join(", ")}
                   </Text>
+                  <Text style={styles.expenseCreatedBy}>
+                    Created by {expense.createdByName || expense.createdBy || "Unknown"} on {expense.createdAt ? new Date(expense.createdAt).toLocaleDateString() : ""}
+                  </Text>
+                  <Text style={styles.expenseUpdatedBy}>
+                    Last updated by {expense.updatedByName || expense.updatedBy || expense.createdByName || expense.createdBy || "Unknown"} on {expense.updatedAt ? new Date(expense.updatedAt).toLocaleDateString() : expense.createdAt ? new Date(expense.createdAt).toLocaleDateString() : ""}
+                  </Text>
                 </View>
                 <View style={styles.expenseActions}>
                   <Text style={styles.expenseAmount}>EUR {expense.amount.toFixed(2)}</Text>
@@ -1755,6 +1771,16 @@ const styles = StyleSheet.create({
     color: "#5F6C7B",
     marginTop: 3,
     fontSize: 13,
+  },
+  expenseCreatedBy: {
+    color: "#7A8A99",
+    marginTop: 6,
+    fontSize: 12,
+  },
+  expenseUpdatedBy: {
+    color: "#7A8A99",
+    marginTop: 2,
+    fontSize: 12,
   },
   expenseAmount: {
     color: "#12324C",

@@ -218,16 +218,26 @@ jest.mock("./lib/_group-utils", () => ({
     }
     return mockCloneGroup(group);
   }),
-  saveExpenseToGroup: jest.fn(async ({ groupId, expense }) => {
+  saveExpenseToGroup: jest.fn(async ({ groupId, expense, userId, userName }) => {
     const group = mockGroups.find((item) => item.id === groupId);
     if (!group) {
       throw new Error("Group not found.");
     }
     const index = group.expenses.findIndex((item) => item.id === expense.id);
+    const now = new Date().toISOString();
+    const expenseWithMetadata = {
+      ...expense,
+      createdAt: index >= 0 ? group.expenses[index].createdAt : expense.createdAt || now,
+      createdBy: index >= 0 ? group.expenses[index].createdBy : userId,
+      createdByName: index >= 0 ? group.expenses[index].createdByName : userName,
+      updatedAt: now,
+      updatedBy: userId,
+      updatedByName: userName,
+    };
     if (index >= 0) {
-      group.expenses[index] = expense;
+      group.expenses[index] = expenseWithMetadata;
     } else {
-      group.expenses.unshift(expense);
+      group.expenses.unshift(expenseWithMetadata);
     }
     return mockCloneGroup(group);
   }),
