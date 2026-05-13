@@ -503,7 +503,7 @@ export default function Index() {
       payer,
       participants,
       userId: currentUser.uid,
-      userName: currentUser.displayName || "Unknown",
+      userName: currentUser.displayName || currentUser.email?.split("@")[0] || "Unknown",
     });
 
     if (result.error || !result.expense) {
@@ -517,8 +517,11 @@ export default function Index() {
     };
 
     if (editingExpenseId) {
+      const existingExpense = activeExpenses.find((expense) => expense.id === editingExpenseId);
       expenseToSave.id = editingExpenseId;
-      expenseToSave.createdAt = activeExpenses.find((expense) => expense.id === editingExpenseId)?.createdAt || expenseToSave.createdAt;
+      expenseToSave.createdAt = existingExpense?.createdAt || expenseToSave.createdAt;
+      expenseToSave.createdBy = existingExpense?.createdBy || expenseToSave.createdBy;
+      expenseToSave.createdByName = existingExpense?.createdByName || expenseToSave.createdByName;
     }
 
     setExpenses((current) => {
@@ -536,7 +539,7 @@ export default function Index() {
         groupId: activeGroup.id,
         expense: expenseToSave,
         userId: currentUser.uid,
-        userName: currentUser.displayName || "Unknown",
+        userName: currentUser.displayName || currentUser.email?.split("@")[0] || "Unknown",
       });
       void refreshActiveGroups(activeGroup.id);
     } catch (saveError) {
@@ -1096,13 +1099,11 @@ export default function Index() {
                     Split: {expense.participants.map((p) => `${p.name} ${p.percentage}%`).join(", ")}
                   </Text>
                   <Text style={styles.expenseCreatedBy}>
-                    Created by {expense.createdByName || expense.createdBy} {expense.createdAt ? `(${new Date(expense.createdAt).toLocaleDateString()})` : ""}
+                    Created by {expense.createdByName || expense.createdBy || "Unknown"} on {expense.createdAt ? new Date(expense.createdAt).toLocaleDateString() : ""}
                   </Text>
-                  {expense.updatedBy && expense.updatedBy !== expense.createdBy ? (
-                    <Text style={styles.expenseUpdatedBy}>
-                      Updated by {expense.updatedByName || expense.updatedBy} {expense.updatedAt ? `(${new Date(expense.updatedAt).toLocaleDateString()})` : ""}
-                    </Text>
-                  ) : null}
+                  <Text style={styles.expenseUpdatedBy}>
+                    Last updated by {expense.updatedByName || expense.updatedBy || expense.createdByName || expense.createdBy || "Unknown"} on {expense.updatedAt ? new Date(expense.updatedAt).toLocaleDateString() : expense.createdAt ? new Date(expense.createdAt).toLocaleDateString() : ""}
+                  </Text>
                 </View>
                 <View style={styles.expenseActions}>
                   <Text style={styles.expenseAmount}>EUR {expense.amount.toFixed(2)}</Text>
@@ -1668,13 +1669,11 @@ const styles = StyleSheet.create({
     color: "#7A8A99",
     marginTop: 6,
     fontSize: 12,
-    fontStyle: "italic",
   },
   expenseUpdatedBy: {
-    color: "#9AA7B7",
+    color: "#7A8A99",
     marginTop: 2,
-    fontSize: 11,
-    fontStyle: "italic",
+    fontSize: 12,
   },
   expenseAmount: {
     color: "#12324C",

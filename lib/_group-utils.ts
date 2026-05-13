@@ -118,6 +118,11 @@ async function loadGroupDetails(groupId: string): Promise<LoadedGroup | null> {
       payer: expenseData.payer || "",
       participants: expenseData.participants || [],
       createdAt: expenseData.createdAt || new Date().toISOString(),
+      createdBy: expenseData.createdBy || "",
+      createdByName: expenseData.createdByName || "",
+      updatedAt: expenseData.updatedAt,
+      updatedBy: expenseData.updatedBy,
+      updatedByName: expenseData.updatedByName,
     } satisfies ExpenseEntry;
   });
 
