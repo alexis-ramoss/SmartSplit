@@ -1,34 +1,33 @@
+import { Redirect } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Pressable,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
-import { Redirect } from "expo-router";
 import { useAuth } from "../auth-context";
 import {
-  createGroup,
-  deleteGroup,
-  joinGroupByInviteCode,
-  leaveGroupFromGroup,
-  loadAccessibleGroups,
-  canRemoveMember,
-  removeMemberFromGroup,
-  saveExpenseToGroup,
-  type LoadedGroup,
-} from "../lib/_group-utils";
-import {
-  calculateDebtBreakdownForMember,
-  calculateMemberBalances,
-  calculateSettlementSuggestions,
-  createExpenseEntry,
-  ExpenseEntry,
-  ParticipantInput,
+    calculateDebtBreakdownForMember,
+    calculateMemberBalances,
+    calculateSettlementSuggestions,
+    createExpenseEntry,
+    ExpenseEntry,
+    ParticipantInput,
 } from "../lib/_expense-utils";
+import {
+    canRemoveMember,
+    createGroup,
+    deleteGroup,
+    leaveGroupFromGroup,
+    loadAccessibleGroups,
+    removeMemberFromGroup,
+    saveExpenseToGroup,
+    type LoadedGroup
+} from "../lib/_group-utils";
 
 type Group = {
   id: string;
@@ -41,6 +40,7 @@ type Group = {
   archivedAt: string | null;
   members: LoadedGroup["members"];
   expenses: LoadedGroup["expenses"];
+  joinRequests?: string[];
 };
 
 const EMPTY_GROUP: Group = {
@@ -101,33 +101,6 @@ function formatSignedCurrency(amount: number): string {
   const sign = amount > 0 ? "+" : "-";
   return `${sign} EUR ${Math.abs(amount).toFixed(2)}`;
 }
-
-const initialExpenses: ExpenseEntry[] = [
-  {
-    id: "seed-1",
-    groupId: "home",
-    name: "Groceries",
-    amount: 24.5,
-    date: formatDate(new Date()),
-    payer: "Person 1",
-    participants: [
-      { name: "Person 1", percentage: 50 },
-      { name: "Person 2", percentage: 50 },
-    ],
-    createdAt: new Date().toISOString(),
-  },
-];
-
-const initialGroups: Group[] = [
-  {
-    id: "home",
-    name: "Household",
-    inviteCode: "HOME123",
-    members: GROUP_MEMBERS,
-    owner: "Person 1",
-    joinRequests: ["Person 4", "Person 5"],
-  },
-];
 
 export default function Index() {
   const { user, loading, signOutUser, firestoreWritable } = useAuth();
@@ -270,22 +243,14 @@ export default function Index() {
 
   const currentUser = user;
 
-  if (loading) {
-    return <SafeAreaView style={styles.safeArea} />;
-  }
-
-  if (!user) {
-    return <Redirect href="/login" />;
-  }
-
   function resetForm() {
     setName("");
     setAmount("");
     setDate(formatDate(new Date()));
-    setPayer(CURRENT_USER);
+    setPayer(currentUserName);
     setParticipants(
       activeGroup.members.map((member, index) => ({
-        name: member,
+        name: member.name,
         selected: index < 2,
         percentage: index < 2 ? "50" : "0",
       }))
@@ -476,7 +441,7 @@ export default function Index() {
       setParticipants(buildDefaultParticipants(matchingGroup.members.map((member) => member.name)));
     }
 
-    if (matchingGroup.members.includes(CURRENT_USER)) {
+    if (matchingGroup.members.some((m) => m.userId === currentUser.uid)) {
       setActiveGroupId(matchingGroup.id);
       setJoinCode("");
       setShowJoinGroup(false);
@@ -487,7 +452,7 @@ export default function Index() {
     setGroups((current) =>
       current.map((g) =>
         g.id === matchingGroup.id
-          ? { ...g, joinRequests: [...new Set([...(g.joinRequests || []), CURRENT_USER])] }
+          ? { ...g, joinRequests: [...new Set([...(g.joinRequests || []), currentUserName])] }
           : g
       )
     );
@@ -503,8 +468,8 @@ export default function Index() {
         g.id === activeGroup.id
           ? {
               ...g,
-              members: [...g.members, requester],
-              joinRequests: g.joinRequests.filter((r) => r !== requester),
+              members: [...g.members, { userId: `req-${Date.now()}`, name: requester, email: "", role: "member", joinedAt: new Date().toISOString() }],
+              joinRequests: (g.joinRequests || []).filter((r) => r !== requester),
             }
           : g
       )
@@ -517,7 +482,7 @@ export default function Index() {
         g.id === activeGroup.id
           ? {
               ...g,
-              joinRequests: g.joinRequests.filter((r) => r !== requester),
+              joinRequests: (g.joinRequests || []).filter((r) => r !== requester),
             }
           : g
       )
@@ -883,7 +848,7 @@ export default function Index() {
           ) : null}
         </View>
 
-        {activeGroup.owner === CURRENT_USER && activeGroup.joinRequests && activeGroup.joinRequests.length > 0 ? (
+        {activeGroup.ownerId === currentUser.uid && activeGroup.joinRequests && activeGroup.joinRequests.length > 0 ? (
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <View>
