@@ -50,7 +50,11 @@ type ExpenseDoc = {
   payer?: string;
   participants?: ExpenseEntry["participants"];
   createdAt?: string;
+  createdBy?: string;
+  createdByName?: string;
   updatedAt?: string;
+  updatedBy?: string;
+  updatedByName?: string;
 };
 
 function requireDb() {
@@ -279,6 +283,8 @@ export async function joinGroupByInviteCode(input: {
 export async function saveExpenseToGroup(input: {
   groupId: string;
   expense: ExpenseEntry;
+  userId: string;
+  userName: string;
 }) {
   const firestore = requireDb();
   const expenseRef = firestore.collection("groups").doc(input.groupId).collection("expenses").doc(input.expense.id);
@@ -290,7 +296,11 @@ export async function saveExpenseToGroup(input: {
     {
       ...input.expense,
       createdAt: existingData?.createdAt || input.expense.createdAt || now,
+      createdBy: existingData?.createdBy || input.userId,
+      createdByName: existingData?.createdByName || input.userName,
       updatedAt: now,
+      updatedBy: input.userId,
+      updatedByName: input.userName,
     },
     { merge: true }
   );

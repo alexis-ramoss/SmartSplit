@@ -502,6 +502,8 @@ export default function Index() {
       date,
       payer,
       participants,
+      userId: currentUser.uid,
+      userName: currentUser.displayName || "Unknown",
     });
 
     if (result.error || !result.expense) {
@@ -530,7 +532,12 @@ export default function Index() {
     resetForm();
 
     try {
-      await saveExpenseToGroup({ groupId: activeGroup.id, expense: expenseToSave });
+      await saveExpenseToGroup({
+        groupId: activeGroup.id,
+        expense: expenseToSave,
+        userId: currentUser.uid,
+        userName: currentUser.displayName || "Unknown",
+      });
       void refreshActiveGroups(activeGroup.id);
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Could not save expense.");
@@ -1088,6 +1095,14 @@ export default function Index() {
                   <Text style={styles.expenseMeta}>
                     Split: {expense.participants.map((p) => `${p.name} ${p.percentage}%`).join(", ")}
                   </Text>
+                  <Text style={styles.expenseCreatedBy}>
+                    Created by {expense.createdByName || expense.createdBy} {expense.createdAt ? `(${new Date(expense.createdAt).toLocaleDateString()})` : ""}
+                  </Text>
+                  {expense.updatedBy && expense.updatedBy !== expense.createdBy ? (
+                    <Text style={styles.expenseUpdatedBy}>
+                      Updated by {expense.updatedByName || expense.updatedBy} {expense.updatedAt ? `(${new Date(expense.updatedAt).toLocaleDateString()})` : ""}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.expenseActions}>
                   <Text style={styles.expenseAmount}>EUR {expense.amount.toFixed(2)}</Text>
@@ -1648,6 +1663,18 @@ const styles = StyleSheet.create({
     color: "#5F6C7B",
     marginTop: 3,
     fontSize: 13,
+  },
+  expenseCreatedBy: {
+    color: "#7A8A99",
+    marginTop: 6,
+    fontSize: 12,
+    fontStyle: "italic",
+  },
+  expenseUpdatedBy: {
+    color: "#9AA7B7",
+    marginTop: 2,
+    fontSize: 11,
+    fontStyle: "italic",
   },
   expenseAmount: {
     color: "#12324C",

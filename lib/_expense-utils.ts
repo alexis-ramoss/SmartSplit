@@ -8,6 +8,11 @@ export type ExpenseEntry = {
   payer: string;
   participants: { name: string; percentage: number }[];
   createdAt: string;
+  createdBy: string;
+  createdByName: string;
+  updatedAt?: string;
+  updatedBy?: string;
+  updatedByName?: string;
 };
 
 export function validateExpenseInput(input: {
@@ -35,6 +40,8 @@ export function createExpenseEntry(input: {
   date: string;
   payer: string;
   participants: ParticipantInput[];
+  userId: string;
+  userName: string;
 }) {
   const error = validateExpenseInput(input);
   if (error) return { error, expense: null };
@@ -50,6 +57,8 @@ export function createExpenseEntry(input: {
       .filter((p) => p.selected)
       .map((p) => ({ name: p.name, percentage: Number(p.percentage) || 0 })),
     createdAt: new Date().toISOString(),
+    createdBy: input.userId,
+    createdByName: input.userName,
   };
 
   return { error: null, expense };
