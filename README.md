@@ -255,9 +255,6 @@ During development we used AI assistance mainly to speed up implementation, test
 
 ## Project management
 
-#### Scrumboard at end of Sprint 1
-![scrumboard_sprint1-end](docs/scrumboard_sprint1-end.png)
-
 ### Sprint 0
 
 During Sprint 0 we established the foundations of SmartSplit. We defined the product vision, main features, assumptions, and domain model, then validated the core idea through user interviews documented in [docs/validation.md](/Users/rafaelkong06/Documents/UNI/ESOF/project/docs/validation.md). Based on that feedback, we refined priorities around simple expense creation, reminders, real-time balance updates, and trust-related features such as payment confirmation.
@@ -281,6 +278,9 @@ During the Sprint we also identified several impediments to our workflow and pro
 - Workflow and Processes: Multiple Pull Requests were merged without an assigned owner or a clear description. This created unclarity and risk regarding code ownership. Some User Stories are marked "Done" in the project board, but the corresponding entries in the Product Backlog are missing documentation or acceptance criteria. They are "Done" but not fully transparent.
 
 - Product Quality & Feedback: The Debt Breakdown Feature (T5 #10): The primary piece of stakeholder feedback from the teacher’s review was that the "View debt breakdown" feature is not clear and lacks clarity in its current implementation. This suggests we may have missed the intended need during Sprint Planning. For this we will create a new user story that better indicates how the feature should work.
+
+#### Scrumboard at end of Sprint 1
+![scrumboard_sprint1-end](docs/scrumboard_sprint1-end.png)
 
 ### Sprint 2
 
