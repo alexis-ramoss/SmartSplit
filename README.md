@@ -292,16 +292,13 @@ During development we used AI assistance mainly to speed up implementation, test
 
 ## Project management
 
-### Scrumboard at end of Sprint 1
-![scrumboard_sprint1-end](docs/scrumboard_sprint1-end.png)
-
 ### Sprint 0
 
 During Sprint 0 we established the foundations of SmartSplit. We defined the product vision, main features, assumptions, and domain model, then validated the core idea through user interviews documented in [docs/validation.md](/Users/rafaelkong06/Documents/UNI/ESOF/project/docs/validation.md). Based on that feedback, we refined priorities around simple expense creation, reminders, real-time balance updates, and trust-related features such as payment confirmation.
 
 At the same time, we designed the system at a high level by producing the logical, package, and deployment UML diagrams available in [README.md](/Users/rafaelkong06/Documents/UNI/ESOF/project/README.md), [logical-uml.png](/Users/rafaelkong06/Documents/UNI/ESOF/project/docs/graphs/logical-uml.png), [package-uml.png](/Users/rafaelkong06/Documents/UNI/ESOF/project/docs/graphs/package-uml.png), and [deployment-uml.png](/Users/rafaelkong06/Documents/UNI/ESOF/project/docs/graphs/deployment-uml.png). We also set up the initial Expo/React Native project structure and implemented a first functional prototype for adding shared expenses with participant selection and custom split percentages in [index.tsx](/Users/rafaelkong06/Documents/UNI/ESOF/project/app/index.tsx) and [expense-utils.ts](/Users/rafaelkong06/Documents/UNI/ESOF/project/app/expense-utils.ts).
 
-To support quality from the start, we added automated validation through unit, integration, and acceptance-oriented tests using Jest and Maestro, as seen in [expense-utils.test.ts](/Users/rafaelkong06/Documents/UNI/ESOF/project/__tests__/expense-utils.test.ts), [add-expense.acceptance.test.tsx](/Users/rafaelkong06/Documents/UNI/ESOF/project/__tests__/add-expense.acceptance.test.tsx), and [add_expense.yaml](/Users/rafaelkong06/Documents/UNI/ESOF/project/maestro/add_expense.yaml). In short, Sprint 0 was used to align the team on the product, validate the problem with users, define the architecture, and deliver the first tested prototype of the application.
+To support quality from the start, we added automated validation through unit, integration, and end-to-end-oriented tests using Jest and Maestro, as seen in [expense-utils.test.ts](/Users/rafaelkong06/Documents/UNI/ESOF/project/__tests__/expense-utils.test.ts), [add-expense.test.tsx](/Users/rafaelkong06/Documents/UNI/ESOF/project/__tests__/add-expense.test.tsx), and [add_expense.yaml](/Users/rafaelkong06/Documents/UNI/ESOF/project/maestro/add_expense.yaml). In short, Sprint 0 was used to align the team on the product, validate the problem with users, define the architecture, and deliver the first tested prototype of the application.
 
 One aspect that could have gone better was the depth of early validation and prototype coverage. Although the initial interviews and tests were useful, in future sprints we should involve more users, validate more realistic roommate scenarios, and expand the prototype to cover additional flows such as group management, settlements, and recurring expenses earlier in the process.
 
@@ -311,15 +308,65 @@ From an organizational perspective, we can also improve task coordination within
 
 #### Sprint Retrospective
 
-The team successfully completed 6 User Stories (T5 #7, 8, 9, 10, 11, and 18). These are functional and in the "Accepted" column. We showed a strong "Product Pride" in delivering key initial features for the expense tracker app.
+**Did Well**
 
-During the Sprint we also identified several impediments to our workflow and product quality.
+The team maintained a consistent delivery pace and managed to collaborate without major communication breakdowns. Members showed initiative in picking up tasks and the overall atmosphere remained constructive throughout the sprint. For a first real sprint, the team demonstrated a good level of commitment and was able to deliver functional features end-to-end, which built confidence going into the next iteration.
 
-- Workflow and Processes: Multiple Pull Requests were merged without an assigned owner or a clear description. This created unclarity and risk regarding code ownership. Some User Stories are marked "Done" in the project board, but the corresponding entries in the Product Backlog are missing documentation or acceptance criteria. They are "Done" but not fully transparent.
+**Do Differently**
 
-- Product Quality & Feedback: The Debt Breakdown Feature (T5 #10): The primary piece of stakeholder feedback from the teacher’s review was that the "View debt breakdown" feature is not clear and lacks clarity in its current implementation. This suggests we may have missed the intended need during Sprint Planning. For this we will create a new user story that better indicates how the feature should work.
+Multiple Pull Requests were merged without an assigned owner or a meaningful description, creating ambiguity around code ownership and making it harder to track who was responsible for what. This also made code reviews less effective and introduced risk around integration. In the next sprint, we will enforce a PR checklist requiring a clear title, description, and at least one assigned reviewer before merging. Additionally, some items were marked "Done" on the board without matching documentation or acceptance criteria in the backlog, making it difficult to verify whether a story was truly complete or just functionally implemented.
+
+**Puzzles**
+
+Sprint Planning felt uncertain at times — it was not always clear how much work the team could realistically commit to within the sprint, which led to some stories being harder to scope than expected. It was also unclear how to handle the gap between a feature being "working" and a feature being "ready", and the team struggled to draw a consistent line between the two. This is something we need to address by building a shared Definition of Done.
+
+**Improvements**
+
+- Enforce PR ownership and descriptions before merging, and assign at least one reviewer to every pull request.
+- Apply a shared Definition of Done to all User Stories before moving them to "Accepted", including documentation and acceptance criteria.
+- Improve Sprint Planning by discussing team capacity upfront and breaking stories into smaller, estimable tasks to reduce mid-sprint uncertainty.
+- Keep the Scrum board updated continuously so it reflects the real state of work at any point during the sprint, not just at delivery time.
+
+#### Sprint Review
+
+The Sprint Review highlighted that the "View debt breakdown" feature lacked clarity in its current implementation, suggesting the intended user need may not have been fully captured during Sprint Planning. As a result, a new user story will be created to better specify how the feature should work and what the expected outcome looks like from the user's perspective.
+
+#### Scrumboard at end of Sprint 1
+![scrumboard_sprint1-end](docs/scrumboard_sprint1-end.png)
 
 ### Sprint 2
+
+#### Sprint Retrospective
+
+**Did Well**
+
+Collaboration improved noticeably compared to Sprint 1. The team communicated more openly, coordination felt smoother, and there was a clearer shared sense of ownership over the work being done. Members were more proactive in picking up tasks and unblocking each other, which helped maintain a steady delivery pace throughout the sprint without the usual last-minute pressure. Sprint Planning also felt more grounded this time around — the team had a better sense of what was realistically achievable within the timebox, which reduced the uncertainty that affected Sprint 1. Overall, the team dynamic matured and the working environment felt more cohesive and focused.
+
+**Do Differently**
+
+While the team dynamic improved, we can still be more deliberate about keeping the Scrum board up to date during the sprint rather than only at the end. Story statuses were not always reflecting the actual state of work in progress, which made it harder to identify blockers early and gave a skewed picture of sprint health during daily standups. We should treat the board as a live tool, not a reporting artifact. Additionally, code reviews still happened somewhat informally — in the next sprint we should make sure every PR has a designated reviewer and that reviews are completed promptly rather than being left open for extended periods, which can cause integration friction later.
+
+**Puzzles**
+
+It is still not entirely clear how we should handle stories that are technically implemented but need design or UX refinement before they can truly be considered "Accepted". In Sprint 2 some features were functional but lacked polish or clarity from a user perspective, and the team was unsure whether to mark them as done or keep them open. We should discuss and agree on where that line sits within our Definition of Done, so the whole team applies the same standard consistently. It is also worth reflecting on how much time should be spent on refinement of existing features versus pushing forward with new ones — finding the right balance between quality and velocity is something we have not yet fully resolved as a team.
+
+**Improvements**
+
+- Update story statuses on the board continuously throughout the sprint, not just at the end, and use it actively during standups to identify blockers.
+- Enforce a clear PR review process: every pull request must have a designated reviewer assigned before it can be merged, and reviews should be completed within a reasonable timeframe.
+- Establish a stronger and shared Definition of Done that explicitly accounts for UX clarity and acceptance criteria, not just technical functionality.
+- Dedicate time in Sprint Planning to backlog refinement, ensuring stories entering the sprint are well-defined with clear acceptance criteria so the team does not have to stop mid-sprint to clarify scope.
+
+#### Sprint Review
+
+During the Sprint Review, 7 new features were demonstrated: approve users joining via invitation code, user login, remove members from a group, leave a group, delete a group, see who created an expense, and expense timestamp tracking.
+
+#### Scrumboard at begining of Sprint 2
+![Scrumboard begining sprint 2](docs/scrumboard_sprint2-begining.png)
+
+#### Scrumboard at end of Sprint 2
+![scrumboard_sprint2-end](docs/scrumboard_sprint2-end.png)
+
 ### Sprint 3
 
 ### Final Release
