@@ -230,29 +230,42 @@ Because the user enabled "Automatic Transaction Confirmation," the Tracker skips
 
 For this project we used React Native with a framework called Expo, for that it's needed to install the following dependencies: Node.js, OpenJDK, Android Studio. Then configure Android Studio like the React Native guide suggests (https://reactnative.dev/docs/environment-setup), after that setup the only step needed is to open any IDE or the terminal in the project's directory and run "npx expo start".
 
-### Guidelines
+### Code standards
 
-#### Contribution Workflow
+#### Naming Conventions
 
-* **Pair Programming:** Development is primarily conducted in **pairs**. Each feature should be a collaborative effort between two team members to ensure code quality and knowledge sharing.
-* **Effort Distribution:** Tasks and user stories must be distributed such that every team member contributes an **equal amount of effort** throughout the project lifecycle.
-* **User Story Alignment:** Every contribution must be directly mapped to a specific user story. Work should not begin until the requirements for that story are validated.
+* **Variables & Functions:** Use `camelCase` (e.g., `activeExpenses`, `handleSaveExpense`).
+* **Booleans:** Use descriptive prefixes like `is`, `has`, or `show` (e.g., `showForm`, `loading`).
+* **Constants:** Use `SCREAMING_SNAKE_CASE` for global immutable values (e.g., `EMPTY_GROUP`).
+* **Components:** Use `PascalCase` for React components (e.g., `Index`, `SafeAreaView`).
+* **Types/Interfaces:** Use `PascalCase` (e.g., `Group`, `ExpenseEntry`).
 
-#### Branching Strategy
+#### Code Style
 
-* **Feature-Based Branching:** The repository follows a "one branch per user story" rule.
-* **Naming Convention:** Branches should be named descriptively based on the feature or user story (e.g., `feat/user-joining-approval` or `fix/debt-breakdown-logic`).
-* **Main Branch Integrity:** The `main` branch is protected. No code is committed directly to `main`; all changes must arrive via a pull request.
+* **Functional Components:** Use function declarations for main components and arrow functions for internal helpers or event handlers where appropriate.
+* **Hooks Order:** Group hooks at the top of the component in the order of `useAuth`, `useState`, `useMemo`, and `useEffect`.
+* **Destructuring:** Destructure props and hook returns for clarity (e.g., `const { user, loading } = useAuth()`).
+* **Logic Extraction:** Move complex calculation logic into helper functions outside the component (e.g., `buildDefaultParticipants`) or wrap them in `useMemo`.
 
-#### Pull Request (PR) Process
+#### Formatting
 
-* **Documentation:** Every PR must include an overview that describes the implementation, ensures it meets the user story criteria, and highlights any UI changes (e.g., "Introduces an 'Approvals' dashboard").
-* **Atomic Changes:** Keep PRs focused. A single PR should address one user story or a logical set of metadata/infrastructure updates to make reviewing more manageable.
-* **Review & Merge:** * Before merging, the PR must pass any automated checks (e.g., build actions, linting).
-* Once reviewed and approved, branches are merged into `main`.
+* **Indentation:** Use 2 spaces for indentation.
+* **Quotes:** Prefer double quotes for JSX attributes and strings.
+* **Spacing:** Use consistent spacing around operators, inside curly braces for imports, and between function arguments.
+* **Line Breaks:** Use vertical whitespace to separate logical blocks of code (e.g., separating state declarations from side effects).
 
+#### Linting & Types
 
-* **Traceability:** PR titles should be prefixed with the nature of the change (e.g., `feat:`, `fix:`, `docs:`) to maintain a clean and searchable project history.
+* **TypeScript:** All data structures must have explicit types or interfaces. Avoid the `any` type; use `unknown` if the type is truly uncertain.
+* **Null Safety:** Use optional chaining (`?.`) and nullish coalescing (`??`) when dealing with potentially undefined objects like `user` or `activeGroup`.
+* **Void Operator:** Use `void` before calling async functions within `useEffect` or event handlers when the result is not being awaited directly.
+
+#### Language & Framework Guidelines (React Native / Expo)
+
+* **Safe Area:** Always wrap top-level views in `SafeAreaView` to handle device notches and home indicators.
+* **Interactions:** Use `Pressable` instead of `TouchableOpacity` for better control over interaction states (using the `pressed` prop for styles).
+* **Optimization:** Use `useMemo` for expensive calculations (like balance breakdowns) that depend on specific state changes.
+* **Styling:** Use `StyleSheet.create` to define styles outside the component logic to improve performance and readability.
 
 ### Tools and prompts used
 
