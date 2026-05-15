@@ -230,6 +230,30 @@ Because the user enabled "Automatic Transaction Confirmation," the Tracker skips
 
 For this project we used React Native with a framework called Expo, for that it's needed to install the following dependencies: Node.js, OpenJDK, Android Studio. Then configure Android Studio like the React Native guide suggests (https://reactnative.dev/docs/environment-setup), after that setup the only step needed is to open any IDE or the terminal in the project's directory and run "npx expo start".
 
+### Guidelines
+
+#### Contribution Workflow
+
+* **Pair Programming:** Development is primarily conducted in **pairs**. Each feature should be a collaborative effort between two team members to ensure code quality and knowledge sharing.
+* **Effort Distribution:** Tasks and user stories must be distributed such that every team member contributes an **equal amount of effort** throughout the project lifecycle.
+* **User Story Alignment:** Every contribution must be directly mapped to a specific user story. Work should not begin until the requirements for that story are validated.
+
+#### Branching Strategy
+
+* **Feature-Based Branching:** The repository follows a "one branch per user story" rule.
+* **Naming Convention:** Branches should be named descriptively based on the feature or user story (e.g., `feat/user-joining-approval` or `fix/debt-breakdown-logic`).
+* **Main Branch Integrity:** The `main` branch is protected. No code is committed directly to `main`; all changes must arrive via a pull request.
+
+#### Pull Request (PR) Process
+
+* **Documentation:** Every PR must include an overview that describes the implementation, ensures it meets the user story criteria, and highlights any UI changes (e.g., "Introduces an 'Approvals' dashboard").
+* **Atomic Changes:** Keep PRs focused. A single PR should address one user story or a logical set of metadata/infrastructure updates to make reviewing more manageable.
+* **Review & Merge:** * Before merging, the PR must pass any automated checks (e.g., build actions, linting).
+* Once reviewed and approved, branches are merged into `main`.
+
+
+* **Traceability:** PR titles should be prefixed with the nature of the change (e.g., `feat:`, `fix:`, `docs:`) to maintain a clean and searchable project history.
+
 ### Tools and prompts used
 
 During development we used AI assistance mainly to speed up implementation, testing, and documentation tasks. The AI output was reviewed and validated by the team before being kept in the repository.
