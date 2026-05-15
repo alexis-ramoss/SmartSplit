@@ -230,6 +230,43 @@ Because the user enabled "Automatic Transaction Confirmation," the Tracker skips
 
 For this project we used React Native with a framework called Expo, for that it's needed to install the following dependencies: Node.js, OpenJDK, Android Studio. Then configure Android Studio like the React Native guide suggests (https://reactnative.dev/docs/environment-setup), after that setup the only step needed is to open any IDE or the terminal in the project's directory and run "npx expo start".
 
+### Code standards
+
+#### Naming Conventions
+
+* **Variables & Functions:** Use `camelCase` (e.g., `activeExpenses`, `handleSaveExpense`).
+* **Booleans:** Use descriptive prefixes like `is`, `has`, or `show` (e.g., `showForm`, `loading`).
+* **Constants:** Use `SCREAMING_SNAKE_CASE` for global immutable values (e.g., `EMPTY_GROUP`).
+* **Components:** Use `PascalCase` for React components (e.g., `Index`, `SafeAreaView`).
+* **Types/Interfaces:** Use `PascalCase` (e.g., `Group`, `ExpenseEntry`).
+
+#### Code Style
+
+* **Functional Components:** Use function declarations for main components and arrow functions for internal helpers or event handlers where appropriate.
+* **Hooks Order:** Group hooks at the top of the component in the order of `useAuth`, `useState`, `useMemo`, and `useEffect`.
+* **Destructuring:** Destructure props and hook returns for clarity (e.g., `const { user, loading } = useAuth()`).
+* **Logic Extraction:** Move complex calculation logic into helper functions outside the component (e.g., `buildDefaultParticipants`) or wrap them in `useMemo`.
+
+#### Formatting
+
+* **Indentation:** Use 2 spaces for indentation.
+* **Quotes:** Prefer double quotes for JSX attributes and strings.
+* **Spacing:** Use consistent spacing around operators, inside curly braces for imports, and between function arguments.
+* **Line Breaks:** Use vertical whitespace to separate logical blocks of code (e.g., separating state declarations from side effects).
+
+#### Linting & Types
+
+* **TypeScript:** All data structures must have explicit types or interfaces. Avoid the `any` type; use `unknown` if the type is truly uncertain.
+* **Null Safety:** Use optional chaining (`?.`) and nullish coalescing (`??`) when dealing with potentially undefined objects like `user` or `activeGroup`.
+* **Void Operator:** Use `void` before calling async functions within `useEffect` or event handlers when the result is not being awaited directly.
+
+#### Language & Framework Guidelines (React Native / Expo)
+
+* **Safe Area:** Always wrap top-level views in `SafeAreaView` to handle device notches and home indicators.
+* **Interactions:** Use `Pressable` instead of `TouchableOpacity` for better control over interaction states (using the `pressed` prop for styles).
+* **Optimization:** Use `useMemo` for expensive calculations (like balance breakdowns) that depend on specific state changes.
+* **Styling:** Use `StyleSheet.create` to define styles outside the component logic to improve performance and readability.
+
 ### Tools and prompts used
 
 During development we used AI assistance mainly to speed up implementation, testing, and documentation tasks. The AI output was reviewed and validated by the team before being kept in the repository.
