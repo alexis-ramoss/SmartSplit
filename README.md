@@ -369,6 +369,9 @@ During the Sprint Review, 7 new features were demonstrated: approve users joinin
 
 ### Sprint 3
 
+#### Scumboard at the begining of Sprint 3
+![Scrumboard begining sprint 3](docs/scrumboard_sprint3-begining.png)
+
 ### Final Release
 
 ---
