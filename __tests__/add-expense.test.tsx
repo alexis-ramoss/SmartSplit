@@ -11,7 +11,7 @@ jest.mock("../auth-context", () => ({
 
 describe("Add expense", () => {
   it("adds an expense to the list when the form is valid", () => {
-    const { getAllByText, getByPlaceholderText, getByText, queryByText } = render(
+    const { getAllByText, getByPlaceholderText, getByTestId, getByText, queryByText } = render(
       <Index />
     );
 
@@ -19,7 +19,11 @@ describe("Add expense", () => {
 
     fireEvent.changeText(getByPlaceholderText("e.g., Coffee"), "Internet bill");
     fireEvent.changeText(getByPlaceholderText("0.00"), "29.99");
-    fireEvent.changeText(getByPlaceholderText("08/03/2026"), "08/04/2026");
+    
+    // select date through calendar
+    fireEvent.press(getByTestId("expense-date-input"));
+    fireEvent.press(getByTestId("calendar-day-8")); // Select 8th
+
     fireEvent.press(getByText("Add"));
 
     expect(queryByText("Please enter a valid expense amount.")).toBeNull();

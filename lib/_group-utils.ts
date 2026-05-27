@@ -2,6 +2,8 @@ import { db } from "../firebase";
 import {
   calculateMemberBalances,
   type ExpenseEntry,
+  generateDueRecurringExpenses,
+  formatDate,
 } from "./_expense-utils";
 
 export type GroupMemberRecord = {
@@ -55,6 +57,8 @@ type ExpenseDoc = {
   updatedAt?: string;
   updatedBy?: string;
   updatedByName?: string;
+  recurrence?: ExpenseEntry["recurrence"];
+  recurringSourceId?: string | null;
 };
 
 function requireDb() {
@@ -123,6 +127,8 @@ async function loadGroupDetails(groupId: string): Promise<LoadedGroup | null> {
       updatedAt: expenseData.updatedAt,
       updatedBy: expenseData.updatedBy,
       updatedByName: expenseData.updatedByName,
+      recurrence: expenseData.recurrence ?? null,
+      recurringSourceId: expenseData.recurringSourceId ?? null,
     } satisfies ExpenseEntry;
   });
 
@@ -312,6 +318,42 @@ export async function saveExpenseToGroup(input: {
 
   await firestore.collection("groups").doc(input.groupId).set({ updatedAt: now }, { merge: true });
   return loadGroupDetails(input.groupId);
+}
+
+export async function processDueRecurringExpensesForGroup(groupId: string) {
+  const group = await loadGroupDetails(groupId);
+  if (!group) return null;
+
+  const result = generateDueRecurringExpenses(group.expenses, formatDate(new Date()));
+
+  if (result.generatedExpenses.length === 0 && result.updatedTemplates.length === 0) {
+    return group;
+  }
+
+  const firestore = requireDb();
+  const batch = firestore.batch();
+  const now = new Date().toISOString();
+
+  result.generatedExpenses.forEach((expense) => {
+    const ref = firestore.collection("groups").doc(groupId).collection("expenses").doc(expense.id);
+    batch.set(ref, {
+      ...expense,
+      updatedAt: now,
+    });
+  });
+
+  result.updatedTemplates.forEach((expense) => {
+    const ref = firestore.collection("groups").doc(groupId).collection("expenses").doc(expense.id);
+    batch.set(ref, {
+      ...expense,
+      updatedAt: now,
+    });
+  });
+
+  batch.set(firestore.collection("groups").doc(groupId), { updatedAt: now }, { merge: true });
+
+  await batch.commit();
+  return loadGroupDetails(groupId);
 }
 
 export async function removeMemberFromGroup(groupId: string, memberId: string) {
