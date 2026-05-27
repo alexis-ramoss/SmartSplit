@@ -52,6 +52,7 @@ function mockCreateGroupFixture(overrides = {}) {
         groupId: "group-1",
         name: "Groceries",
         amount: 24.5,
+        category: "Rent",
         date: "12/05/2026",
         payer: "Person 1",
         participants: [
