@@ -34,6 +34,7 @@ import {
     processDueRecurringExpensesForGroup,
     removeMemberFromGroup,
     saveExpenseToGroup,
+    updateGroupSettings,
     type LoadedGroup
 } from "../lib/_group-utils";
 
@@ -46,6 +47,7 @@ type Group = {
   createdAt: string;
   updatedAt: string;
   archivedAt: string | null;
+  autoConfirmExpenses: boolean;
   members: LoadedGroup["members"];
   expenses: LoadedGroup["expenses"];
   joinRequests?: string[];
@@ -60,6 +62,7 @@ const EMPTY_GROUP: Group = {
   createdAt: "",
   updatedAt: "",
   archivedAt: null,
+  autoConfirmExpenses: false,
   members: [],
   expenses: [],
 };
@@ -233,6 +236,7 @@ export default function Index() {
   const [showForm, setShowForm] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showJoinGroup, setShowJoinGroup] = useState(false);
+  const [showGroupSettings, setShowGroupSettings] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [groupMessage, setGroupMessage] = useState<string | null>(null);
@@ -654,6 +658,21 @@ export default function Index() {
     );
   }
 
+  async function handleUpdateGroupSettings(settings: { autoConfirmExpenses: boolean }) {
+    if (!activeGroup.id) return;
+    try {
+      const updated = await updateGroupSettings(activeGroup.id, settings);
+      if (updated) {
+        setGroups((current) =>
+          current.map((g) => (g.id === updated.id ? { ...g, ...updated } : g))
+        );
+        setGroupMessage("Settings updated successfully.");
+      }
+    } catch (err) {
+      setGroupMessage("Failed to update settings. Please try again.");
+    }
+  }
+
   function updateParticipantSelection(member: string) {
     setParticipants((current) =>
       current.map((participant) =>
@@ -712,6 +731,7 @@ export default function Index() {
         startDate: recurrenceStartDate,
         endDate: recurrenceHasEndDate ? recurrenceEndDate : "",
       },
+      confirmed: activeGroup.autoConfirmExpenses,
     });
 
     if (result.error || !result.expense) {
@@ -737,6 +757,7 @@ export default function Index() {
         expenseToSave.createdAt = existingExpense.createdAt || expenseToSave.createdAt;
         expenseToSave.createdBy = existingExpense.createdBy || expenseToSave.createdBy;
         expenseToSave.createdByName = existingExpense.createdByName || expenseToSave.createdByName;
+        expenseToSave.confirmed = existingExpense.confirmed;
       }
     }
 
@@ -881,6 +902,7 @@ export default function Index() {
               onPress={() => {
                 setShowCreateGroup((value) => !value);
                 setShowJoinGroup(false);
+                setShowGroupSettings(false);
                 setGroupMessage(null);
               }}
             >
@@ -896,11 +918,30 @@ export default function Index() {
               onPress={() => {
                 setShowJoinGroup((value) => !value);
                 setShowCreateGroup(false);
+                setShowGroupSettings(false);
                 setGroupMessage(null);
               }}
             >
               <Text style={styles.secondaryButtonText}>Join group</Text>
             </Pressable>
+            {activeGroup.id && activeGroup.ownerId === currentUser.uid ? (
+              <Pressable
+                accessibilityLabel="Group settings"
+                testID="open-group-settings-button"
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  pressed && styles.buttonPressed,
+                ]}
+                onPress={() => {
+                  setShowGroupSettings((value) => !value);
+                  setShowCreateGroup(false);
+                  setShowJoinGroup(false);
+                  setGroupMessage(null);
+                }}
+              >
+                <Text style={styles.secondaryButtonText}>Settings</Text>
+              </Pressable>
+            ) : null}
             {activeGroup.id ? (
               <Pressable
                 accessibilityLabel={activeGroup.ownerId === currentUser.uid ? "Delete group" : "Leave group"}
@@ -1018,6 +1059,36 @@ export default function Index() {
               >
                 <Text style={styles.saveButtonText}>Join</Text>
               </Pressable>
+            </View>
+          ) : null}
+
+          {showGroupSettings && activeGroup.id && activeGroup.ownerId === currentUser.uid ? (
+            <View style={styles.inlineForm}>
+              <Text style={styles.formLabel}>Group Settings</Text>
+              <View style={[styles.switchRow, { marginBottom: 16 }]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.switchLabel}>Automatic Confirmation</Text>
+                  <Text style={styles.switchDescription}>
+                    New transactions will be automatically confirmed.
+                  </Text>
+                </View>
+                <Pressable
+                  accessibilityLabel="Toggle automatic confirmation"
+                  testID="toggle-auto-confirm"
+                  style={[
+                    styles.toggleButton,
+                    activeGroup.autoConfirmExpenses && styles.toggleButtonActive,
+                  ]}
+                  onPress={() => handleUpdateGroupSettings({ autoConfirmExpenses: !activeGroup.autoConfirmExpenses })}
+                >
+                  <View
+                    style={[
+                      styles.toggleKnob,
+                      activeGroup.autoConfirmExpenses && styles.toggleKnobActive,
+                    ]}
+                  />
+                </Pressable>
+              </View>
             </View>
           ) : null}
 
@@ -2308,5 +2379,40 @@ const styles = StyleSheet.create({
     color: "#8B95A7",
     fontStyle: "italic",
     marginTop: 4,
+  },
+  switchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+  },
+  switchLabel: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#152B3C",
+  },
+  switchDescription: {
+    fontSize: 13,
+    color: "#5F6C7B",
+    marginTop: 2,
+  },
+  toggleButton: {
+    width: 50,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#DDE2E8",
+    padding: 3,
+  },
+  toggleButtonActive: {
+    backgroundColor: "#020427",
+  },
+  toggleKnob: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "#FFFFFF",
+  },
+  toggleKnobActive: {
+    transform: [{ translateX: 22 }],
   },
 });

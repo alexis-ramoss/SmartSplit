@@ -23,6 +23,7 @@ export type LoadedGroup = {
   createdAt: string;
   updatedAt: string;
   archivedAt: string | null;
+  autoConfirmExpenses: boolean;
   members: GroupMemberRecord[];
   expenses: ExpenseEntry[];
 };
@@ -35,6 +36,7 @@ type GroupDoc = {
   createdAt?: string;
   updatedAt?: string;
   archivedAt?: string | null;
+  autoConfirmExpenses?: boolean;
 };
 
 type MemberDoc = {
@@ -141,6 +143,7 @@ async function loadGroupDetails(groupId: string): Promise<LoadedGroup | null> {
     createdAt: groupData.createdAt || "",
     updatedAt: groupData.updatedAt || "",
     archivedAt: groupData.archivedAt ?? null,
+    autoConfirmExpenses: groupData.autoConfirmExpenses || false,
     members,
     expenses,
   };
@@ -246,6 +249,7 @@ export async function createGroup(input: {
     createdAt: now,
     updatedAt: now,
     archivedAt: null,
+    autoConfirmExpenses: false,
   });
 
   await saveGroupMember(groupRef.id, {
@@ -439,6 +443,22 @@ export async function deleteGroup(groupId: string, memberId: string) {
 
   await batch.commit();
   return null;
+}
+
+export async function updateGroupSettings(groupId: string, settings: Partial<GroupDoc>) {
+  const firestore = requireDb();
+  const groupRef = firestore.collection("groups").doc(groupId);
+  const now = new Date().toISOString();
+
+  await groupRef.set(
+    {
+      ...settings,
+      updatedAt: now,
+    },
+    { merge: true }
+  );
+
+  return loadGroupDetails(groupId);
 }
 
 export function isGroupOwner(group: LoadedGroup | null | undefined, uid: string) {
