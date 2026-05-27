@@ -738,17 +738,35 @@ export default function Index() {
             <View style={styles.balanceList} testID="global-balance-list">
               {globalSummary.breakdown.length > 0 ? (
                 globalSummary.breakdown.map((item) => (
-                  <View key={item.name} style={styles.balanceRow}>
-                    <Text style={styles.balanceName}>{item.name}</Text>
-                    <Text
-                      style={[
-                        styles.balanceAmount,
-                        item.balance > 0.01 && styles.positiveBalance,
-                        item.balance < -0.01 && styles.negativeBalance,
-                      ]}
-                    >
-                      {formatSignedCurrency(item.balance)}
-                    </Text>
+                  <View key={item.name} style={styles.globalBreakdownItem}>
+                    <View style={styles.balanceRow}>
+                      <Text style={styles.balanceName}>{item.name}</Text>
+                      <Text
+                        style={[
+                          styles.balanceAmount,
+                          item.balance > 0.01 && styles.positiveBalance,
+                          item.balance < -0.01 && styles.negativeBalance,
+                        ]}
+                      >
+                        {formatSignedCurrency(item.balance)}
+                      </Text>
+                    </View>
+                    <View style={styles.groupBreakdownList}>
+                      {item.groups.map((group) => (
+                        <View key={group.groupName} style={styles.groupBreakdownRow}>
+                          <Text style={styles.groupBreakdownName}>{group.groupName}</Text>
+                          <Text
+                            style={[
+                              styles.groupBreakdownAmount,
+                              group.balance > 0.01 && styles.positiveBalance,
+                              group.balance < -0.01 && styles.negativeBalance,
+                            ]}
+                          >
+                            {formatSignedCurrency(group.balance)}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
                   </View>
                 ))
               ) : (
@@ -1607,6 +1625,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#F7FAFD",
     borderRadius: 12,
     padding: 12,
+  },
+  globalBreakdownItem: {
+    gap: 4,
+  },
+  groupBreakdownList: {
+    paddingLeft: 24,
+    gap: 2,
+    marginBottom: 8,
+  },
+  groupBreakdownRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  groupBreakdownName: {
+    color: "#5F6C7B",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  groupBreakdownAmount: {
+    fontSize: 13,
+    fontWeight: "700",
   },
   balanceName: {
     color: "#152B3C",

@@ -84,7 +84,7 @@ export function calculateMemberBalances(expenses: ExpenseEntry[], members: strin
 }
 
 export function aggregateGlobalBalances(groups: LoadedGroup[], currentUserId: string) {
-  const globalBalances: Record<string, number> = {};
+  const globalBalances: Record<string, { balance: number; groups: Record<string, number> }> = {};
 
   groups.forEach((group) => {
     const me = group.members.find((m) => m.userId === currentUserId);
@@ -95,16 +95,35 @@ export function aggregateGlobalBalances(groups: LoadedGroup[], currentUserId: st
     const suggestions = calculateSettlementSuggestions(groupBalances);
 
     suggestions.forEach((s) => {
+      let otherPerson = "";
+      let amount = 0;
+
       if (s.from === myNameInGroup) {
-        globalBalances[s.to] = (globalBalances[s.to] || 0) - s.amount;
+        otherPerson = s.to;
+        amount = -s.amount;
       } else if (s.to === myNameInGroup) {
-        globalBalances[s.from] = (globalBalances[s.from] || 0) + s.amount;
+        otherPerson = s.from;
+        amount = s.amount;
+      }
+
+      if (otherPerson) {
+        if (!globalBalances[otherPerson]) {
+          globalBalances[otherPerson] = { balance: 0, groups: {} };
+        }
+        globalBalances[otherPerson].balance += amount;
+        globalBalances[otherPerson].groups[group.name] = (globalBalances[otherPerson].groups[group.name] || 0) + amount;
       }
     });
   });
 
   const breakdown = Object.entries(globalBalances)
-    .map(([name, balance]) => ({ name, balance }))
+    .map(([name, data]) => ({
+      name,
+      balance: data.balance,
+      groups: Object.entries(data.groups)
+        .map(([groupName, groupBalance]) => ({ groupName, balance: groupBalance }))
+        .filter((g) => Math.abs(g.balance) > 0.01)
+    }))
     .filter((b) => Math.abs(b.balance) > 0.01);
 
   const totalOwed = breakdown.filter((b) => b.balance < 0).reduce((sum, b) => sum - b.balance, 0);
