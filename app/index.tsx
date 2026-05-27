@@ -13,7 +13,6 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../auth-context";
 import {
-    aggregateGlobalBalances,
     calculateDebtBreakdownForMember,
     calculateMemberBalances,
     calculateSettlementSuggestions,
