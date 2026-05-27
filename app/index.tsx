@@ -9,6 +9,16 @@ import {
     TextInput,
     View,
 } from "react-native";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  Layout,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  interpolateColor,
+  Easing,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../auth-context";
@@ -67,6 +77,49 @@ const EMPTY_GROUP: Group = {
   members: [],
   expenses: [],
 };
+
+interface ToggleProps {
+  value: boolean;
+  onValueChange: (value: boolean) => void;
+  testID?: string;
+  accessibilityLabel?: string;
+}
+
+function Toggle({ value, onValueChange, testID, accessibilityLabel }: ToggleProps) {
+  const transition = useSharedValue(value ? 1 : 0);
+
+  useEffect(() => {
+    transition.value = withTiming(value ? 1 : 0, {
+      duration: 200,
+      easing: Easing.out(Easing.quad),
+    });
+  }, [value]);
+
+  const animatedContainerStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      transition.value,
+      [0, 1],
+      ["#CDE8ED", "#137F86"]
+    );
+    return { backgroundColor };
+  });
+
+  const animatedKnobStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: transition.value * 22 }],
+  }));
+
+  return (
+    <Pressable
+      accessibilityLabel={accessibilityLabel}
+      testID={testID}
+      onPress={() => onValueChange(!value)}
+    >
+      <Animated.View style={[styles.toggleButton, animatedContainerStyle]}>
+        <Animated.View style={[styles.toggleKnob, animatedKnobStyle]} />
+      </Animated.View>
+    </Pressable>
+  );
+}
 
 function getTestSeedGroups(): Group[] {
   const getter = (globalThis as { __SMARTSPLIT_TEST_GROUPS__?: () => Group[] }).__SMARTSPLIT_TEST_GROUPS__;
@@ -282,7 +335,6 @@ export default function Index() {
           return;
         }
 
-        // process recurring expenses for all accessible groups
         await Promise.all(
           remoteGroups.map((group) => processDueRecurringExpensesForGroup(group.id))
         );
@@ -918,19 +970,25 @@ export default function Index() {
           </View>
 
           <View style={styles.summaryRow}>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Group total</Text>
-              <Text style={styles.summaryValue}>EUR {totalSpent.toFixed(2)}</Text>
+            <View style={[styles.summaryItem, { backgroundColor: "#EEF2FF", borderColor: "#C7D2FE" }]}>
+              <Text style={[styles.summaryLabel, { color: "#4F46E5" }]}>Group total</Text>
+              <Text style={[styles.summaryValue, { color: "#4338CA" }]}>EUR {totalSpent.toFixed(2)}</Text>
             </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Recorded</Text>
-              <Text style={styles.summaryValue}>{activeExpenses.length}</Text>
+            <View style={[styles.summaryItem, { backgroundColor: "#DDF7F0", borderColor: "#B8E8EA" }]}>
+              <Text style={[styles.summaryLabel, { color: "#159296" }]}>Recorded</Text>
+              <Text style={[styles.summaryValue, { color: "#12626C" }]}>{activeExpenses.length}</Text>
             </View>
           </View>
         </View>
 
         {showGlobalOverview ? (
-          <View style={styles.sectionCard} testID="global-overview-card">
+          <Animated.View
+            entering={FadeIn.duration(400)}
+            exiting={FadeOut.duration(300)}
+            layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
+            style={styles.sectionCard}
+            testID="global-overview-card"
+          >
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.sectionTitle}>Global Balance Overview</Text>
@@ -939,13 +997,13 @@ export default function Index() {
             </View>
 
             <View style={[styles.summaryRow, { marginTop: 16 }]}>
-              <View style={[styles.summaryItem, { backgroundColor: "#FFF5F5" }]}>
+              <View style={[styles.summaryItem, { backgroundColor: "#FFF5F5", borderColor: "#FECACA" }]}>
                 <Text style={[styles.summaryLabel, { color: "#C53030" }]}>Total Owed</Text>
                 <Text style={[styles.summaryValue, { color: "#C53030" }]}>
                   EUR {globalSummary.totalOwed.toFixed(2)}
                 </Text>
               </View>
-              <View style={[styles.summaryItem, { backgroundColor: "#F0FFF4" }]}>
+              <View style={[styles.summaryItem, { backgroundColor: "#F0FFF4", borderColor: "#BBF7D0" }]}>
                 <Text style={[styles.summaryLabel, { color: "#2F855A" }]}>Total Receivable</Text>
                 <Text style={[styles.summaryValue, { color: "#2F855A" }]}>
                   EUR {globalSummary.totalReceivable.toFixed(2)}
@@ -991,7 +1049,7 @@ export default function Index() {
                 <Text style={styles.infoText}>No outstanding balances.</Text>
               )}
             </View>
-          </View>
+          </Animated.View>
         ) : null}
 
         <View style={styles.sectionCard}>
@@ -1009,8 +1067,7 @@ export default function Index() {
                     testID={`switch-group-${group.id}`}
                     style={[
                       styles.payerChip,
-                      activeGroupId === group.id &&
-                        styles.payerChipSelected,
+                      activeGroupId === group.id && styles.payerChipSelected,
                     ]}
                     onPress={() => {
                       setActiveGroupId(group.id);
@@ -1019,8 +1076,7 @@ export default function Index() {
                     <Text
                       style={[
                         styles.payerChipText,
-                        activeGroupId === group.id &&
-                          styles.payerChipTextSelected,
+                        activeGroupId === group.id && styles.payerChipTextSelected,
                       ]}
                     >
                       {group.name}
@@ -1035,10 +1091,7 @@ export default function Index() {
             <Pressable
               accessibilityLabel="Create group"
               testID="open-create-group-button"
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                pressed && styles.buttonPressed,
-              ]}
+              style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
               onPress={() => {
                 setShowCreateGroup((value) => !value);
                 setShowJoinGroup(false);
@@ -1051,10 +1104,7 @@ export default function Index() {
             <Pressable
               accessibilityLabel="Join group"
               testID="open-join-group-button"
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                pressed && styles.buttonPressed,
-              ]}
+              style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
               onPress={() => {
                 setShowJoinGroup((value) => !value);
                 setShowCreateGroup(false);
@@ -1068,10 +1118,7 @@ export default function Index() {
               <Pressable
                 accessibilityLabel="Group settings"
                 testID="open-group-settings-button"
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.buttonPressed,
-                ]}
+                style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
                 onPress={() => {
                   setShowGroupSettings((value) => !value);
                   setShowCreateGroup(false);
@@ -1109,7 +1156,12 @@ export default function Index() {
           </View>
 
           {groupActionToConfirm ? (
-            <View style={styles.confirmBox}>
+            <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
+              style={styles.confirmBox}
+            >
               <Text style={styles.confirmTitle}>
                 {groupActionToConfirm === "delete"
                   ? `Delete ${activeGroup.name}?`
@@ -1140,11 +1192,16 @@ export default function Index() {
                   <Text style={styles.dangerButtonText}>Confirm</Text>
                 </Pressable>
               </View>
-            </View>
+            </Animated.View>
           ) : null}
 
           {showCreateGroup ? (
-            <View style={styles.inlineForm}>
+            <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
+              style={styles.inlineForm}
+            >
               <Text style={styles.formLabel}>Group name</Text>
               <TextInput
                 accessibilityLabel="Group name"
@@ -1161,19 +1218,21 @@ export default function Index() {
               <Pressable
                 accessibilityLabel="Save group"
                 testID="save-group-button"
-                style={({ pressed }) => [
-                  styles.saveButton,
-                  pressed && styles.buttonPressed,
-                ]}
+                style={({ pressed }) => [styles.saveButton, pressed && styles.buttonPressed]}
                 onPress={handleCreateGroup}
               >
                 <Text style={styles.saveButtonText}>Create</Text>
               </Pressable>
-            </View>
+            </Animated.View>
           ) : null}
 
           {showJoinGroup ? (
-            <View style={styles.inlineForm}>
+            <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
+              style={styles.inlineForm}
+            >
               <Text style={styles.formLabel}>Invite code</Text>
               <TextInput
                 accessibilityLabel="Invite code"
@@ -1191,19 +1250,21 @@ export default function Index() {
               <Pressable
                 accessibilityLabel="Join saved group"
                 testID="join-group-button"
-                style={({ pressed }) => [
-                  styles.saveButton,
-                  pressed && styles.buttonPressed,
-                ]}
+                style={({ pressed }) => [styles.saveButton, pressed && styles.buttonPressed]}
                 onPress={handleJoinGroup}
               >
                 <Text style={styles.saveButtonText}>Join</Text>
               </Pressable>
-            </View>
+            </Animated.View>
           ) : null}
 
           {showGroupSettings && activeGroup.id && activeGroup.ownerId === currentUser.uid ? (
-            <View style={styles.inlineForm}>
+            <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
+              style={styles.inlineForm}
+            >
               <Text style={styles.formLabel}>Group Settings</Text>
               <View style={[styles.switchRow, { marginBottom: 16 }]}>
                 <View style={{ flex: 1 }}>
@@ -1212,24 +1273,14 @@ export default function Index() {
                     New transactions will be automatically confirmed.
                   </Text>
                 </View>
-                <Pressable
+                <Toggle
                   accessibilityLabel="Toggle automatic confirmation"
                   testID="toggle-auto-confirm"
-                  style={[
-                    styles.toggleButton,
-                    activeGroup.autoConfirmExpenses && styles.toggleButtonActive,
-                  ]}
-                  onPress={() => handleUpdateGroupSettings({ autoConfirmExpenses: !activeGroup.autoConfirmExpenses })}
-                >
-                  <View
-                    style={[
-                      styles.toggleKnob,
-                      activeGroup.autoConfirmExpenses && styles.toggleKnobActive,
-                    ]}
-                  />
-                </Pressable>
+                  value={activeGroup.autoConfirmExpenses}
+                  onValueChange={(newValue) => handleUpdateGroupSettings({ autoConfirmExpenses: newValue })}
+                />
               </View>
-            </View>
+            </Animated.View>
           ) : null}
 
           {groupMessage ? (
@@ -1240,7 +1291,12 @@ export default function Index() {
         </View>
 
         {activeGroup.ownerId === currentUser.uid && activeGroup.joinRequests && activeGroup.joinRequests.length > 0 ? (
-          <View style={styles.sectionCard}>
+          <Animated.View
+            entering={FadeIn}
+            exiting={FadeOut}
+            layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
+            style={styles.sectionCard}
+          >
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.sectionTitle}>Join requests</Text>
@@ -1272,11 +1328,16 @@ export default function Index() {
                 </View>
               ))}
             </View>
-          </View>
+          </Animated.View>
         ) : null}
 
         {shouldShowBalanceBreakdown ? (
-          <View style={styles.sectionCard}>
+          <Animated.View
+            entering={FadeIn}
+            exiting={FadeOut}
+            layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
+            style={styles.sectionCard}
+          >
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.sectionTitle}>Balance breakdown</Text>
@@ -1355,7 +1416,7 @@ export default function Index() {
                 <Text style={styles.settlementText}>No payments needed.</Text>
               )}
             </View>
-          </View>
+          </Animated.View>
         ) : null}
 
         <View style={styles.sectionCard}>
@@ -1367,10 +1428,7 @@ export default function Index() {
             <Pressable
               accessibilityLabel="Add expense"
               testID="open-add-expense-button"
-              style={({ pressed }) => [
-                styles.primaryButton,
-                pressed && styles.buttonPressed,
-              ]}
+              style={({ pressed }) => [styles.primaryButton, pressed && styles.buttonPressed]}
               onPress={handleOpenAddExpense}
             >
               <Text style={styles.primaryButtonText}>
@@ -1380,7 +1438,12 @@ export default function Index() {
           </View>
 
           {showForm ? (
-            <View style={styles.form}>
+            <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
+              style={styles.form}
+            >
               <Text style={styles.formTitle}>
                 {editingExpenseId ? "Edit Expense" : "Add New Expense"}
               </Text>
@@ -1394,9 +1457,7 @@ export default function Index() {
                 value={name}
                 onChangeText={(value) => {
                   setName(value);
-                  if (error) {
-                    setError(null);
-                  }
+                  if (error) setError(null);
                 }}
                 testID="expense-name-input"
               />
@@ -1411,9 +1472,7 @@ export default function Index() {
                 value={amount}
                 onChangeText={(value) => {
                   setAmount(value);
-                  if (error) {
-                    setError(null);
-                  }
+                  if (error) setError(null);
                 }}
                 testID="expense-amount-input"
               />
@@ -1451,9 +1510,7 @@ export default function Index() {
                     ]}
                     onPress={() => {
                       setCategory(cat.label);
-                      if (error) {
-                        setError(null);
-                      }
+                      if (error) setError(null);
                     }}
                   >
                     <Text
@@ -1481,9 +1538,7 @@ export default function Index() {
                     ]}
                     onPress={() => {
                       setPayer(member);
-                      if (error) {
-                        setError(null);
-                      }
+                      if (error) setError(null);
                     }}
                   >
                     <Text
@@ -1621,10 +1676,9 @@ export default function Index() {
                     }}
                     onClose={() => setShowRecurrenceStartDatePicker(false)}
                   />
-                  
+
                   {(() => {
                     const [day] = recurrenceStartDate.split("/").map(Number);
-
                     return recurrenceFrequency === "Monthly" && day >= 29;
                   })() && (
                     <Text style={styles.helperText}>
@@ -1686,10 +1740,7 @@ export default function Index() {
 
               <View style={styles.actionsRow}>
                 <Pressable
-                  style={({ pressed }) => [
-                    styles.cancelButton,
-                    pressed && styles.buttonPressed,
-                  ]}
+                  style={({ pressed }) => [styles.cancelButton, pressed && styles.buttonPressed]}
                   onPress={() => {
                     setShowForm(false);
                     resetForm();
@@ -1701,10 +1752,7 @@ export default function Index() {
                 <Pressable
                   accessibilityLabel="Save expense"
                   testID="save-expense-button"
-                  style={({ pressed }) => [
-                    styles.saveButton,
-                    pressed && styles.buttonPressed,
-                  ]}
+                  style={({ pressed }) => [styles.saveButton, pressed && styles.buttonPressed]}
                   onPress={handleSaveExpense}
                 >
                   <Text style={styles.saveButtonText}>
@@ -1712,12 +1760,17 @@ export default function Index() {
                   </Text>
                 </Pressable>
               </View>
-            </View>
+            </Animated.View>
           ) : null}
 
           <View style={styles.list} testID="expense-list">
             {activeExpenses.map((expense) => (
-              <View key={expense.id} style={styles.expenseItem}>
+              <Animated.View
+                key={expense.id}
+                entering={FadeIn}
+                layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
+                style={styles.expenseItem}
+              >
                 <View style={styles.expenseTextArea}>
                   <Text style={styles.expenseName}>{expense.name}</Text>
                   <View style={styles.categoryBadge}>
@@ -1752,16 +1805,13 @@ export default function Index() {
                   <Pressable
                     accessibilityLabel={`Edit ${expense.name}`}
                     testID={`edit-expense-${expense.id}`}
-                    style={({ pressed }) => [
-                      styles.editButton,
-                      pressed && styles.buttonPressed,
-                    ]}
+                    style={({ pressed }) => [styles.editButton, pressed && styles.buttonPressed]}
                     onPress={() => handleEditExpense(expense)}
                   >
                     <Text style={styles.editButtonText}>Edit</Text>
                   </Pressable>
                 </View>
-              </View>
+              </Animated.View>
             ))}
           </View>
         </View>
@@ -1775,10 +1825,7 @@ export default function Index() {
             <Pressable
               accessibilityLabel="Manage members"
               testID="toggle-members-button"
-              style={({ pressed }) => [
-                styles.primaryButton,
-                pressed && styles.buttonPressed,
-              ]}
+              style={({ pressed }) => [styles.primaryButton, pressed && styles.buttonPressed]}
               onPress={() => {
                 setShowMembers(!showMembers);
                 setRemoveError(null);
@@ -1791,7 +1838,12 @@ export default function Index() {
           </View>
 
           {showMembers ? (
-            <View style={styles.list}>
+            <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
+              style={styles.list}
+            >
               {removeError ? (
                 <Text style={styles.errorText} testID="member-remove-error">
                   {removeError}
@@ -1799,17 +1851,19 @@ export default function Index() {
               ) : null}
 
               {memberToRemove ? (
-                <View style={styles.confirmBox}>
+                <Animated.View
+                  entering={FadeIn}
+                  exiting={FadeOut}
+                  layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
+                  style={styles.confirmBox}
+                >
                   <Text style={styles.confirmTitle}>Remove {memberToRemove}?</Text>
                   <Text style={styles.confirmMessage}>
                     This member will be removed from the group. Make sure all balances are settled.
                   </Text>
                   <View style={styles.confirmActions}>
                     <Pressable
-                      style={({ pressed }) => [
-                        styles.cancelButton,
-                        pressed && styles.buttonPressed,
-                      ]}
+                      style={({ pressed }) => [styles.cancelButton, pressed && styles.buttonPressed]}
                       onPress={() => {
                         setMemberToRemove(null);
                         setRemoveError(null);
@@ -1818,19 +1872,14 @@ export default function Index() {
                       <Text style={styles.cancelButtonText}>Cancel</Text>
                     </Pressable>
                     <Pressable
-                      style={({ pressed }) => [
-                        styles.dangerButton,
-                        pressed && styles.buttonPressed,
-                      ]}
-                      onPress={() => {
-                        void handleRemoveMember(memberToRemove);
-                      }}
+                      style={({ pressed }) => [styles.dangerButton, pressed && styles.buttonPressed]}
+                      onPress={() => { void handleRemoveMember(memberToRemove); }}
                       testID="confirm-remove-member"
                     >
                       <Text style={styles.dangerButtonText}>Remove</Text>
                     </Pressable>
                   </View>
-                </View>
+                </Animated.View>
               ) : (
                 activeGroup.members.map((member) => {
                   const balance = getMemberBalance(member.name);
@@ -1838,7 +1887,12 @@ export default function Index() {
                   const canRemove = !isCurrentUser && canRemoveMemberLocal(member.name).canRemove;
 
                   return (
-                    <View key={member.userId} style={styles.memberItem}>
+                    <Animated.View
+                      key={member.userId}
+                      entering={FadeIn}
+                      layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
+                      style={styles.memberItem}
+                    >
                       <View style={styles.memberInfo}>
                         <Text style={styles.memberName}>
                           {isCurrentUser ? `${member.name} (You)` : member.name}
@@ -1859,20 +1913,17 @@ export default function Index() {
                         <Pressable
                           accessibilityLabel={`Remove ${member.name}`}
                           testID={`remove-member-${member.name}`}
-                          style={({ pressed }) => [
-                            styles.removeButton,
-                            pressed && styles.buttonPressed,
-                          ]}
+                          style={({ pressed }) => [styles.removeButton, pressed && styles.buttonPressed]}
                           onPress={() => setMemberToRemove(member.name)}
                         >
                           <Text style={styles.removeButtonText}>Remove</Text>
                         </Pressable>
                       ) : null}
-                    </View>
+                    </Animated.View>
                   );
                 })
               )}
-            </View>
+            </Animated.View>
           ) : null}
         </View>
       </ScrollView>
@@ -1992,6 +2043,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     alignSelf: "flex-start",
+    shadowColor: "#159296",
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
   primaryButtonText: {
     color: "#FFFFFF",
@@ -2015,7 +2070,8 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   buttonPressed: {
-    opacity: 0.88,
+    opacity: 0.82,
+    transform: [{ scale: 0.98 }],
   },
   groupActionsRow: {
     flexDirection: "row",
@@ -2344,6 +2400,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 13,
     alignItems: "center",
+    shadowColor: "#137F86",
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
   saveButtonText: {
     color: "#FFFFFF",
@@ -2661,16 +2721,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#CDE8ED",
     padding: 3,
   },
-  toggleButtonActive: {
-    backgroundColor: "#137F86",
-  },
   toggleKnob: {
     width: 22,
     height: 22,
     borderRadius: 11,
     backgroundColor: "#FFFFFF",
-  },
-  toggleKnobActive: {
-    transform: [{ translateX: 22 }],
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
 });
