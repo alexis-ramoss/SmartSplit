@@ -603,12 +603,15 @@ export default function Index() {
 
     const matchingGroup = groups.find((group) => group.inviteCode === normalizedCode) || null;
 
-    if (matchingGroup) {
-      setGroups((current) => [matchingGroup, ...current.filter((group) => group.id !== matchingGroup.id)]);
-      setActiveGroupId(matchingGroup.id);
-      setExpenses(matchingGroup.expenses || []);
-      setParticipants(buildDefaultParticipants(matchingGroup.members.map((member) => member.name)));
+    if (!matchingGroup) {
+      setGroupMessage(`No group found with code ${normalizedCode}.`);
+      return;
     }
+
+    setGroups((current) => [matchingGroup, ...current.filter((group) => group.id !== matchingGroup.id)]);
+    setActiveGroupId(matchingGroup.id);
+    setExpenses(matchingGroup.expenses || []);
+    setParticipants(buildDefaultParticipants(matchingGroup.members.map((member) => member.name)));
 
     if (matchingGroup.members.some((m) => m.userId === currentUser.uid)) {
       setActiveGroupId(matchingGroup.id);
@@ -888,6 +891,33 @@ export default function Index() {
               <Text style={styles.sectionSubtitle}>
                 {activeGroup.id ? `Invite code: ${activeGroup.inviteCode}` : "Create or join a group to start tracking expenses."}
               </Text>
+
+              <View style={styles.payerRow}>
+                {groups.map((group) => (
+                  <Pressable
+                    key={group.id}
+                    testID={`switch-group-${group.id}`}
+                    style={[
+                      styles.payerChip,
+                      activeGroupId === group.id &&
+                        styles.payerChipSelected,
+                    ]}
+                    onPress={() => {
+                      setActiveGroupId(group.id);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.payerChipText,
+                        activeGroupId === group.id &&
+                          styles.payerChipTextSelected,
+                      ]}
+                    >
+                      {group.name}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
             </View>
           </View>
 
