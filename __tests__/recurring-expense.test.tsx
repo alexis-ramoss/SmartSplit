@@ -68,4 +68,24 @@ describe("Recurring Expenses Acceptance Tests", () => {
         expect(queryByText("Repeats monthly")).toBeNull();
      });
   });
+
+  it("shows warning for monthly recurrence on 31st", async () => {
+    const { getByText, getByTestId } = render(<Index />);
+
+    fireEvent.press(getByText("Add expense"));
+
+    fireEvent.press(getByTestId("recurrence-toggle"));
+
+    fireEvent.press(getByTestId("frequency-option-Monthly"));
+
+    fireEvent.press(getByTestId("recurrence-start-date-input"));
+
+    fireEvent.press(getByTestId("calendar-day-31"));
+
+    expect(
+      getByText(
+        "Shorter months will use the last available day."
+      )
+    ).toBeTruthy();
+  });
 });

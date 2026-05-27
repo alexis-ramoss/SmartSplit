@@ -1380,6 +1380,16 @@ export default function Index() {
                     }}
                     onClose={() => setShowRecurrenceStartDatePicker(false)}
                   />
+                  
+                  {(() => {
+                    const [day] = recurrenceStartDate.split("/").map(Number);
+
+                    return recurrenceFrequency === "Monthly" && day >= 29;
+                  })() && (
+                    <Text style={styles.helperText}>
+                      Shorter months will use the last available day.
+                    </Text>
+                  )}
 
                   <View style={styles.checkboxRowContainer}>
                     <Text style={styles.formLabel}>End Date</Text>
