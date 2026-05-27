@@ -204,6 +204,10 @@ jest.mock("../lib/_group-utils", () => ({
       )
       .map((group) => mockCloneGroup(group))
   ),
+  processDueRecurringExpensesForGroup: jest.fn(async (groupId: string) => {
+    const group = mockGroups.find((item: any) => item.id === groupId);
+    return group ? mockCloneGroup(group) : null;
+  }),
   loadOwnedGroupData: jest.fn(async () => {
     const accessibleGroup = mockGroups.find(
       (group) =>

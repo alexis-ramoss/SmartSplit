@@ -201,6 +201,10 @@ jest.mock("./lib/_group-utils", () => ({
       )
       .map((group) => mockCloneGroup(group))
   ),
+  processDueRecurringExpensesForGroup: jest.fn(async (groupId) => {
+    const group = mockGroups.find((item) => item.id === groupId);
+    return group ? mockCloneGroup(group) : null;
+  }),
   loadOwnedGroupData: jest.fn(async () => {
     const accessibleGroup = mockGroups.find(
       (group) => group.ownerId === "test-user" || group.members.some((member) => member.userId === "test-user")
@@ -239,6 +243,15 @@ jest.mock("./lib/_group-utils", () => ({
     } else {
       group.expenses.unshift(expenseWithMetadata);
     }
+    return mockCloneGroup(group);
+  }),
+  updateGroupSettings: jest.fn(async (groupId, settings) => {
+    const group = mockGroups.find((item) => item.id === groupId);
+    if (!group) {
+      throw new Error("Group not found.");
+    }
+    Object.assign(group, settings);
+    group.updatedAt = new Date().toISOString();
     return mockCloneGroup(group);
   }),
 }));
