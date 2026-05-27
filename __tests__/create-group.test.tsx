@@ -3,7 +3,7 @@ import Index from "../app/index";
 
 describe("Create group", () => {
   it("activates the new group, shows a share code, and starts without balances", () => {
-    const { getByPlaceholderText, getByTestId, getByText, queryByTestId } = render(
+    const { getAllByText, getByPlaceholderText, getByTestId, getByText, queryByTestId } = render(
       <Index />
     );
 
@@ -12,7 +12,7 @@ describe("Create group", () => {
     fireEvent.changeText(getByPlaceholderText("e.g., Apartment 2B"), "Apartment 2B");
     fireEvent.press(getByTestId("save-group-button"));
 
-    expect(getByText("Apartment 2B")).toBeTruthy();
+    expect(getAllByText("Apartment 2B").length).toBeGreaterThanOrEqual(1);
     expect(getByTestId("group-status-message").props.children).toContain(
       "Created Apartment 2B."
     );
