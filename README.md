@@ -369,6 +369,26 @@ During the Sprint Review, 7 new features were demonstrated: approve users joinin
 
 ### Sprint 3
 
+#### Sprint Retrospective
+
+**Did Well**
+
+Velocity and delivery consistency maintained well in Sprint 3. The team successfully checked off a heavy load of core user stories, demonstrating a great rhythm in implementing backend automation and user workflows. We tackled complex, highly requested tracking features—specifically **Add recurring expense** and **Define recurrent expense frequency**—which drastically improves the core utility of our application. Additionally, our multi-group functionality progressed rapidly, allowing us to deliver **Switch Between Groups** alongside a comprehensive **View Global Balance Overview Across Groups**. The engineering momentum was stellar, and we managed to hit our goals across all assigned tasks.
+
+**Do Differently**
+
+While our development velocity was high, we need to improve how we plan and manage cross-feature dependencies early in the sprint. For instance, developing **Enable Automatic Transaction Confirmation** and **Categorize Expenses** simultaneously created a lot of parallel database schema updates. This led to a scramble to resolve data model alignment late in the cycle. In the next sprint, we should map out shared data structures during Sprint Planning so that overlapping backend changes don't stall localized testing.
+
+**Puzzles**
+
+An ongoing puzzle is how we should best handle the scope definition for automated system logic versus complex user interfaces. Features like "Automatic Transaction Confirmation" and "Recurrent Expense Frequency" require heavy background configuration, but how we surface those automated states clearly to the user remains a gray area. We need to decide if backend-heavy automation tasks should be broken down into separate engineering and UI tasks, or if we need a more robust approach to handling systemic logic inside user-facing stories.
+
+**Improvements**
+
+* Coordinate a quick schema alignment sync at the start of the sprint whenever multiple stories (like categorization and automatic confirmation) modify the same core entities.
+* Establish clear UI/UX guidelines for background automation processes so developers know exactly how to display automated actions to the user.
+* Break down multi-layered epics (like global cross-group features) into smaller, more granular sub-tasks to avoid oversized pull requests.
+
 #### Scumboard at the begining of Sprint 3
 ![Scrumboard begining sprint 3](docs/scrumboard_sprint3-begining.png)
 
