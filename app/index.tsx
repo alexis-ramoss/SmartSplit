@@ -9,12 +9,12 @@ import {
     TextInput,
     View,
 } from "react-native";
-import Animated, { 
-  FadeIn, 
-  FadeOut, 
-  Layout, 
-  useSharedValue, 
-  useAnimatedStyle, 
+import Animated, {
+  FadeIn,
+  FadeOut,
+  Layout,
+  useSharedValue,
+  useAnimatedStyle,
   withTiming,
   interpolateColor,
   Easing,
@@ -99,18 +99,14 @@ function Toggle({ value, onValueChange, testID, accessibilityLabel }: ToggleProp
     const backgroundColor = interpolateColor(
       transition.value,
       [0, 1],
-      ["#E2E8F0", "#6366F1"]
+      ["#CDE8ED", "#137F86"]
     );
-    return {
-      backgroundColor,
-    };
+    return { backgroundColor };
   });
 
-  const animatedKnobStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: transition.value * 22 }],
-    };
-  });
+  const animatedKnobStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: transition.value * 22 }],
+  }));
 
   return (
     <Pressable
@@ -238,11 +234,11 @@ function CalendarPicker({
         <View style={styles.calendarContainer}>
           <View style={styles.calendarHeader}>
             <Pressable onPress={() => changeMonth(-1)} style={styles.calendarNavButton}>
-              <Ionicons name="chevron-back" size={24} color="#4338CA" />
+              <Ionicons name="chevron-back" size={24} color="#12626C" />
             </Pressable>
             <Text style={styles.calendarTitle}>{monthNames[month]} {year}</Text>
             <Pressable onPress={() => changeMonth(1)} style={styles.calendarNavButton}>
-              <Ionicons name="chevron-forward" size={24} color="#4338CA" />
+              <Ionicons name="chevron-forward" size={24} color="#12626C" />
             </Pressable>
           </View>
           <View style={styles.calendarGrid}>
@@ -339,7 +335,6 @@ export default function Index() {
           return;
         }
 
-        // process recurring expenses for all accessible groups
         await Promise.all(
           remoteGroups.map((group) => processDueRecurringExpensesForGroup(group.id))
         );
@@ -562,10 +557,6 @@ export default function Index() {
 
   function getCategoryIcon(label: string): string {
     return EXPENSE_CATEGORIES.find((c) => c.label === label)?.icon || "📦";
-  }
-
-  function getCategoryColor(label: string): string {
-    return (EXPENSE_CATEGORIES.find((c) => c.label === label) as any)?.color || "#64748B";
   }
 
   function handleEditExpense(expense: ExpenseEntry) {
@@ -961,7 +952,7 @@ export default function Index() {
                 styles.signOutButton,
                 {
                   marginTop: 0,
-                  backgroundColor: showGlobalOverview ? "#6366F1" : "#E0E7FF",
+                  backgroundColor: showGlobalOverview ? "#137F86" : "#F7FEFF",
                 },
                 pressed && styles.buttonPressed,
               ]}
@@ -983,19 +974,19 @@ export default function Index() {
               <Text style={[styles.summaryLabel, { color: "#4F46E5" }]}>Group total</Text>
               <Text style={[styles.summaryValue, { color: "#4338CA" }]}>EUR {totalSpent.toFixed(2)}</Text>
             </View>
-            <View style={[styles.summaryItem, { backgroundColor: "#FDF2F8", borderColor: "#FBCFE8" }]}>
-              <Text style={[styles.summaryLabel, { color: "#DB2777" }]}>Recorded</Text>
-              <Text style={[styles.summaryValue, { color: "#BE185D" }]}>{activeExpenses.length}</Text>
+            <View style={[styles.summaryItem, { backgroundColor: "#DDF7F0", borderColor: "#B8E8EA" }]}>
+              <Text style={[styles.summaryLabel, { color: "#159296" }]}>Recorded</Text>
+              <Text style={[styles.summaryValue, { color: "#12626C" }]}>{activeExpenses.length}</Text>
             </View>
           </View>
         </View>
 
         {showGlobalOverview ? (
-          <Animated.View 
-            entering={FadeIn.duration(400)} 
+          <Animated.View
+            entering={FadeIn.duration(400)}
             exiting={FadeOut.duration(300)}
             layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
-            style={styles.sectionCard} 
+            style={styles.sectionCard}
             testID="global-overview-card"
           >
             <View style={styles.sectionHeader}>
@@ -1006,15 +997,15 @@ export default function Index() {
             </View>
 
             <View style={[styles.summaryRow, { marginTop: 16 }]}>
-              <View style={[styles.summaryItem, { backgroundColor: "#FFE4E6", borderColor: "#FECACA" }]}>
-                <Text style={[styles.summaryLabel, { color: "#E11D48" }]}>Total Owed</Text>
-                <Text style={[styles.summaryValue, { color: "#B91C1C" }]}>
+              <View style={[styles.summaryItem, { backgroundColor: "#FFF5F5", borderColor: "#FECACA" }]}>
+                <Text style={[styles.summaryLabel, { color: "#C53030" }]}>Total Owed</Text>
+                <Text style={[styles.summaryValue, { color: "#C53030" }]}>
                   EUR {globalSummary.totalOwed.toFixed(2)}
                 </Text>
               </View>
-              <View style={[styles.summaryItem, { backgroundColor: "#DCFCE7", borderColor: "#BBF7D0" }]}>
-                <Text style={[styles.summaryLabel, { color: "#15803D" }]}>Total Receivable</Text>
-                <Text style={[styles.summaryValue, { color: "#15803D" }]}>
+              <View style={[styles.summaryItem, { backgroundColor: "#F0FFF4", borderColor: "#BBF7D0" }]}>
+                <Text style={[styles.summaryLabel, { color: "#2F855A" }]}>Total Receivable</Text>
+                <Text style={[styles.summaryValue, { color: "#2F855A" }]}>
                   EUR {globalSummary.totalReceivable.toFixed(2)}
                 </Text>
               </View>
@@ -1076,8 +1067,7 @@ export default function Index() {
                     testID={`switch-group-${group.id}`}
                     style={[
                       styles.payerChip,
-                      activeGroupId === group.id &&
-                        styles.payerChipSelected,
+                      activeGroupId === group.id && styles.payerChipSelected,
                     ]}
                     onPress={() => {
                       setActiveGroupId(group.id);
@@ -1086,8 +1076,7 @@ export default function Index() {
                     <Text
                       style={[
                         styles.payerChipText,
-                        activeGroupId === group.id &&
-                          styles.payerChipTextSelected,
+                        activeGroupId === group.id && styles.payerChipTextSelected,
                       ]}
                     >
                       {group.name}
@@ -1102,10 +1091,7 @@ export default function Index() {
             <Pressable
               accessibilityLabel="Create group"
               testID="open-create-group-button"
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                pressed && styles.buttonPressed,
-              ]}
+              style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
               onPress={() => {
                 setShowCreateGroup((value) => !value);
                 setShowJoinGroup(false);
@@ -1118,10 +1104,7 @@ export default function Index() {
             <Pressable
               accessibilityLabel="Join group"
               testID="open-join-group-button"
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                pressed && styles.buttonPressed,
-              ]}
+              style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
               onPress={() => {
                 setShowJoinGroup((value) => !value);
                 setShowCreateGroup(false);
@@ -1135,10 +1118,7 @@ export default function Index() {
               <Pressable
                 accessibilityLabel="Group settings"
                 testID="open-group-settings-button"
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  pressed && styles.buttonPressed,
-                ]}
+                style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
                 onPress={() => {
                   setShowGroupSettings((value) => !value);
                   setShowCreateGroup(false);
@@ -1176,10 +1156,10 @@ export default function Index() {
           </View>
 
           {groupActionToConfirm ? (
-            <Animated.View 
-              entering={FadeIn} 
-              exiting={FadeOut} 
-              layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
+            <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
               style={styles.confirmBox}
             >
               <Text style={styles.confirmTitle}>
@@ -1216,10 +1196,10 @@ export default function Index() {
           ) : null}
 
           {showCreateGroup ? (
-            <Animated.View 
-              entering={FadeIn} 
-              exiting={FadeOut} 
-              layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
+            <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
               style={styles.inlineForm}
             >
               <Text style={styles.formLabel}>Group name</Text>
@@ -1238,10 +1218,7 @@ export default function Index() {
               <Pressable
                 accessibilityLabel="Save group"
                 testID="save-group-button"
-                style={({ pressed }) => [
-                  styles.saveButton,
-                  pressed && styles.buttonPressed,
-                ]}
+                style={({ pressed }) => [styles.saveButton, pressed && styles.buttonPressed]}
                 onPress={handleCreateGroup}
               >
                 <Text style={styles.saveButtonText}>Create</Text>
@@ -1250,10 +1227,10 @@ export default function Index() {
           ) : null}
 
           {showJoinGroup ? (
-            <Animated.View 
-              entering={FadeIn} 
-              exiting={FadeOut} 
-              layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
+            <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
               style={styles.inlineForm}
             >
               <Text style={styles.formLabel}>Invite code</Text>
@@ -1273,10 +1250,7 @@ export default function Index() {
               <Pressable
                 accessibilityLabel="Join saved group"
                 testID="join-group-button"
-                style={({ pressed }) => [
-                  styles.saveButton,
-                  pressed && styles.buttonPressed,
-                ]}
+                style={({ pressed }) => [styles.saveButton, pressed && styles.buttonPressed]}
                 onPress={handleJoinGroup}
               >
                 <Text style={styles.saveButtonText}>Join</Text>
@@ -1285,10 +1259,10 @@ export default function Index() {
           ) : null}
 
           {showGroupSettings && activeGroup.id && activeGroup.ownerId === currentUser.uid ? (
-            <Animated.View 
-              entering={FadeIn} 
-              exiting={FadeOut} 
-              layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
+            <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
               style={styles.inlineForm}
             >
               <Text style={styles.formLabel}>Group Settings</Text>
@@ -1317,10 +1291,10 @@ export default function Index() {
         </View>
 
         {activeGroup.ownerId === currentUser.uid && activeGroup.joinRequests && activeGroup.joinRequests.length > 0 ? (
-          <Animated.View 
-            entering={FadeIn} 
-            exiting={FadeOut} 
-            layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
+          <Animated.View
+            entering={FadeIn}
+            exiting={FadeOut}
+            layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
             style={styles.sectionCard}
           >
             <View style={styles.sectionHeader}>
@@ -1358,10 +1332,10 @@ export default function Index() {
         ) : null}
 
         {shouldShowBalanceBreakdown ? (
-          <Animated.View 
-            entering={FadeIn} 
-            exiting={FadeOut} 
-            layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
+          <Animated.View
+            entering={FadeIn}
+            exiting={FadeOut}
+            layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
             style={styles.sectionCard}
           >
             <View style={styles.sectionHeader}>
@@ -1454,10 +1428,7 @@ export default function Index() {
             <Pressable
               accessibilityLabel="Add expense"
               testID="open-add-expense-button"
-              style={({ pressed }) => [
-                styles.primaryButton,
-                pressed && styles.buttonPressed,
-              ]}
+              style={({ pressed }) => [styles.primaryButton, pressed && styles.buttonPressed]}
               onPress={handleOpenAddExpense}
             >
               <Text style={styles.primaryButtonText}>
@@ -1467,10 +1438,10 @@ export default function Index() {
           </View>
 
           {showForm ? (
-            <Animated.View 
-              entering={FadeIn} 
-              exiting={FadeOut} 
-              layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
+            <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
               style={styles.form}
             >
               <Text style={styles.formTitle}>
@@ -1486,9 +1457,7 @@ export default function Index() {
                 value={name}
                 onChangeText={(value) => {
                   setName(value);
-                  if (error) {
-                    setError(null);
-                  }
+                  if (error) setError(null);
                 }}
                 testID="expense-name-input"
               />
@@ -1503,9 +1472,7 @@ export default function Index() {
                 value={amount}
                 onChangeText={(value) => {
                   setAmount(value);
-                  if (error) {
-                    setError(null);
-                  }
+                  if (error) setError(null);
                 }}
                 testID="expense-amount-input"
               />
@@ -1543,9 +1510,7 @@ export default function Index() {
                     ]}
                     onPress={() => {
                       setCategory(cat.label);
-                      if (error) {
-                        setError(null);
-                      }
+                      if (error) setError(null);
                     }}
                   >
                     <Text
@@ -1573,9 +1538,7 @@ export default function Index() {
                     ]}
                     onPress={() => {
                       setPayer(member);
-                      if (error) {
-                        setError(null);
-                      }
+                      if (error) setError(null);
                     }}
                   >
                     <Text
@@ -1713,10 +1676,9 @@ export default function Index() {
                     }}
                     onClose={() => setShowRecurrenceStartDatePicker(false)}
                   />
-                  
+
                   {(() => {
                     const [day] = recurrenceStartDate.split("/").map(Number);
-
                     return recurrenceFrequency === "Monthly" && day >= 29;
                   })() && (
                     <Text style={styles.helperText}>
@@ -1778,10 +1740,7 @@ export default function Index() {
 
               <View style={styles.actionsRow}>
                 <Pressable
-                  style={({ pressed }) => [
-                    styles.cancelButton,
-                    pressed && styles.buttonPressed,
-                  ]}
+                  style={({ pressed }) => [styles.cancelButton, pressed && styles.buttonPressed]}
                   onPress={() => {
                     setShowForm(false);
                     resetForm();
@@ -1793,10 +1752,7 @@ export default function Index() {
                 <Pressable
                   accessibilityLabel="Save expense"
                   testID="save-expense-button"
-                  style={({ pressed }) => [
-                    styles.saveButton,
-                    pressed && styles.buttonPressed,
-                  ]}
+                  style={({ pressed }) => [styles.saveButton, pressed && styles.buttonPressed]}
                   onPress={handleSaveExpense}
                 >
                   <Text style={styles.saveButtonText}>
@@ -1809,16 +1765,16 @@ export default function Index() {
 
           <View style={styles.list} testID="expense-list">
             {activeExpenses.map((expense) => (
-              <Animated.View 
-                key={expense.id} 
-                entering={FadeIn} 
-                layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
+              <Animated.View
+                key={expense.id}
+                entering={FadeIn}
+                layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
                 style={styles.expenseItem}
               >
                 <View style={styles.expenseTextArea}>
                   <Text style={styles.expenseName}>{expense.name}</Text>
-                  <View style={[styles.categoryBadge, { backgroundColor: getCategoryColor(expense.category) + "15" }]}>
-                    <Text style={[styles.categoryBadgeText, { color: getCategoryColor(expense.category) }]}>
+                  <View style={styles.categoryBadge}>
+                    <Text style={styles.categoryBadgeText}>
                       {getCategoryIcon(expense.category)} {(expense.category || "General").toUpperCase()}
                     </Text>
                   </View>
@@ -1849,10 +1805,7 @@ export default function Index() {
                   <Pressable
                     accessibilityLabel={`Edit ${expense.name}`}
                     testID={`edit-expense-${expense.id}`}
-                    style={({ pressed }) => [
-                      styles.editButton,
-                      pressed && styles.buttonPressed,
-                    ]}
+                    style={({ pressed }) => [styles.editButton, pressed && styles.buttonPressed]}
                     onPress={() => handleEditExpense(expense)}
                   >
                     <Text style={styles.editButtonText}>Edit</Text>
@@ -1872,10 +1825,7 @@ export default function Index() {
             <Pressable
               accessibilityLabel="Manage members"
               testID="toggle-members-button"
-              style={({ pressed }) => [
-                styles.primaryButton,
-                pressed && styles.buttonPressed,
-              ]}
+              style={({ pressed }) => [styles.primaryButton, pressed && styles.buttonPressed]}
               onPress={() => {
                 setShowMembers(!showMembers);
                 setRemoveError(null);
@@ -1888,10 +1838,10 @@ export default function Index() {
           </View>
 
           {showMembers ? (
-            <Animated.View 
-              entering={FadeIn} 
-              exiting={FadeOut} 
-              layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
+            <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
               style={styles.list}
             >
               {removeError ? (
@@ -1901,10 +1851,10 @@ export default function Index() {
               ) : null}
 
               {memberToRemove ? (
-                <Animated.View 
-                  entering={FadeIn} 
-                  exiting={FadeOut} 
-                  layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
+                <Animated.View
+                  entering={FadeIn}
+                  exiting={FadeOut}
+                  layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
                   style={styles.confirmBox}
                 >
                   <Text style={styles.confirmTitle}>Remove {memberToRemove}?</Text>
@@ -1913,10 +1863,7 @@ export default function Index() {
                   </Text>
                   <View style={styles.confirmActions}>
                     <Pressable
-                      style={({ pressed }) => [
-                        styles.cancelButton,
-                        pressed && styles.buttonPressed,
-                      ]}
+                      style={({ pressed }) => [styles.cancelButton, pressed && styles.buttonPressed]}
                       onPress={() => {
                         setMemberToRemove(null);
                         setRemoveError(null);
@@ -1925,13 +1872,8 @@ export default function Index() {
                       <Text style={styles.cancelButtonText}>Cancel</Text>
                     </Pressable>
                     <Pressable
-                      style={({ pressed }) => [
-                        styles.dangerButton,
-                        pressed && styles.buttonPressed,
-                      ]}
-                      onPress={() => {
-                        void handleRemoveMember(memberToRemove);
-                      }}
+                      style={({ pressed }) => [styles.dangerButton, pressed && styles.buttonPressed]}
+                      onPress={() => { void handleRemoveMember(memberToRemove); }}
                       testID="confirm-remove-member"
                     >
                       <Text style={styles.dangerButtonText}>Remove</Text>
@@ -1945,10 +1887,10 @@ export default function Index() {
                   const canRemove = !isCurrentUser && canRemoveMemberLocal(member.name).canRemove;
 
                   return (
-                    <Animated.View 
-                      key={member.userId} 
-                      entering={FadeIn} 
-                      layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
+                    <Animated.View
+                      key={member.userId}
+                      entering={FadeIn}
+                      layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
                       style={styles.memberItem}
                     >
                       <View style={styles.memberInfo}>
@@ -1971,10 +1913,7 @@ export default function Index() {
                         <Pressable
                           accessibilityLabel={`Remove ${member.name}`}
                           testID={`remove-member-${member.name}`}
-                          style={({ pressed }) => [
-                            styles.removeButton,
-                            pressed && styles.buttonPressed,
-                          ]}
+                          style={({ pressed }) => [styles.removeButton, pressed && styles.buttonPressed]}
                           onPress={() => setMemberToRemove(member.name)}
                         >
                           <Text style={styles.removeButtonText}>Remove</Text>
@@ -1995,290 +1934,398 @@ export default function Index() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F5F7FF",
+    backgroundColor: "#EEF9FA",
   },
   container: {
-    padding: 20,
-    gap: 24,
-    paddingBottom: 40,
+    padding: 18,
+    gap: 18,
   },
   headerCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 32,
-    padding: 28,
-    shadowColor: "#6366F1",
-    shadowOpacity: 0.1,
-    shadowRadius: 30,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 4,
+    backgroundColor: "#DDF7F0",
+    borderRadius: 24,
+    padding: 24,
     borderWidth: 1,
-    borderColor: "#E0E7FF",
+    borderColor: "#B8E8EA",
+    shadowColor: "#0E6E78",
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
   },
   signOutButton: {
     alignSelf: "flex-start",
-    backgroundColor: "#E0E7FF",
+    marginTop: 14,
+    backgroundColor: "#F7FEFF",
+    borderWidth: 1,
+    borderColor: "#BEE7E9",
     borderRadius: 999,
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 14,
   },
   signOutButtonText: {
-    color: "#475569",
+    color: "#12626C",
     fontWeight: "800",
-    fontSize: 13,
   },
   kicker: {
-    color: "#6366F1",
-    fontSize: 11,
-    fontWeight: "800",
-    letterSpacing: 2,
+    color: "#159296",
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 1.4,
     textTransform: "uppercase",
   },
   title: {
-    color: "#0F172A",
-    fontSize: 30,
-    fontWeight: "900",
-    marginTop: 12,
-    lineHeight: 38,
+    color: "#103C4A",
+    fontSize: 27,
+    fontWeight: "800",
+    marginTop: 10,
+    lineHeight: 33,
   },
   subtitle: {
-    color: "#64748B",
+    color: "#496973",
     fontSize: 15,
-    marginTop: 12,
-    lineHeight: 24,
-    fontWeight: "500",
+    lineHeight: 22,
+    marginTop: 10,
   },
   summaryRow: {
     flexDirection: "row",
-    gap: 16,
-    marginTop: 28,
+    gap: 12,
+    marginTop: 20,
   },
   summaryItem: {
     flex: 1,
-    backgroundColor: "#F5F7FF",
-    borderRadius: 20,
-    padding: 18,
+    backgroundColor: "#F7FEFF",
+    borderRadius: 16,
+    padding: 14,
     borderWidth: 1,
-    borderColor: "#E0E7FF",
+    borderColor: "#C6ECEB",
   },
   summaryLabel: {
-    color: "#64748B",
-    fontSize: 11,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 1,
+    color: "#52828A",
+    fontSize: 13,
   },
   summaryValue: {
-    color: "#0F172A",
+    color: "#12343F",
     fontSize: 24,
-    fontWeight: "900",
-    marginTop: 6,
+    fontWeight: "800",
+    marginTop: 8,
   },
   sectionCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 32,
-    padding: 28,
-    shadowColor: "#000000",
-    shadowOpacity: 0.04,
-    shadowRadius: 24,
+    borderRadius: 22,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#D8EEF1",
+    shadowColor: "#0F5F6B",
+    shadowOpacity: 0.06,
+    shadowRadius: 18,
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
-    borderWidth: 1,
-    borderColor: "#E0E7FF",
   },
   sectionHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 24,
+    justifyContent: "space-between",
     flexWrap: "wrap",
     gap: 12,
   },
   sectionTitle: {
-    color: "#0F172A",
+    color: "#12343F",
     fontSize: 22,
-    fontWeight: "900",
+    fontWeight: "800",
   },
   sectionSubtitle: {
-    color: "#64748B",
-    fontSize: 14,
+    color: "#5B767D",
     marginTop: 4,
-    fontWeight: "500",
   },
   primaryButton: {
-    backgroundColor: "#6366F1",
+    backgroundColor: "#159296",
     borderRadius: 999,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    shadowColor: "#6366F1",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignSelf: "flex-start",
+    shadowColor: "#159296",
     shadowOpacity: 0.25,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    alignItems: "center",
-    justifyContent: "center",
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
   primaryButtonText: {
     color: "#FFFFFF",
-    fontWeight: "800",
     fontSize: 14,
+    fontWeight: "700",
   },
   secondaryButton: {
-    backgroundColor: "#EEF2FF",
-    borderRadius: 999,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
     minWidth: "45%",
+    backgroundColor: "#E7F8F8",
+    borderWidth: 1,
+    borderColor: "#BFE7E8",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     alignItems: "center",
     justifyContent: "center",
   },
   secondaryButtonText: {
-    color: "#4F46E5",
-    fontWeight: "800",
+    color: "#12626C",
     fontSize: 14,
-  },
-  dangerButton: {
-    backgroundColor: "#FFF1F2",
-    borderRadius: 999,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    minWidth: "45%",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dangerButtonText: {
-    color: "#E11D48",
     fontWeight: "800",
-    fontSize: 14,
   },
   buttonPressed: {
-    opacity: 0.7,
+    opacity: 0.82,
     transform: [{ scale: 0.98 }],
   },
   groupActionsRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
     gap: 10,
-    marginTop: 20,
+    marginTop: 16,
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+  },
+  inlineForm: {
+    marginTop: 14,
+    gap: 8,
+  },
+  infoText: {
+    color: "#12626C",
+    fontSize: 14,
+    fontWeight: "700",
+    backgroundColor: "#E7F8F8",
+    borderWidth: 1,
+    borderColor: "#BFE7E8",
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+  },
+  balanceList: {
+    marginTop: 16,
+    gap: 8,
+  },
+  debtBreakdownBox: {
+    backgroundColor: "#F2FBFA",
+    borderRadius: 12,
+    padding: 12,
+    gap: 8,
+  },
+  debtBreakdownTitle: {
+    color: "#244E5A",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  debtBreakdownRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#D7ECEF",
+    paddingTop: 8,
+  },
+  debtBreakdownTextArea: {
+    flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
+  },
+  debtBreakdownName: {
+    color: "#12343F",
+    fontSize: 15,
+    fontWeight: "800",
+    flexShrink: 1,
+  },
+  debtBreakdownMeta: {
+    color: "#5B767D",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 2,
+    flexShrink: 1,
+  },
+  debtBreakdownAmount: {
+    fontSize: 15,
+    fontWeight: "900",
+    textAlign: "right",
+    flexShrink: 0,
+  },
+  balanceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "#F3FBFC",
+    borderWidth: 1,
+    borderColor: "#D8EEF1",
+    borderRadius: 12,
+    padding: 12,
+  },
+  globalBreakdownItem: {
+    gap: 4,
+  },
+  groupBreakdownList: {
+    paddingLeft: 24,
+    gap: 2,
+    marginBottom: 8,
+  },
+  groupBreakdownRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  groupBreakdownName: {
+    color: "#5B767D",
+    fontSize: 13,
+    fontWeight: "600",
+    flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
+  },
+  groupBreakdownAmount: {
+    fontSize: 13,
+    fontWeight: "700",
+    flexShrink: 0,
+    textAlign: "right",
+  },
+  balanceName: {
+    color: "#12343F",
+    fontSize: 16,
+    fontWeight: "700",
+    flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
+  },
+  balanceAmount: {
+    color: "#5B767D",
+    fontSize: 15,
+    fontWeight: "800",
+    textAlign: "right",
+    flexShrink: 0,
+  },
+  positiveBalance: {
+    color: "#11845B",
+  },
+  negativeBalance: {
+    color: "#B42318",
+  },
+  settlementBox: {
+    marginTop: 12,
+    backgroundColor: "#F2FBFA",
+    borderRadius: 12,
+    padding: 12,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: "#D8EEF1",
+  },
+  settlementTitle: {
+    color: "#244E5A",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  settlementText: {
+    color: "#5B767D",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  recurrenceSection: {
+    gap: 8,
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#D8EEF1",
+    paddingTop: 8,
+  },
+  form: {
+    marginTop: 18,
+    backgroundColor: "#F2FBFA",
+    borderRadius: 18,
+    padding: 16,
+    gap: 9,
+    borderWidth: 1,
+    borderColor: "#D3ECEF",
+  },
+  formTitle: {
+    color: "#12343F",
+    fontSize: 24,
+    fontWeight: "800",
+    marginBottom: 2,
+  },
+  formLabel: {
+    color: "#244E5A",
+    fontSize: 16,
+    fontWeight: "700",
+    marginTop: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#CDE8ED",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#12343F",
+    backgroundColor: "#FAFEFF",
   },
   payerRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
     gap: 8,
-    marginTop: 12,
-    marginBottom: 16,
+    flexWrap: "wrap",
   },
   payerChip: {
-    backgroundColor: "#F7FEFF",
-    borderWidth: 1,
-    borderColor: "#D1EFF2",
     borderRadius: 999,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#BFE1E4",
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    backgroundColor: "#FAFEFF",
   },
   payerChipSelected: {
-    backgroundColor: "#6366F1",
-    borderColor: "#6366F1",
+    backgroundColor: "#137F86",
+    borderColor: "#137F86",
   },
   payerChipText: {
-    color: "#4338CA",
-    fontSize: 13,
+    color: "#244E5A",
     fontWeight: "700",
   },
   payerChipTextSelected: {
     color: "#FFFFFF",
   },
-  form: {
-    marginTop: 24,
-    gap: 20,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 32,
-    padding: 28,
-    borderWidth: 1,
-    borderColor: "#E0E7FF",
-    shadowColor: "#000000",
-    shadowOpacity: 0.05,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 8 },
-  },
-  formTitle: {
-    fontSize: 24,
-    fontWeight: "900",
-    color: "#0F172A",
-    marginBottom: 6,
-  },
-  formLabel: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: "#64748B",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginTop: 8,
-  },
-  input: {
-    backgroundColor: "#F5F7FF",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 16,
-    padding: 16,
-    fontSize: 16,
-    color: "#0F172A",
-  },
-  datePickerTrigger: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F5F7FF",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 16,
-    padding: 16,
-    gap: 12,
-  },
-  datePickerText: {
-    fontSize: 16,
-    color: "#0F172A",
-    fontWeight: "500",
-  },
   participantsCard: {
-    backgroundColor: "#F5F7FF",
-    borderRadius: 20,
-    padding: 20,
-    gap: 16,
+    backgroundColor: "#FAFEFF",
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E2E8F0",
+    borderColor: "#D3ECEF",
+    padding: 12,
+    gap: 8,
   },
   participantRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: 10,
   },
   checkboxRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 10,
     flex: 1,
   },
   checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: "#CBD5E1",
-    justifyContent: "center",
+    width: 22,
+    height: 22,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: "#8FCED1",
     alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "#FFFFFF",
   },
   checkboxSelected: {
-    backgroundColor: "#6366F1",
-    borderColor: "#6366F1",
+    backgroundColor: "#159296",
+    borderColor: "#159296",
   },
   checkboxTick: {
     color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "900",
+    fontSize: 11,
+    fontWeight: "800",
   },
   participantName: {
+    color: "#12343F",
     fontSize: 16,
     fontWeight: "600",
-    color: "#0F172A",
   },
   weightContainer: {
     flexDirection: "row",
@@ -2286,532 +2333,338 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   weightInput: {
-    backgroundColor: "#FFFFFF",
+    width: 66,
     borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    width: 75,
-    textAlign: "right",
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#0F172A",
+    borderColor: "#CDE8ED",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    textAlign: "center",
+    backgroundColor: "#FFFFFF",
   },
   percentLabel: {
-    fontSize: 14,
+    color: "#5B767D",
     fontWeight: "700",
-    color: "#64748B",
   },
   notSelectedText: {
+    color: "#9AA7B7",
     fontSize: 13,
-    color: "#94A3B8",
-    fontStyle: "italic",
   },
   totalRow: {
+    marginTop: 4,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#D8EEF1",
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 8,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#E2E8F0",
   },
   totalLabel: {
-    fontSize: 14,
-    fontWeight: "800",
-    color: "#64748B",
+    color: "#244E5A",
+    fontWeight: "700",
   },
   totalValue: {
-    fontSize: 18,
-    fontWeight: "900",
-    color: "#6366F1",
+    color: "#12343F",
+    fontWeight: "800",
+  },
+  errorText: {
+    color: "#B42318",
+    fontSize: 14,
+    fontWeight: "600",
+    backgroundColor: "#FFF1F0",
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 8,
   },
   actionsRow: {
     flexDirection: "row",
-    gap: 12,
-    marginTop: 20,
-  },
-  saveButton: {
-    flex: 2,
-    backgroundColor: "#6366F1",
-    borderRadius: 999,
-    paddingVertical: 16,
-    alignItems: "center",
-    shadowColor: "#6366F1",
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-  },
-  saveButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "800",
-    fontSize: 16,
+    gap: 10,
+    marginTop: 12,
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: "#E0E7FF",
-    borderRadius: 999,
-    paddingVertical: 16,
+    backgroundColor: "#E7F8F8",
+    borderWidth: 1,
+    borderColor: "#BFE7E8",
+    borderRadius: 12,
+    paddingVertical: 13,
     alignItems: "center",
   },
   cancelButtonText: {
-    color: "#475569",
-    fontWeight: "800",
+    color: "#12626C",
     fontSize: 16,
+    fontWeight: "700",
+  },
+  saveButton: {
+    flex: 1,
+    backgroundColor: "#137F86",
+    borderRadius: 12,
+    paddingVertical: 13,
+    alignItems: "center",
+    shadowColor: "#137F86",
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  saveButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "800",
   },
   list: {
     marginTop: 20,
-    gap: 16,
+    gap: 12,
   },
   expenseItem: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 28,
-    padding: 24,
     flexDirection: "row",
+    alignItems: "flex-start",
     justifyContent: "space-between",
+    borderRadius: 16,
+    padding: 14,
+    backgroundColor: "#F3FBFC",
     borderWidth: 1,
-    borderColor: "#E0E7FF",
-    shadowColor: "#000000",
-    shadowOpacity: 0.03,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    borderColor: "#D8EEF1",
+    gap: 10,
   },
   expenseTextArea: {
     flex: 1,
-    gap: 6,
   },
   expenseName: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: "#0F172A",
+    color: "#12343F",
+    fontSize: 16,
+    fontWeight: "700",
   },
   categoryBadge: {
-    backgroundColor: "#E0E7FF",
+    backgroundColor: "#DDF7F0",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
     alignSelf: "flex-start",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
     marginTop: 4,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   categoryBadgeText: {
-    fontSize: 10,
-    fontWeight: "800",
-    color: "#64748B",
-    letterSpacing: 0.5,
+    color: "#12626C",
+    fontSize: 11,
+    fontWeight: "700",
     textTransform: "uppercase",
   },
   expenseMeta: {
+    color: "#5B767D",
+    marginTop: 3,
     fontSize: 13,
-    color: "#94A3B8",
-    fontWeight: "500",
   },
   expenseCreatedBy: {
-    fontSize: 11,
-    color: "#CBD5E1",
-    marginTop: 8,
+    color: "#7A8A99",
+    marginTop: 6,
+    fontSize: 12,
   },
   expenseUpdatedBy: {
-    fontSize: 11,
-    color: "#CBD5E1",
+    color: "#7A8A99",
     marginTop: 2,
+    fontSize: 12,
+  },
+  expenseAmount: {
+    color: "#12626C",
+    fontSize: 17,
+    fontWeight: "800",
+    textAlign: "right",
   },
   expenseActions: {
     alignItems: "flex-end",
-    justifyContent: "space-between",
-  },
-  expenseAmount: {
-    fontSize: 22,
-    fontWeight: "900",
-    color: "#0F172A",
+    gap: 8,
   },
   editButton: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#E7F8F8",
     borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 999,
+    borderColor: "#BFE7E8",
+    borderRadius: 10,
+    paddingHorizontal: 12,
     paddingVertical: 8,
-    paddingHorizontal: 16,
   },
   editButtonText: {
-    color: "#6366F1",
+    color: "#12626C",
     fontSize: 13,
     fontWeight: "800",
   },
-  balanceList: {
-    marginTop: 20,
-    gap: 12,
-  },
-  balanceRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 16,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: "#E0E7FF",
-    shadowColor: "#000000",
-    shadowOpacity: 0.02,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  balanceName: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#0F172A",
-    flex: 1,
-  },
-  balanceAmount: {
-    fontSize: 17,
-    fontWeight: "900",
-  },
-  positiveBalance: {
-    color: "#15803D",
-  },
-  negativeBalance: {
-    color: "#C53030",
-  },
-  settlementBox: {
-    marginTop: 24,
-    backgroundColor: "#F0F9FA",
-    borderRadius: 22,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: "#D1EFF2",
-  },
-  settlementTitle: {
-    fontSize: 14,
-    fontWeight: "900",
-    color: "#4338CA",
-    marginBottom: 10,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-  },
-  settlementText: {
-    fontSize: 14,
-    color: "#103C4A",
-    fontWeight: "600",
-    lineHeight: 22,
-  },
-  errorText: {
-    color: "#C53030",
-    fontSize: 14,
-    fontWeight: "700",
-    backgroundColor: "#FFF1F1",
-    padding: 16,
-    borderRadius: 16,
-    marginTop: 8,
-  },
-  infoText: {
-    color: "#64748B",
-    fontSize: 15,
-    fontWeight: "600",
-    fontStyle: "italic",
-    textAlign: "center",
-    marginTop: 12,
-    padding: 16,
-    backgroundColor: "#F8FAFB",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#EEF2F6",
-  },
   confirmBox: {
-    backgroundColor: "#FEF2F2",
-    borderRadius: 24,
-    padding: 24,
     marginTop: 16,
-    borderWidth: 1,
-    borderColor: "#FEE2E2",
+    backgroundColor: "#FEF5F1",
+    borderRadius: 16,
+    padding: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#B42318",
   },
   confirmTitle: {
-    fontSize: 18,
-    fontWeight: "900",
-    color: "#991B1B",
+    color: "#12343F",
+    fontSize: 16,
+    fontWeight: "800",
     marginBottom: 8,
   },
   confirmMessage: {
-    fontSize: 15,
-    color: "#991B1B",
-    marginBottom: 20,
-    lineHeight: 22,
-    opacity: 0.8,
+    color: "#5B767D",
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 16,
   },
   confirmActions: {
     flexDirection: "row",
     gap: 12,
   },
+  dangerButton: {
+    minWidth: "45%",
+    backgroundColor: "#B42318",
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dangerButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800",
+  },
   memberItem: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#F8FAFB",
-    padding: 18,
-    borderRadius: 20,
+    justifyContent: "space-between",
+    borderRadius: 16,
+    padding: 14,
+    backgroundColor: "#F3FBFC",
     borderWidth: 1,
-    borderColor: "#EEF2F6",
+    borderColor: "#D8EEF1",
+    gap: 10,
   },
   memberInfo: {
     flex: 1,
-    gap: 4,
   },
   memberName: {
+    color: "#12343F",
     fontSize: 16,
-    fontWeight: "800",
-    color: "#103C4A",
-  },
-  memberBalance: {
-    fontSize: 14,
     fontWeight: "700",
   },
+  memberBalance: {
+    color: "#5B767D",
+    fontSize: 14,
+    marginTop: 4,
+    fontWeight: "600",
+  },
   removeButton: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1.5,
-    borderColor: "#FEE2E2",
+    backgroundColor: "#FEE6E1",
+    borderRadius: 10,
+    paddingHorizontal: 12,
     paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 12,
   },
   removeButtonText: {
-    color: "#C53030",
+    color: "#B42318",
     fontSize: 13,
     fontWeight: "800",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(16, 60, 74, 0.6)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
   calendarContainer: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 32,
-    padding: 24,
+    borderRadius: 24,
+    padding: 20,
     width: "100%",
-    maxWidth: 360,
-    shadowColor: "#103C4A",
-    shadowOpacity: 0.25,
-    shadowRadius: 30,
-    shadowOffset: { width: 0, height: 15 },
+    maxWidth: 340,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5,
   },
   calendarHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 24,
-  },
-  calendarTitle: {
-    fontSize: 20,
-    fontWeight: "900",
-    color: "#103C4A",
+    marginBottom: 20,
   },
   calendarNavButton: {
-    padding: 10,
-    backgroundColor: "#F0F9FA",
-    borderRadius: 14,
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: "#E7F8F8",
+  },
+  calendarTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#12343F",
   },
   calendarGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "space-between",
   },
   calendarDayHeaderBox: {
-    width: "14.28%",
+    width: "14%",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 10,
   },
   calendarDayHeader: {
     fontSize: 12,
-    fontWeight: "900",
-    color: "#94A3B8",
-    textTransform: "uppercase",
+    fontWeight: "700",
+    color: "#8B95A7",
   },
   calendarDay: {
-    width: "14.28%",
+    width: "14%",
     aspectRatio: 1,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 14,
+    borderRadius: 12,
     marginBottom: 4,
   },
   calendarDaySelected: {
-    backgroundColor: "#6366F1",
+    backgroundColor: "#137F86",
   },
   calendarDayText: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#103C4A",
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#12343F",
   },
   calendarDayTextSelected: {
     color: "#FFFFFF",
-    fontWeight: "900",
   },
   calendarFooter: {
-    marginTop: 24,
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#D8EEF1",
+    paddingTop: 16,
     alignItems: "center",
   },
   calendarCloseButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    backgroundColor: "#E0E7FF",
-    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
   calendarCloseButtonText: {
-    color: "#475569",
-    fontWeight: "800",
     fontSize: 15,
+    fontWeight: "700",
+    color: "#5B767D",
   },
-  inlineForm: {
-    marginTop: 24,
-    gap: 16,
-    padding: 24,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 28,
-    borderWidth: 1,
-    borderColor: "#E0E7FF",
-    shadowColor: "#000000",
-    shadowOpacity: 0.03,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  switchRow: {
+  datePickerTrigger: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#CDE8ED",
+    borderRadius: 12,
+    paddingHorizontal: 14,
     paddingVertical: 12,
-  },
-  switchLabel: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#0F172A",
-  },
-  switchDescription: {
-    fontSize: 13,
-    color: "#64748B",
-    marginTop: 4,
-    lineHeight: 20,
-  },
-  toggleButton: {
-    width: 52,
-    height: 30,
-    borderRadius: 999,
-    backgroundColor: "#E2E8F0",
-    padding: 3,
-  },
-  toggleButtonActive: {
-    backgroundColor: "#6366F1",
-  },
-  toggleKnob: {
-    width: 24,
-    height: 24,
-    borderRadius: 999,
-    backgroundColor: "#FFFFFF",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  toggleKnobActive: {
-    transform: [{ translateX: 22 }],
-  },
-  debtBreakdownBox: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 28,
-    padding: 24,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#E0E7FF",
-    shadowColor: "#000000",
-    shadowOpacity: 0.03,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  debtBreakdownTitle: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: "#64748B",
-    marginBottom: 20,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  debtBreakdownRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E7FF",
-  },
-  debtBreakdownTextArea: {
-    flex: 1,
-    gap: 4,
-  },
-  debtBreakdownName: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#0F172A",
-  },
-  debtBreakdownMeta: {
-    fontSize: 12,
-    color: "#94A3B8",
-    fontWeight: "600",
-  },
-  debtBreakdownAmount: {
-    fontSize: 16,
-    fontWeight: "900",
-  },
-  globalBreakdownItem: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 28,
-    padding: 24,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#E0E7FF",
-    shadowColor: "#000000",
-    shadowOpacity: 0.03,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  groupBreakdownList: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#E0E7FF",
     gap: 10,
   },
-  groupBreakdownRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  groupBreakdownName: {
-    fontSize: 13,
-    color: "#64748B",
-    fontWeight: "600",
-  },
-  groupBreakdownAmount: {
-    fontSize: 13,
-    fontWeight: "800",
-  },
-  recurrenceSection: {
-    gap: 20,
-    padding: 24,
-    backgroundColor: "#F5F7FF",
-    borderRadius: 28,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    marginTop: 12,
-  },
-  helperText: {
-    fontSize: 12,
-    color: "#64748B",
-    fontStyle: "italic",
-    lineHeight: 18,
+  datePickerText: {
+    fontSize: 16,
+    color: "#12343F",
+    fontWeight: "500",
   },
   checkboxRowContainer: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 8,
   },
   checkboxRowSmall: {
@@ -2822,21 +2675,60 @@ const styles = StyleSheet.create({
   checkboxSmall: {
     width: 20,
     height: 20,
-    borderRadius: 6,
     borderWidth: 2,
-    borderColor: "#CBD5E1",
+    borderColor: "#CDE8ED",
+    borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
   },
   checkboxTickSmall: {
-    color: "#FFFFFF",
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "900",
+    color: "#FFFFFF",
   },
   checkboxLabelSmall: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#5B767D",
+  },
+  helperText: {
     fontSize: 13,
+    color: "#8B95A7",
+    fontStyle: "italic",
+    marginTop: 4,
+  },
+  switchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+  },
+  switchLabel: {
+    fontSize: 16,
     fontWeight: "700",
-    color: "#64748B",
+    color: "#12343F",
+  },
+  switchDescription: {
+    fontSize: 13,
+    color: "#5B767D",
+    marginTop: 2,
+  },
+  toggleButton: {
+    width: 50,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#CDE8ED",
+    padding: 3,
+  },
+  toggleKnob: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
 });
