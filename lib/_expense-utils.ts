@@ -27,6 +27,7 @@ export type ExpenseEntry = {
   groupId: string;
   name: string;
   amount: number;
+  category: string;
   date: string;
   payer: string;
   participants: { name: string; percentage: number }[];
@@ -41,6 +42,15 @@ export type ExpenseEntry = {
   recurringSourceId?: string | null;
 };
 
+export const EXPENSE_CATEGORIES = [
+  { label: "General", icon: "📦" },
+  { label: "Food", icon: "🍴" },
+  { label: "Transport", icon: "🚗" },
+  { label: "Rent", icon: "🏠" },
+  { label: "Leisure", icon: "🎨" },
+] as const;
+
+export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number]["label"];
 export function parseDate(dateStr: string): Date {
   const [day, month, year] = dateStr.split('/').map(Number);
   return new Date(year, month - 1, day);
@@ -151,6 +161,7 @@ export function validateExpenseInput(input: {
   date: string;
   payer: string;
   participants: ParticipantInput[];
+  category?: string;
 }) {
   const amt = Number(input.amount);
   if (!input.amount || Number.isNaN(amt) || amt <= 0) return 'Please enter a valid expense amount.';
@@ -160,6 +171,10 @@ export function validateExpenseInput(input: {
     .reduce((sum, p) => sum + (Number(p.percentage) || 0), 0);
 
   if (total !== 100) return 'Participant percentages must total 100%.';
+
+  if (input.category && !EXPENSE_CATEGORIES.some(c => c.label === input.category)) {
+    return 'Invalid category selected.';
+  }
 
   return null;
 }
@@ -172,6 +187,7 @@ export function createExpenseEntry(input: {
   participants: ParticipantInput[];
   userId: string;
   userName: string;
+  category?: string;
   recurrence?: RecurrenceInput;
   confirmed?: boolean;
 }) {
@@ -188,10 +204,11 @@ export function createExpenseEntry(input: {
   } : null;
 
   const expense: ExpenseEntry = {
-    id: `exp-${Date.now()}`,
+    id: `exp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     groupId: 'home',
     name: input.name,
     amount: Number(input.amount),
+    category: input.category || 'General',
     date: input.date,
     payer: input.payer,
     participants: input.participants

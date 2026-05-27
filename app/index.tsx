@@ -18,6 +18,9 @@ import {
     calculateMemberBalances,
     calculateSettlementSuggestions,
     createExpenseEntry,
+    aggregateGlobalBalances,
+    EXPENSE_CATEGORIES,
+    ExpenseCategory,
     ExpenseEntry,
     formatDate,
     ParticipantInput,
@@ -243,6 +246,7 @@ export default function Index() {
   const [groupMessage, setGroupMessage] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState<string>("General");
   const [date, setDate] = useState(formatDate(new Date()));
   const [payer, setPayer] = useState(() => seededGroups[0]?.members[0]?.name || currentUserName);
   const [participants, setParticipants] = useState<ParticipantInput[]>(() =>
@@ -402,6 +406,7 @@ export default function Index() {
   function resetForm() {
     setName("");
     setAmount("");
+    setCategory("General");
     setDate(formatDate(new Date()));
     setPayer(currentUserName);
     setParticipants(
@@ -501,9 +506,14 @@ export default function Index() {
     setShowForm(true);
   }
 
+  function getCategoryIcon(label: string): string {
+    return EXPENSE_CATEGORIES.find((c) => c.label === label)?.icon || "📦";
+  }
+
   function handleEditExpense(expense: ExpenseEntry) {
     setName(expense.name);
     setAmount(String(expense.amount));
+    setCategory(expense.category || "General");
     setDate(expense.date);
     setPayer(expense.payer);
     setParticipants(getParticipantInputsFromExpense(expense));
@@ -732,6 +742,7 @@ export default function Index() {
     const result = createExpenseEntry({
       name,
       amount,
+      category,
       date,
       payer,
       participants,
@@ -1421,6 +1432,36 @@ export default function Index() {
                 onClose={() => setShowMainDatePicker(false)}
               />
 
+              <Text style={styles.formLabel}>Category</Text>
+              <View style={styles.payerRow}>
+                {EXPENSE_CATEGORIES.map((cat) => (
+                  <Pressable
+                    key={cat.label}
+                    testID={`category-option-${cat.label}`}
+                    style={({ pressed }) => [
+                      styles.payerChip,
+                      category === cat.label && styles.payerChipSelected,
+                      pressed && styles.buttonPressed,
+                    ]}
+                    onPress={() => {
+                      setCategory(cat.label);
+                      if (error) {
+                        setError(null);
+                      }
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.payerChipText,
+                        category === cat.label && styles.payerChipTextSelected,
+                      ]}
+                    >
+                      {cat.icon} {cat.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
               <Text style={styles.formLabel}>Paid By</Text>
               <View style={styles.payerRow}>
                 {activeMemberNames.map((member) => (
@@ -1673,6 +1714,11 @@ export default function Index() {
               <View key={expense.id} style={styles.expenseItem}>
                 <View style={styles.expenseTextArea}>
                   <Text style={styles.expenseName}>{expense.name}</Text>
+                  <View style={styles.categoryBadge}>
+                    <Text style={styles.categoryBadgeText}>
+                      {getCategoryIcon(expense.category)} {(expense.category || "General").toUpperCase()}
+                    </Text>
+                  </View>
                   <Text style={styles.expenseMeta}>Date: {expense.date}</Text>
                   <Text style={styles.expenseMeta}>Paid by {expense.payer}</Text>
 
@@ -2278,6 +2324,21 @@ const styles = StyleSheet.create({
     color: "#152B3C",
     fontSize: 16,
     fontWeight: "700",
+  },
+  categoryBadge: {
+    backgroundColor: "#E2E8F0",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    alignSelf: "flex-start",
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  categoryBadgeText: {
+    color: "#475569",
+    fontSize: 11,
+    fontWeight: "700",
+    textTransform: "uppercase",
   },
   expenseMeta: {
     color: "#5F6C7B",
