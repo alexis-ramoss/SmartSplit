@@ -1,4 +1,27 @@
+import { type LoadedGroup } from "./_group-utils";
+
 export type ParticipantInput = { name: string; selected: boolean; percentage: string };
+export type RecurrenceFrequency = 'Daily' | 'Weekly' | 'Monthly';
+
+export type RecurrenceRule = {
+  frequency: RecurrenceFrequency;
+  every: number;
+  startDate: string;
+  endDate?: string;
+  active: boolean;
+  nextRunDate: string | null;
+  lastGeneratedAt?: string;
+  stoppedAt?: string;
+};
+
+export type RecurrenceInput = {
+  enabled: boolean;
+  frequency: RecurrenceFrequency;
+  every: string;
+  startDate: string;
+  endDate?: string;
+};
+
 export type ExpenseEntry = {
   id: string;
   groupId: string;
@@ -11,9 +34,12 @@ export type ExpenseEntry = {
   createdAt: string;
   createdBy: string;
   createdByName: string;
+  confirmed: boolean;
   updatedAt?: string;
   updatedBy?: string;
   updatedByName?: string;
+  recurrence?: RecurrenceRule | null;
+  recurringSourceId?: string | null;
 };
 
 export const EXPENSE_CATEGORIES = [
@@ -25,6 +51,109 @@ export const EXPENSE_CATEGORIES = [
 ] as const;
 
 export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number]["label"];
+export function parseDate(dateStr: string): Date {
+  const [day, month, year] = dateStr.split('/').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+export function formatDate(date: Date): string {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+export function getNextRunDate(currentRunDate: string, frequency: RecurrenceFrequency, every: number): string {
+  const date = parseDate(currentRunDate);
+  if (frequency === 'Daily') {
+    date.setDate(date.getDate() + every);
+  } else if (frequency === 'Weekly') {
+    date.setDate(date.getDate() + 7 * every);
+  } else if (frequency === 'Monthly') {
+    date.setMonth(date.getMonth() + every);
+  }
+  return formatDate(date);
+}
+
+export function generateRecurringExpenseInstance(sourceExpense: ExpenseEntry, runDate: string): ExpenseEntry {
+  return {
+    ...sourceExpense,
+    id: `exp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    date: runDate,
+    createdAt: new Date().toISOString(),
+    recurrence: null,
+    recurringSourceId: sourceExpense.id,
+    confirmed: sourceExpense.confirmed,
+  };
+}
+
+export function generateDueRecurringExpenses(expenses: ExpenseEntry[], todayStr: string) {
+  const generatedExpenses: ExpenseEntry[] = [];
+  const updatedTemplates: ExpenseEntry[] = [];
+  const today = parseDate(todayStr);
+
+  expenses.forEach((expense) => {
+    if (expense.recurrence && expense.recurrence.active && expense.recurrence.nextRunDate) {
+      let nextRun = parseDate(expense.recurrence.nextRunDate);
+      let currentTemplate = { ...expense, recurrence: { ...expense.recurrence } };
+      let templateUpdated = false;
+
+      while (nextRun <= today && currentTemplate.recurrence && currentTemplate.recurrence.active) {
+        const instance = generateRecurringExpenseInstance(expense, formatDate(nextRun));
+        generatedExpenses.push(instance);
+
+        const nextRunStr = getNextRunDate(
+          formatDate(nextRun),
+          currentTemplate.recurrence.frequency,
+          currentTemplate.recurrence.every
+        );
+        
+        currentTemplate.recurrence.nextRunDate = nextRunStr;
+        currentTemplate.recurrence.lastGeneratedAt = new Date().toISOString();
+
+        if (currentTemplate.recurrence.endDate) {
+          const endDate = parseDate(currentTemplate.recurrence.endDate);
+          if (parseDate(nextRunStr) > endDate) {
+            currentTemplate.recurrence.active = false;
+            currentTemplate.recurrence.nextRunDate = null;
+            currentTemplate.recurrence.stoppedAt = new Date().toISOString();
+          }
+        }
+
+        nextRun = parseDate(currentTemplate.recurrence.nextRunDate || '');
+        templateUpdated = true;
+      }
+
+      if (templateUpdated) {
+        updatedTemplates.push(currentTemplate);
+      }
+    }
+  });
+
+  return { generatedExpenses, updatedTemplates };
+}
+
+export function stopRecurringExpense(expense: ExpenseEntry): ExpenseEntry {
+  if (!expense.recurrence) return expense;
+  return {
+    ...expense,
+    recurrence: {
+      ...expense.recurrence,
+      active: false,
+      nextRunDate: null,
+      stoppedAt: new Date().toISOString(),
+    },
+  };
+}
+
+export function updateRecurringExpenseTemplate(expense: ExpenseEntry, changes: Partial<ExpenseEntry>): ExpenseEntry {
+  return {
+    ...expense,
+    ...changes,
+    id: expense.id, // Ensure ID doesn't change
+    recurrence: expense.recurrence ? { ...expense.recurrence, ...(changes.recurrence || {}) } : null,
+  };
+}
 
 export function validateExpenseInput(input: {
   name: string;
@@ -59,9 +188,20 @@ export function createExpenseEntry(input: {
   userId: string;
   userName: string;
   category?: string;
+  recurrence?: RecurrenceInput;
+  confirmed?: boolean;
 }) {
   const error = validateExpenseInput(input);
   if (error) return { error, expense: null };
+
+  const recurrenceRule: RecurrenceRule | null = input.recurrence?.enabled ? {
+    frequency: input.recurrence.frequency,
+    every: Number(input.recurrence.every) || 1,
+    startDate: input.recurrence.startDate,
+    endDate: input.recurrence.endDate || undefined,
+    active: true,
+    nextRunDate: input.recurrence.startDate,
+  } : null;
 
   const expense: ExpenseEntry = {
     id: `exp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -77,6 +217,9 @@ export function createExpenseEntry(input: {
     createdAt: new Date().toISOString(),
     createdBy: input.userId,
     createdByName: input.userName,
+    confirmed: input.confirmed ?? false,
+    recurrence: recurrenceRule,
+    recurringSourceId: null,
   };
 
   return { error: null, expense };
@@ -86,16 +229,66 @@ export function calculateMemberBalances(expenses: ExpenseEntry[], members: strin
   const balances = members.map((m) => ({ name: m, balance: 0 }));
 
   expenses.forEach((e) => {
-    const share = e.amount / e.participants.length;
     e.participants.forEach((p) => {
       const entry = balances.find((b) => b.name === p.name);
-      if (entry) entry.balance -= share;
+      if (entry) {
+        entry.balance -= e.amount * (p.percentage / 100);
+      }
     });
     const payerEntry = balances.find((b) => b.name === e.payer);
     if (payerEntry) payerEntry.balance += e.amount;
   });
 
   return balances;
+}
+
+export function aggregateGlobalBalances(groups: LoadedGroup[], currentUserId: string) {
+  const globalBalances: Record<string, { balance: number; groups: Record<string, number> }> = {};
+
+  groups.forEach((group) => {
+    const me = group.members.find((m) => m.userId === currentUserId);
+    if (!me) return;
+
+    const myNameInGroup = me.name;
+    const groupBalances = calculateMemberBalances(group.expenses, group.members.map((m) => m.name));
+    const suggestions = calculateSettlementSuggestions(groupBalances);
+
+    suggestions.forEach((s) => {
+      let otherPerson = "";
+      let amount = 0;
+
+      if (s.from === myNameInGroup) {
+        otherPerson = s.to;
+        amount = -s.amount;
+      } else if (s.to === myNameInGroup) {
+        otherPerson = s.from;
+        amount = s.amount;
+      }
+
+      if (otherPerson) {
+        if (!globalBalances[otherPerson]) {
+          globalBalances[otherPerson] = { balance: 0, groups: {} };
+        }
+        globalBalances[otherPerson].balance += amount;
+        globalBalances[otherPerson].groups[group.name] = (globalBalances[otherPerson].groups[group.name] || 0) + amount;
+      }
+    });
+  });
+
+  const breakdown = Object.entries(globalBalances)
+    .map(([name, data]) => ({
+      name,
+      balance: data.balance,
+      groups: Object.entries(data.groups)
+        .map(([groupName, groupBalance]) => ({ groupName, balance: groupBalance }))
+        .filter((g) => Math.abs(g.balance) > 0.01)
+    }))
+    .filter((b) => Math.abs(b.balance) > 0.01);
+
+  const totalOwed = breakdown.filter((b) => b.balance < 0).reduce((sum, b) => sum - b.balance, 0);
+  const totalReceivable = breakdown.filter((b) => b.balance > 0).reduce((sum, b) => sum + b.balance, 0);
+
+  return { totalOwed, totalReceivable, breakdown };
 }
 
 export function calculateSettlementSuggestions(balances: { name: string; balance: number }[]) {

@@ -11,7 +11,11 @@ describe("Expense payer", () => {
 
     fireEvent.changeText(getByPlaceholderText("e.g., Coffee"), "Internet bill");
     fireEvent.changeText(getByPlaceholderText("0.00"), "29.99");
-    fireEvent.changeText(getByPlaceholderText("08/03/2026"), "08/04/2026");
+    
+    // select date through calendar
+    fireEvent.press(getByTestId("expense-date-input"));
+    fireEvent.press(getByTestId("calendar-day-8"));
+
     fireEvent.press(getByTestId("payer-option-Person 2"));
     fireEvent.press(getByTestId("save-expense-button"));
 

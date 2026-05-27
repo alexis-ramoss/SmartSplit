@@ -12,6 +12,7 @@ type AuthContextValue = {
   user: FirebaseUser | null;
   loading: boolean;
   firebaseReady: boolean;
+  firestoreWritable: boolean;
   signOutUser: () => Promise<void>;
 };
 
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   loading: true,
   firebaseReady: false,
+  firestoreWritable: false,
   signOutUser: async () => {},
 });
 
@@ -70,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       firebaseReady: hasRequiredConfig,
+      firestoreWritable: !!db,
       signOutUser: async () => {
         if (!auth) {
           return;

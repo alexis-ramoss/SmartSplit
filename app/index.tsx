@@ -1,6 +1,7 @@
 import { Redirect } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
+    Modal,
     Pressable,
     SafeAreaView,
     ScrollView,
@@ -9,8 +10,10 @@ import {
     TextInput,
     View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../auth-context";
 import {
+    aggregateGlobalBalances,
     calculateDebtBreakdownForMember,
     calculateMemberBalances,
     calculateSettlementSuggestions,
@@ -19,7 +22,12 @@ import {
     EXPENSE_CATEGORIES,
     ExpenseCategory,
     ExpenseEntry,
+    formatDate,
     ParticipantInput,
+    RecurrenceFrequency,
+    RecurrenceRule,
+    stopRecurringExpense,
+    updateRecurringExpenseTemplate,
 } from "../lib/_expense-utils";
 import {
     canRemoveMember,
@@ -27,8 +35,10 @@ import {
     deleteGroup,
     leaveGroupFromGroup,
     loadAccessibleGroups,
+    processDueRecurringExpensesForGroup,
     removeMemberFromGroup,
     saveExpenseToGroup,
+    updateGroupSettings,
     type LoadedGroup
 } from "../lib/_group-utils";
 
@@ -41,6 +51,7 @@ type Group = {
   createdAt: string;
   updatedAt: string;
   archivedAt: string | null;
+  autoConfirmExpenses: boolean;
   members: LoadedGroup["members"];
   expenses: LoadedGroup["expenses"];
   joinRequests?: string[];
@@ -55,6 +66,7 @@ const EMPTY_GROUP: Group = {
   createdAt: "",
   updatedAt: "",
   archivedAt: null,
+  autoConfirmExpenses: false,
   members: [],
   expenses: [],
 };
@@ -93,16 +105,129 @@ function buildDefaultParticipants(memberNames: string[]): ParticipantInput[] {
   });
 }
 
-function formatDate(date: Date): string {
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-}
-
 function formatSignedCurrency(amount: number): string {
   const sign = amount > 0 ? "+" : "-";
   return `${sign} EUR ${Math.abs(amount).toFixed(2)}`;
+}
+
+function CalendarPicker({
+  value,
+  onSelect,
+  onClose,
+  visible,
+}: {
+  value: string;
+  onSelect: (date: string) => void;
+  onClose: () => void;
+  visible: boolean;
+}) {
+  const [currentDate, setCurrentDate] = useState(() => {
+    try {
+      if (!value) return new Date();
+      const [day, month, year] = value.split("/").map(Number);
+      const d = new Date(year, month - 1, day);
+      return isNaN(d.getTime()) ? new Date() : d;
+    } catch {
+      return new Date();
+    }
+  });
+
+  useEffect(() => {
+    if (visible) {
+      try {
+        if (value) {
+          const [day, month, year] = value.split("/").map(Number);
+          const d = new Date(year, month - 1, day);
+          if (!isNaN(d.getTime())) {
+            setCurrentDate(d);
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }, [visible, value]);
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+
+  const days: (number | null)[] = [];
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    days.push(null);
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
+    days.push(i);
+  }
+
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const changeMonth = (offset: number) => {
+    const nextDate = new Date(year, month + offset, 1);
+    setCurrentDate(nextDate);
+  };
+
+  const isSelected = (day: number) => {
+    if (!value) return false;
+    const [d, m, y] = value.split("/").map(Number);
+    return day === d && (month + 1) === m && year === y;
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.calendarContainer}>
+          <View style={styles.calendarHeader}>
+            <Pressable onPress={() => changeMonth(-1)} style={styles.calendarNavButton}>
+              <Ionicons name="chevron-back" size={24} color="#020427" />
+            </Pressable>
+            <Text style={styles.calendarTitle}>{monthNames[month]} {year}</Text>
+            <Pressable onPress={() => changeMonth(1)} style={styles.calendarNavButton}>
+              <Ionicons name="chevron-forward" size={24} color="#020427" />
+            </Pressable>
+          </View>
+          <View style={styles.calendarGrid}>
+            {["S", "M", "T", "W", "T", "F", "S"].map((day, idx) => (
+              <View key={idx} style={styles.calendarDayHeaderBox}>
+                <Text style={styles.calendarDayHeader}>{day}</Text>
+              </View>
+            ))}
+            {days.map((day, idx) => (
+              <Pressable
+                key={idx}
+                testID={day !== null ? `calendar-day-${day}` : undefined}
+                style={[
+                  styles.calendarDay,
+                  day !== null && isSelected(day) && styles.calendarDaySelected
+                ]}
+                onPress={() => {
+                  if (day) {
+                    const selectedDate = new Date(year, month, day);
+                    onSelect(formatDate(selectedDate));
+                  }
+                }}
+              >
+                <Text style={[
+                  styles.calendarDayText,
+                  day !== null && isSelected(day) && styles.calendarDayTextSelected
+                ]}>{day || ""}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <View style={styles.calendarFooter}>
+            <Pressable style={styles.calendarCloseButton} onPress={onClose}>
+              <Text style={styles.calendarCloseButtonText}>Cancel</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
 }
 
 export default function Index() {
@@ -115,6 +240,7 @@ export default function Index() {
   const [showForm, setShowForm] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showJoinGroup, setShowJoinGroup] = useState(false);
+  const [showGroupSettings, setShowGroupSettings] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [groupMessage, setGroupMessage] = useState<string | null>(null);
@@ -129,9 +255,20 @@ export default function Index() {
   const [error, setError] = useState<string | null>(null);
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [showMembers, setShowMembers] = useState(false);
+  const [showGlobalOverview, setShowGlobalOverview] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
   const [groupActionToConfirm, setGroupActionToConfirm] = useState<"leave" | "delete" | null>(null);
+
+  const [recurrenceEnabled, setRecurrenceEnabled] = useState(false);
+  const [recurrenceFrequency, setRecurrenceFrequency] = useState<RecurrenceFrequency>("Monthly");
+  const [recurrenceEvery, setRecurrenceEvery] = useState("1");
+  const [recurrenceStartDate, setRecurrenceStartDate] = useState(formatDate(new Date()));
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState("");
+  const [recurrenceHasEndDate, setRecurrenceHasEndDate] = useState(false);
+  const [showMainDatePicker, setShowMainDatePicker] = useState(false);
+  const [showRecurrenceStartDatePicker, setShowRecurrenceStartDatePicker] = useState(false);
+  const [showRecurrenceEndDatePicker, setShowRecurrenceEndDatePicker] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -148,12 +285,23 @@ export default function Index() {
           return;
         }
 
-        setGroups(remoteGroups);
+        // process recurring expenses for all accessible groups
+        await Promise.all(
+          remoteGroups.map((group) => processDueRecurringExpensesForGroup(group.id))
+        );
+
+        const refreshedGroups = await loadAccessibleGroups(currentUser.uid);
+
+        if (cancelled) {
+          return;
+        }
+
+        setGroups(refreshedGroups);
 
         const nextActiveGroup =
-          remoteGroups.find((group) => group.id === preferredGroupId) ||
-          remoteGroups.find((group) => group.id === activeGroupId) ||
-          remoteGroups[0] ||
+          refreshedGroups.find((group) => group.id === preferredGroupId) ||
+          refreshedGroups.find((group) => group.id === activeGroupId) ||
+          refreshedGroups[0] ||
           null;
 
         setActiveGroupId(nextActiveGroup ? nextActiveGroup.id : null);
@@ -206,12 +354,20 @@ export default function Index() {
     () => calculateSettlementSuggestions(visibleMemberBalances),
     [visibleMemberBalances]
   );
+  const myNameInActiveGroup = useMemo(
+    () => activeGroup.members.find((m) => m.userId === user?.uid)?.name || currentUserName,
+    [activeGroup, user, currentUserName]
+  );
   const currentUserDebtBreakdown = useMemo(
-    () => calculateDebtBreakdownForMember(activeExpenses, currentUserName),
-    [activeExpenses, currentUserName]
+    () => calculateDebtBreakdownForMember(activeExpenses, myNameInActiveGroup),
+    [activeExpenses, myNameInActiveGroup]
+  );
+  const globalSummary = useMemo(
+    () => aggregateGlobalBalances(groups, user?.uid || ""),
+    [groups, user?.uid]
   );
   const currentUserBalance =
-    visibleMemberBalances.find((balance) => balance.name === currentUserName)?.balance || 0;
+    visibleMemberBalances.find((balance) => balance.name === myNameInActiveGroup)?.balance || 0;
   const shouldShowBalanceBreakdown = Boolean(activeGroup && visibleMemberBalances.length > 0);
 
   const totalSpent = useMemo(
@@ -262,6 +418,12 @@ export default function Index() {
     );
     setError(null);
     setEditingExpenseId(null);
+    setRecurrenceEnabled(false);
+    setRecurrenceFrequency("Monthly");
+    setRecurrenceEvery("1");
+    setRecurrenceStartDate(formatDate(new Date()));
+    setRecurrenceEndDate("");
+    setRecurrenceHasEndDate(false);
   }
 
   function getMemberBalance(memberName: string): number {
@@ -357,6 +519,23 @@ export default function Index() {
     setParticipants(getParticipantInputsFromExpense(expense));
     setEditingExpenseId(expense.id);
     setError(null);
+
+    if (expense.recurrence) {
+      setRecurrenceEnabled(expense.recurrence.active);
+      setRecurrenceFrequency(expense.recurrence.frequency);
+      setRecurrenceEvery(String(expense.recurrence.every));
+      setRecurrenceStartDate(expense.recurrence.startDate);
+      setRecurrenceEndDate(expense.recurrence.endDate || "");
+      setRecurrenceHasEndDate(!!expense.recurrence.endDate);
+    } else {
+      setRecurrenceEnabled(false);
+      setRecurrenceFrequency("Monthly");
+      setRecurrenceEvery("1");
+      setRecurrenceStartDate(expense.date);
+      setRecurrenceEndDate("");
+      setRecurrenceHasEndDate(false);
+    }
+
     setShowForm(true);
   }
 
@@ -444,35 +623,35 @@ export default function Index() {
 
     const matchingGroup = groups.find((group) => group.inviteCode === normalizedCode) || null;
 
-    if (!matchingGroup) {
-      setGroupMessage(`No group found with code ${normalizedCode}.`);
-      return;
-    }
-
-    setGroups((current) => [matchingGroup, ...current.filter((group) => group.id !== matchingGroup.id)]);
-    setActiveGroupId(matchingGroup.id);
-    setExpenses(matchingGroup.expenses || []);
-    setParticipants(buildDefaultParticipants(matchingGroup.members.map((member) => member.name)));
-
-    if (matchingGroup.members.some((m) => m.userId === currentUser.uid)) {
+    if (matchingGroup) {
+      setGroups((current) => [matchingGroup, ...current.filter((group) => group.id !== matchingGroup.id)]);
       setActiveGroupId(matchingGroup.id);
+      setExpenses(matchingGroup.expenses || []);
+      setParticipants(buildDefaultParticipants(matchingGroup.members.map((member) => member.name)));
+
+      if (matchingGroup.members.some((m) => m.userId === currentUser.uid)) {
+        setActiveGroupId(matchingGroup.id);
+        setJoinCode("");
+        setShowJoinGroup(false);
+        setGroupMessage(`Joined ${matchingGroup.name}.`);
+        return;
+      }
+
+      setGroups((current) =>
+        current.map((g) =>
+          g.id === matchingGroup.id
+            ? { ...g, joinRequests: [...new Set([...(g.joinRequests || []), currentUserName])] }
+            : g
+        )
+      );
+
       setJoinCode("");
       setShowJoinGroup(false);
-      setGroupMessage(`Joined ${matchingGroup.name}.`);
+      setGroupMessage(`Requested to join ${matchingGroup.name}. Waiting for approval.`);
       return;
     }
 
-    setGroups((current) =>
-      current.map((g) =>
-        g.id === matchingGroup.id
-          ? { ...g, joinRequests: [...new Set([...(g.joinRequests || []), currentUserName])] }
-          : g
-      )
-    );
-
-    setJoinCode("");
-    setShowJoinGroup(false);
-    setGroupMessage(`Requested to join ${matchingGroup.name}. Waiting for approval.`);
+    setGroupMessage("Invalid invite code.");
   }
 
   function handleAcceptJoinRequest(requester: string) {
@@ -500,6 +679,21 @@ export default function Index() {
           : g
       )
     );
+  }
+
+  async function handleUpdateGroupSettings(settings: { autoConfirmExpenses: boolean }) {
+    if (!activeGroup.id) return;
+    try {
+      const updated = await updateGroupSettings(activeGroup.id, settings);
+      if (updated) {
+        setGroups((current) =>
+          current.map((g) => (g.id === updated.id ? { ...g, ...updated } : g))
+        );
+        setGroupMessage("Settings updated successfully.");
+      }
+    } catch (err) {
+      setGroupMessage("Failed to update settings. Please try again.");
+    }
   }
 
   function updateParticipantSelection(member: string) {
@@ -554,6 +748,14 @@ export default function Index() {
       participants,
       userId: currentUser.uid,
       userName: currentUser.displayName || currentUser.email?.split("@")[0] || "Unknown",
+      recurrence: {
+        enabled: recurrenceEnabled,
+        frequency: recurrenceFrequency,
+        every: recurrenceEvery,
+        startDate: recurrenceStartDate,
+        endDate: recurrenceHasEndDate ? recurrenceEndDate : "",
+      },
+      confirmed: activeGroup.autoConfirmExpenses,
     });
 
     if (result.error || !result.expense) {
@@ -561,17 +763,26 @@ export default function Index() {
       return;
     }
 
-    const expenseToSave: ExpenseEntry = {
+    let expenseToSave: ExpenseEntry = {
       ...result.expense,
       groupId: activeGroup.id,
     };
 
     if (editingExpenseId) {
       const existingExpense = activeExpenses.find((expense) => expense.id === editingExpenseId);
-      expenseToSave.id = editingExpenseId;
-      expenseToSave.createdAt = existingExpense?.createdAt || expenseToSave.createdAt;
-      expenseToSave.createdBy = existingExpense?.createdBy || expenseToSave.createdBy;
-      expenseToSave.createdByName = existingExpense?.createdByName || expenseToSave.createdByName;
+      if (existingExpense) {
+        if (existingExpense.recurrence && !recurrenceEnabled) {
+          expenseToSave = stopRecurringExpense(existingExpense);
+        } else if (existingExpense.recurrence) {
+          expenseToSave = updateRecurringExpenseTemplate(existingExpense, expenseToSave);
+        }
+
+        expenseToSave.id = editingExpenseId;
+        expenseToSave.createdAt = existingExpense.createdAt || expenseToSave.createdAt;
+        expenseToSave.createdBy = existingExpense.createdBy || expenseToSave.createdBy;
+        expenseToSave.createdByName = existingExpense.createdByName || expenseToSave.createdByName;
+        expenseToSave.confirmed = existingExpense.confirmed;
+      }
     }
 
     setExpenses((current) => {
@@ -665,22 +876,40 @@ export default function Index() {
             Create or join a household group, record shared expenses, and see balances.
           </Text>
 
-          <Pressable
-            accessibilityLabel="Sign out"
-            style={({ pressed }) => [
-              styles.signOutButton,
-              pressed && styles.buttonPressed,
-            ]}
-            onPress={async () => {
-              try {
-                await signOutUser();
-              } catch {
-                setGroupMessage("Could not sign out. Please try again.");
-              }
-            }}
-          >
-            <Text style={styles.signOutButtonText}>Sign out</Text>
-          </Pressable>
+          <View style={[styles.groupActionsRow, { marginTop: 14 }]}>
+            <Pressable
+              accessibilityLabel="Sign out"
+              style={({ pressed }) => [
+                styles.signOutButton,
+                { marginTop: 0 },
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={async () => {
+                try {
+                  await signOutUser();
+                } catch {
+                  setGroupMessage("Could not sign out. Please try again.");
+                }
+              }}
+            >
+              <Text style={styles.signOutButtonText}>Sign out</Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityLabel="Global balances"
+              testID="toggle-global-overview"
+              style={({ pressed }) => [
+                styles.signOutButton,
+                { marginTop: 0, backgroundColor: showGlobalOverview ? "#2B6CB0" : "rgba(255,255,255,0.12)" },
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={() => setShowGlobalOverview(!showGlobalOverview)}
+            >
+              <Text style={styles.signOutButtonText}>
+                {showGlobalOverview ? "Hide Global" : "Global Balances"}
+              </Text>
+            </Pressable>
+          </View>
 
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
@@ -693,6 +922,71 @@ export default function Index() {
             </View>
           </View>
         </View>
+
+        {showGlobalOverview ? (
+          <View style={styles.sectionCard} testID="global-overview-card">
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text style={styles.sectionTitle}>Global Balance Overview</Text>
+                <Text style={styles.sectionSubtitle}>Across all your groups.</Text>
+              </View>
+            </View>
+
+            <View style={[styles.summaryRow, { marginTop: 16 }]}>
+              <View style={[styles.summaryItem, { backgroundColor: "#FFF5F5" }]}>
+                <Text style={[styles.summaryLabel, { color: "#C53030" }]}>Total Owed</Text>
+                <Text style={[styles.summaryValue, { color: "#C53030" }]}>
+                  EUR {globalSummary.totalOwed.toFixed(2)}
+                </Text>
+              </View>
+              <View style={[styles.summaryItem, { backgroundColor: "#F0FFF4" }]}>
+                <Text style={[styles.summaryLabel, { color: "#2F855A" }]}>Total Receivable</Text>
+                <Text style={[styles.summaryValue, { color: "#2F855A" }]}>
+                  EUR {globalSummary.totalReceivable.toFixed(2)}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.balanceList} testID="global-balance-list">
+              {globalSummary.breakdown.length > 0 ? (
+                globalSummary.breakdown.map((item) => (
+                  <View key={item.name} style={styles.globalBreakdownItem}>
+                    <View style={styles.balanceRow}>
+                      <Text style={styles.balanceName}>{item.name}</Text>
+                      <Text
+                        style={[
+                          styles.balanceAmount,
+                          item.balance > 0.01 && styles.positiveBalance,
+                          item.balance < -0.01 && styles.negativeBalance,
+                        ]}
+                      >
+                        {formatSignedCurrency(item.balance)}
+                      </Text>
+                    </View>
+                    <View style={styles.groupBreakdownList}>
+                      {item.groups.map((group) => (
+                        <View key={group.groupName} style={styles.groupBreakdownRow}>
+                          <Text style={styles.groupBreakdownName}>{group.groupName}</Text>
+                          <Text
+                            style={[
+                              styles.groupBreakdownAmount,
+                              group.balance > 0.01 && styles.positiveBalance,
+                              group.balance < -0.01 && styles.negativeBalance,
+                            ]}
+                          >
+                            {formatSignedCurrency(group.balance)}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.infoText}>No outstanding balances.</Text>
+              )}
+            </View>
+          </View>
+        ) : null}
 
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
@@ -742,6 +1036,7 @@ export default function Index() {
               onPress={() => {
                 setShowCreateGroup((value) => !value);
                 setShowJoinGroup(false);
+                setShowGroupSettings(false);
                 setGroupMessage(null);
               }}
             >
@@ -757,11 +1052,30 @@ export default function Index() {
               onPress={() => {
                 setShowJoinGroup((value) => !value);
                 setShowCreateGroup(false);
+                setShowGroupSettings(false);
                 setGroupMessage(null);
               }}
             >
               <Text style={styles.secondaryButtonText}>Join group</Text>
             </Pressable>
+            {activeGroup.id && activeGroup.ownerId === currentUser.uid ? (
+              <Pressable
+                accessibilityLabel="Group settings"
+                testID="open-group-settings-button"
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  pressed && styles.buttonPressed,
+                ]}
+                onPress={() => {
+                  setShowGroupSettings((value) => !value);
+                  setShowCreateGroup(false);
+                  setShowJoinGroup(false);
+                  setGroupMessage(null);
+                }}
+              >
+                <Text style={styles.secondaryButtonText}>Settings</Text>
+              </Pressable>
+            ) : null}
             {activeGroup.id ? (
               <Pressable
                 accessibilityLabel={activeGroup.ownerId === currentUser.uid ? "Delete group" : "Leave group"}
@@ -879,6 +1193,36 @@ export default function Index() {
               >
                 <Text style={styles.saveButtonText}>Join</Text>
               </Pressable>
+            </View>
+          ) : null}
+
+          {showGroupSettings && activeGroup.id && activeGroup.ownerId === currentUser.uid ? (
+            <View style={styles.inlineForm}>
+              <Text style={styles.formLabel}>Group Settings</Text>
+              <View style={[styles.switchRow, { marginBottom: 16 }]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.switchLabel}>Automatic Confirmation</Text>
+                  <Text style={styles.switchDescription}>
+                    New transactions will be automatically confirmed.
+                  </Text>
+                </View>
+                <Pressable
+                  accessibilityLabel="Toggle automatic confirmation"
+                  testID="toggle-auto-confirm"
+                  style={[
+                    styles.toggleButton,
+                    activeGroup.autoConfirmExpenses && styles.toggleButtonActive,
+                  ]}
+                  onPress={() => handleUpdateGroupSettings({ autoConfirmExpenses: !activeGroup.autoConfirmExpenses })}
+                >
+                  <View
+                    style={[
+                      styles.toggleKnob,
+                      activeGroup.autoConfirmExpenses && styles.toggleKnobActive,
+                    ]}
+                  />
+                </Pressable>
+              </View>
             </View>
           ) : null}
 
@@ -1069,19 +1413,23 @@ export default function Index() {
               />
 
               <Text style={styles.formLabel}>Date</Text>
-              <TextInput
-                accessibilityLabel="Expense date"
-                placeholder="08/03/2026"
-                placeholderTextColor="#8B95A7"
-                style={styles.input}
-                value={date}
-                onChangeText={(value) => {
-                  setDate(value);
-                  if (error) {
-                    setError(null);
-                  }
-                }}
+              <Pressable
                 testID="expense-date-input"
+                onPress={() => setShowMainDatePicker(true)}
+                style={styles.datePickerTrigger}
+              >
+                <Ionicons name="calendar-outline" size={20} color="#5F6C7B" />
+                <Text style={styles.datePickerText}>{date}</Text>
+              </Pressable>
+
+              <CalendarPicker
+                visible={showMainDatePicker}
+                value={date}
+                onSelect={(val) => {
+                  setDate(val);
+                  setShowMainDatePicker(false);
+                }}
+                onClose={() => setShowMainDatePicker(false)}
               />
 
               <Text style={styles.formLabel}>Category</Text>
@@ -1194,6 +1542,136 @@ export default function Index() {
                 </View>
               </View>
 
+              <Text style={styles.formLabel}>Recurring Expense</Text>
+              <Pressable
+                testID="recurrence-toggle"
+                style={styles.checkboxRow}
+                onPress={() => setRecurrenceEnabled(!recurrenceEnabled)}
+              >
+                <View
+                  style={[
+                    styles.checkbox,
+                    recurrenceEnabled && styles.checkboxSelected,
+                  ]}
+                >
+                  {recurrenceEnabled ? <Text style={styles.checkboxTick}>X</Text> : null}
+                </View>
+                <Text style={styles.participantName}>Make this expense recurring</Text>
+              </Pressable>
+
+              {recurrenceEnabled ? (
+                <View style={styles.recurrenceSection}>
+                  <Text style={styles.formLabel}>Frequency</Text>
+                  <View style={styles.payerRow}>
+                    {(["Daily", "Weekly", "Monthly"] as RecurrenceFrequency[]).map((freq) => (
+                      <Pressable
+                        key={freq}
+                        testID={`frequency-option-${freq}`}
+                        style={[
+                          styles.payerChip,
+                          recurrenceFrequency === freq && styles.payerChipSelected,
+                        ]}
+                        onPress={() => setRecurrenceFrequency(freq)}
+                      >
+                        <Text
+                          style={[
+                            styles.payerChipText,
+                            recurrenceFrequency === freq && styles.payerChipTextSelected,
+                          ]}
+                        >
+                          {freq}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+
+                  <Text style={styles.formLabel}>Every (Interval)</Text>
+                  <TextInput
+                    accessibilityLabel="Recurrence interval"
+                    placeholder="1"
+                    keyboardType="numeric"
+                    style={styles.input}
+                    value={recurrenceEvery}
+                    onChangeText={setRecurrenceEvery}
+                    testID="recurrence-every-input"
+                  />
+
+                  <Text style={styles.formLabel}>Start Date</Text>
+                  <Pressable
+                    testID="recurrence-start-date-input"
+                    onPress={() => setShowRecurrenceStartDatePicker(true)}
+                    style={styles.datePickerTrigger}
+                  >
+                    <Ionicons name="calendar-outline" size={20} color="#5F6C7B" />
+                    <Text style={styles.datePickerText}>{recurrenceStartDate}</Text>
+                  </Pressable>
+
+                  <CalendarPicker
+                    visible={showRecurrenceStartDatePicker}
+                    value={recurrenceStartDate}
+                    onSelect={(val) => {
+                      setRecurrenceStartDate(val);
+                      setShowRecurrenceStartDatePicker(false);
+                    }}
+                    onClose={() => setShowRecurrenceStartDatePicker(false)}
+                  />
+                  
+                  {(() => {
+                    const [day] = recurrenceStartDate.split("/").map(Number);
+
+                    return recurrenceFrequency === "Monthly" && day >= 29;
+                  })() && (
+                    <Text style={styles.helperText}>
+                      Shorter months will use the last available day.
+                    </Text>
+                  )}
+
+                  <View style={styles.checkboxRowContainer}>
+                    <Text style={styles.formLabel}>End Date</Text>
+                    <Pressable
+                      testID="recurrence-end-date-toggle"
+                      style={styles.checkboxRowSmall}
+                      onPress={() => setRecurrenceHasEndDate(!recurrenceHasEndDate)}
+                    >
+                      <View
+                        style={[
+                          styles.checkboxSmall,
+                          recurrenceHasEndDate && styles.checkboxSelected,
+                        ]}
+                      >
+                        {recurrenceHasEndDate ? <Text style={styles.checkboxTickSmall}>X</Text> : null}
+                      </View>
+                      <Text style={styles.checkboxLabelSmall}>Has end date</Text>
+                    </Pressable>
+                  </View>
+
+                  {recurrenceHasEndDate ? (
+                    <>
+                      <Pressable
+                        testID="recurrence-end-date-input"
+                        onPress={() => setShowRecurrenceEndDatePicker(true)}
+                        style={styles.datePickerTrigger}
+                      >
+                        <Ionicons name="calendar-outline" size={20} color="#5F6C7B" />
+                        <Text style={styles.datePickerText}>{recurrenceEndDate || "Select end date"}</Text>
+                      </Pressable>
+
+                      <CalendarPicker
+                        visible={showRecurrenceEndDatePicker}
+                        value={recurrenceEndDate}
+                        onSelect={(val) => {
+                          setRecurrenceEndDate(val);
+                          setShowRecurrenceEndDatePicker(false);
+                        }}
+                        onClose={() => setShowRecurrenceEndDatePicker(false)}
+                      />
+                    </>
+                  ) : (
+                    <Text style={styles.helperText}>Repeats indefinitely until stopped manually.</Text>
+                  )}
+                </View>
+              ) : null}
+
               {error ? (
                 <Text style={styles.errorText} testID="expense-error-message">
                   {error}
@@ -1243,6 +1721,16 @@ export default function Index() {
                   </View>
                   <Text style={styles.expenseMeta}>Date: {expense.date}</Text>
                   <Text style={styles.expenseMeta}>Paid by {expense.payer}</Text>
+
+                  {expense.recurrence?.active ? (
+                    <Text style={styles.expenseMeta}>
+                      Repeats {expense.recurrence.frequency.toLowerCase()}
+                    </Text>
+                  ) : null}
+
+                  {expense.recurringSourceId ? (
+                    <Text style={styles.expenseMeta}>Generated recurring expense</Text>
+                  ) : null}
                   <Text style={styles.expenseMeta}>
                     Split: {expense.participants.map((p) => `${p.name} ${p.percentage}%`).join(", ")}
                   </Text>
@@ -1579,6 +2067,28 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
   },
+  globalBreakdownItem: {
+    gap: 4,
+  },
+  groupBreakdownList: {
+    paddingLeft: 24,
+    gap: 2,
+    marginBottom: 8,
+  },
+  groupBreakdownRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  groupBreakdownName: {
+    color: "#5F6C7B",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  groupBreakdownAmount: {
+    fontSize: 13,
+    fontWeight: "700",
+  },
   balanceName: {
     color: "#152B3C",
     fontSize: 16,
@@ -1612,6 +2122,13 @@ const styles = StyleSheet.create({
     color: "#5F6C7B",
     fontSize: 13,
     fontWeight: "600",
+  },
+  recurrenceSection: {
+    gap: 8,
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#E1E8EF",
+    paddingTop: 8,
   },
   form: {
     marginTop: 18,
@@ -1930,5 +2447,178 @@ const styles = StyleSheet.create({
     color: "#B42318",
     fontSize: 13,
     fontWeight: "800",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  calendarContainer: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    padding: 20,
+    width: "100%",
+    maxWidth: 340,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5,
+  },
+  calendarHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  calendarNavButton: {
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: "#F7F8FA",
+  },
+  calendarTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#020427",
+  },
+  calendarGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  calendarDayHeaderBox: {
+    width: "14%",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  calendarDayHeader: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#8B95A7",
+  },
+  calendarDay: {
+    width: "14%",
+    aspectRatio: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 12,
+    marginBottom: 4,
+  },
+  calendarDaySelected: {
+    backgroundColor: "#020427",
+  },
+  calendarDayText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#152B3C",
+  },
+  calendarDayTextSelected: {
+    color: "#FFFFFF",
+  },
+  calendarFooter: {
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#E1E8EF",
+    paddingTop: 16,
+    alignItems: "center",
+  },
+  calendarCloseButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  calendarCloseButtonText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#5F6C7B",
+  },
+  datePickerTrigger: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#E1E8EF",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 10,
+  },
+  datePickerText: {
+    fontSize: 16,
+    color: "#152B3C",
+    fontWeight: "500",
+  },
+  checkboxRowContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  checkboxRowSmall: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  checkboxSmall: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: "#E1E8EF",
+    borderRadius: 6,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  checkboxTickSmall: {
+    fontSize: 12,
+    fontWeight: "900",
+    color: "#FFFFFF",
+  },
+  checkboxLabelSmall: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#5F6C7B",
+  },
+  helperText: {
+    fontSize: 13,
+    color: "#8B95A7",
+    fontStyle: "italic",
+    marginTop: 4,
+  },
+  switchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+  },
+  switchLabel: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#152B3C",
+  },
+  switchDescription: {
+    fontSize: 13,
+    color: "#5F6C7B",
+    marginTop: 2,
+  },
+  toggleButton: {
+    width: 50,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#DDE2E8",
+    padding: 3,
+  },
+  toggleButtonActive: {
+    backgroundColor: "#020427",
+  },
+  toggleKnob: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "#FFFFFF",
+  },
+  toggleKnobActive: {
+    transform: [{ translateX: 22 }],
   },
 });
