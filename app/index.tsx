@@ -9,6 +9,7 @@ import {
     TextInput,
     View,
 } from "react-native";
+import Animated, { FadeIn, FadeOut, Layout } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../auth-context";
@@ -930,7 +931,13 @@ export default function Index() {
         </View>
 
         {showGlobalOverview ? (
-          <View style={styles.sectionCard} testID="global-overview-card">
+          <Animated.View 
+            entering={FadeIn.duration(400)} 
+            exiting={FadeOut.duration(300)}
+            layout={Layout.springify()}
+            style={styles.sectionCard} 
+            testID="global-overview-card"
+          >
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.sectionTitle}>Global Balance Overview</Text>
@@ -939,15 +946,15 @@ export default function Index() {
             </View>
 
             <View style={[styles.summaryRow, { marginTop: 16 }]}>
-              <View style={[styles.summaryItem, { backgroundColor: "#FFF5F5" }]}>
-                <Text style={[styles.summaryLabel, { color: "#C53030" }]}>Total Owed</Text>
-                <Text style={[styles.summaryValue, { color: "#C53030" }]}>
+              <View style={[styles.summaryItem, { backgroundColor: "#F0F9FF" }]}>
+                <Text style={[styles.summaryLabel, { color: "#0369A1" }]}>Total Owed</Text>
+                <Text style={[styles.summaryValue, { color: "#0369A1" }]}>
                   EUR {globalSummary.totalOwed.toFixed(2)}
                 </Text>
               </View>
-              <View style={[styles.summaryItem, { backgroundColor: "#F0FFF4" }]}>
-                <Text style={[styles.summaryLabel, { color: "#2F855A" }]}>Total Receivable</Text>
-                <Text style={[styles.summaryValue, { color: "#2F855A" }]}>
+              <View style={[styles.summaryItem, { backgroundColor: "#F0FDF4" }]}>
+                <Text style={[styles.summaryLabel, { color: "#15803D" }]}>Total Receivable</Text>
+                <Text style={[styles.summaryValue, { color: "#15803D" }]}>
                   EUR {globalSummary.totalReceivable.toFixed(2)}
                 </Text>
               </View>
@@ -991,7 +998,7 @@ export default function Index() {
                 <Text style={styles.infoText}>No outstanding balances.</Text>
               )}
             </View>
-          </View>
+          </Animated.View>
         ) : null}
 
         <View style={styles.sectionCard}>
@@ -1109,7 +1116,12 @@ export default function Index() {
           </View>
 
           {groupActionToConfirm ? (
-            <View style={styles.confirmBox}>
+            <Animated.View 
+              entering={FadeIn} 
+              exiting={FadeOut} 
+              layout={Layout.springify()} 
+              style={styles.confirmBox}
+            >
               <Text style={styles.confirmTitle}>
                 {groupActionToConfirm === "delete"
                   ? `Delete ${activeGroup.name}?`
@@ -1140,11 +1152,16 @@ export default function Index() {
                   <Text style={styles.dangerButtonText}>Confirm</Text>
                 </Pressable>
               </View>
-            </View>
+            </Animated.View>
           ) : null}
 
           {showCreateGroup ? (
-            <View style={styles.inlineForm}>
+            <Animated.View 
+              entering={FadeIn} 
+              exiting={FadeOut} 
+              layout={Layout.springify()} 
+              style={styles.inlineForm}
+            >
               <Text style={styles.formLabel}>Group name</Text>
               <TextInput
                 accessibilityLabel="Group name"
@@ -1169,11 +1186,16 @@ export default function Index() {
               >
                 <Text style={styles.saveButtonText}>Create</Text>
               </Pressable>
-            </View>
+            </Animated.View>
           ) : null}
 
           {showJoinGroup ? (
-            <View style={styles.inlineForm}>
+            <Animated.View 
+              entering={FadeIn} 
+              exiting={FadeOut} 
+              layout={Layout.springify()} 
+              style={styles.inlineForm}
+            >
               <Text style={styles.formLabel}>Invite code</Text>
               <TextInput
                 accessibilityLabel="Invite code"
@@ -1199,11 +1221,16 @@ export default function Index() {
               >
                 <Text style={styles.saveButtonText}>Join</Text>
               </Pressable>
-            </View>
+            </Animated.View>
           ) : null}
 
           {showGroupSettings && activeGroup.id && activeGroup.ownerId === currentUser.uid ? (
-            <View style={styles.inlineForm}>
+            <Animated.View 
+              entering={FadeIn} 
+              exiting={FadeOut} 
+              layout={Layout.springify()} 
+              style={styles.inlineForm}
+            >
               <Text style={styles.formLabel}>Group Settings</Text>
               <View style={[styles.switchRow, { marginBottom: 16 }]}>
                 <View style={{ flex: 1 }}>
@@ -1229,7 +1256,7 @@ export default function Index() {
                   />
                 </Pressable>
               </View>
-            </View>
+            </Animated.View>
           ) : null}
 
           {groupMessage ? (
@@ -1240,7 +1267,12 @@ export default function Index() {
         </View>
 
         {activeGroup.ownerId === currentUser.uid && activeGroup.joinRequests && activeGroup.joinRequests.length > 0 ? (
-          <View style={styles.sectionCard}>
+          <Animated.View 
+            entering={FadeIn} 
+            exiting={FadeOut} 
+            layout={Layout.springify()} 
+            style={styles.sectionCard}
+          >
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.sectionTitle}>Join requests</Text>
@@ -1272,11 +1304,16 @@ export default function Index() {
                 </View>
               ))}
             </View>
-          </View>
+          </Animated.View>
         ) : null}
 
         {shouldShowBalanceBreakdown ? (
-          <View style={styles.sectionCard}>
+          <Animated.View 
+            entering={FadeIn} 
+            exiting={FadeOut} 
+            layout={Layout.springify()} 
+            style={styles.sectionCard}
+          >
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.sectionTitle}>Balance breakdown</Text>
@@ -1355,7 +1392,7 @@ export default function Index() {
                 <Text style={styles.settlementText}>No payments needed.</Text>
               )}
             </View>
-          </View>
+          </Animated.View>
         ) : null}
 
         <View style={styles.sectionCard}>
@@ -1380,7 +1417,12 @@ export default function Index() {
           </View>
 
           {showForm ? (
-            <View style={styles.form}>
+            <Animated.View 
+              entering={FadeIn} 
+              exiting={FadeOut} 
+              layout={Layout.springify()} 
+              style={styles.form}
+            >
               <Text style={styles.formTitle}>
                 {editingExpenseId ? "Edit Expense" : "Add New Expense"}
               </Text>
@@ -1712,12 +1754,17 @@ export default function Index() {
                   </Text>
                 </Pressable>
               </View>
-            </View>
+            </Animated.View>
           ) : null}
 
           <View style={styles.list} testID="expense-list">
             {activeExpenses.map((expense) => (
-              <View key={expense.id} style={styles.expenseItem}>
+              <Animated.View 
+                key={expense.id} 
+                entering={FadeIn} 
+                layout={Layout.springify()} 
+                style={styles.expenseItem}
+              >
                 <View style={styles.expenseTextArea}>
                   <Text style={styles.expenseName}>{expense.name}</Text>
                   <View style={styles.categoryBadge}>
@@ -1761,7 +1808,7 @@ export default function Index() {
                     <Text style={styles.editButtonText}>Edit</Text>
                   </Pressable>
                 </View>
-              </View>
+              </Animated.View>
             ))}
           </View>
         </View>
@@ -1791,7 +1838,12 @@ export default function Index() {
           </View>
 
           {showMembers ? (
-            <View style={styles.list}>
+            <Animated.View 
+              entering={FadeIn} 
+              exiting={FadeOut} 
+              layout={Layout.springify()} 
+              style={styles.list}
+            >
               {removeError ? (
                 <Text style={styles.errorText} testID="member-remove-error">
                   {removeError}
@@ -1799,7 +1851,12 @@ export default function Index() {
               ) : null}
 
               {memberToRemove ? (
-                <View style={styles.confirmBox}>
+                <Animated.View 
+                  entering={FadeIn} 
+                  exiting={FadeOut} 
+                  layout={Layout.springify()} 
+                  style={styles.confirmBox}
+                >
                   <Text style={styles.confirmTitle}>Remove {memberToRemove}?</Text>
                   <Text style={styles.confirmMessage}>
                     This member will be removed from the group. Make sure all balances are settled.
@@ -1830,7 +1887,7 @@ export default function Index() {
                       <Text style={styles.dangerButtonText}>Remove</Text>
                     </Pressable>
                   </View>
-                </View>
+                </Animated.View>
               ) : (
                 activeGroup.members.map((member) => {
                   const balance = getMemberBalance(member.name);
@@ -1838,7 +1895,12 @@ export default function Index() {
                   const canRemove = !isCurrentUser && canRemoveMemberLocal(member.name).canRemove;
 
                   return (
-                    <View key={member.userId} style={styles.memberItem}>
+                    <Animated.View 
+                      key={member.userId} 
+                      entering={FadeIn} 
+                      layout={Layout.springify()} 
+                      style={styles.memberItem}
+                    >
                       <View style={styles.memberInfo}>
                         <Text style={styles.memberName}>
                           {isCurrentUser ? `${member.name} (You)` : member.name}
@@ -1868,11 +1930,11 @@ export default function Index() {
                           <Text style={styles.removeButtonText}>Remove</Text>
                         </Pressable>
                       ) : null}
-                    </View>
+                    </Animated.View>
                   );
                 })
               )}
-            </View>
+            </Animated.View>
           ) : null}
         </View>
       </ScrollView>
@@ -1883,393 +1945,296 @@ export default function Index() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#EEF9FA",
+    backgroundColor: "#F0F9FA",
   },
   container: {
-    padding: 18,
-    gap: 18,
+    padding: 20,
+    gap: 20,
+    paddingBottom: 40,
   },
   headerCard: {
     backgroundColor: "#DDF7F0",
-    borderRadius: 24,
+    borderRadius: 28,
     padding: 24,
     borderWidth: 1,
-    borderColor: "#B8E8EA",
+    borderColor: "rgba(184, 232, 234, 0.5)",
     shadowColor: "#0E6E78",
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 4,
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 6,
   },
   signOutButton: {
     alignSelf: "flex-start",
-    marginTop: 14,
-    backgroundColor: "#F7FEFF",
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#BEE7E9",
     borderRadius: 999,
     paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
+    shadowColor: "#0E6E78",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
   signOutButtonText: {
     color: "#12626C",
     fontWeight: "800",
+    fontSize: 14,
   },
   kicker: {
     color: "#159296",
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 1.4,
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 1.6,
     textTransform: "uppercase",
   },
   title: {
     color: "#103C4A",
-    fontSize: 27,
-    fontWeight: "800",
+    fontSize: 28,
+    fontWeight: "900",
     marginTop: 10,
-    lineHeight: 33,
+    lineHeight: 34,
   },
   subtitle: {
     color: "#496973",
     fontSize: 15,
-    lineHeight: 22,
     marginTop: 10,
+    lineHeight: 22,
+    fontWeight: "500",
   },
   summaryRow: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 20,
+    marginTop: 24,
   },
   summaryItem: {
     flex: 1,
-    backgroundColor: "#F7FEFF",
-    borderRadius: 16,
-    padding: 14,
+    backgroundColor: "rgba(255, 255, 255, 0.6)",
+    borderRadius: 20,
+    padding: 16,
     borderWidth: 1,
-    borderColor: "#C6ECEB",
+    borderColor: "rgba(255, 255, 255, 0.8)",
   },
   summaryLabel: {
-    color: "#52828A",
-    fontSize: 13,
+    color: "#5B767D",
+    fontSize: 12,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   summaryValue: {
-    color: "#12343F",
-    fontSize: 24,
-    fontWeight: "800",
-    marginTop: 8,
+    color: "#103C4A",
+    fontSize: 22,
+    fontWeight: "900",
+    marginTop: 4,
   },
   sectionCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 22,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: "#D8EEF1",
-    shadowColor: "#0F5F6B",
-    shadowOpacity: 0.06,
-    shadowRadius: 18,
+    borderRadius: 28,
+    padding: 24,
+    shadowColor: "#12626C",
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
+    borderWidth: 1,
+    borderColor: "#F0F9FA",
   },
   sectionHeader: {
     flexDirection: "row",
-    alignItems: "flex-start",
     justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 20,
     flexWrap: "wrap",
     gap: 12,
   },
   sectionTitle: {
-    color: "#12343F",
-    fontSize: 22,
+    color: "#103C4A",
+    fontSize: 20,
     fontWeight: "800",
   },
   sectionSubtitle: {
     color: "#5B767D",
+    fontSize: 14,
     marginTop: 4,
+    fontWeight: "500",
   },
   primaryButton: {
-    backgroundColor: "#159296",
-    borderRadius: 999,
+    backgroundColor: "#137F86",
+    borderRadius: 16,
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignSelf: "flex-start",
+    paddingHorizontal: 20,
+    shadowColor: "#137F86",
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    alignItems: "center",
+    justifyContent: "center",
   },
   primaryButtonText: {
     color: "#FFFFFF",
+    fontWeight: "800",
     fontSize: 14,
-    fontWeight: "700",
   },
   secondaryButton: {
-    minWidth: "45%",
-    backgroundColor: "#E7F8F8",
-    borderWidth: 1,
-    borderColor: "#BFE7E8",
-    borderRadius: 12,
+    backgroundColor: "#F0F9FA",
+    borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#D1EFF2",
+    minWidth: "45%",
     alignItems: "center",
     justifyContent: "center",
   },
   secondaryButtonText: {
     color: "#12626C",
-    fontSize: 14,
-    fontWeight: "800",
+    fontWeight: "700",
+    fontSize: 13,
+  },
+  dangerButton: {
+    backgroundColor: "#FFF1F1",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#FFE0E0",
+    minWidth: "45%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dangerButtonText: {
+    color: "#C53030",
+    fontWeight: "700",
+    fontSize: 13,
   },
   buttonPressed: {
-    opacity: 0.88,
+    opacity: 0.7,
+    transform: [{ scale: 0.98 }],
   },
   groupActionsRow: {
     flexDirection: "row",
-    gap: 10,
-    marginTop: 16,
     flexWrap: "wrap",
-    justifyContent: "flex-start",
-  },
-  inlineForm: {
-    marginTop: 14,
-    gap: 8,
-  },
-  infoText: {
-    color: "#12626C",
-    fontSize: 14,
-    fontWeight: "700",
-    backgroundColor: "#E7F8F8",
-    borderWidth: 1,
-    borderColor: "#BFE7E8",
-    borderRadius: 12,
-    padding: 12,
-    marginTop: 12,
-  },
-  balanceList: {
-    marginTop: 16,
-    gap: 8,
-  },
-  debtBreakdownBox: {
-    backgroundColor: "#F2FBFA",
-    borderRadius: 12,
-    padding: 12,
-    gap: 8,
-  },
-  debtBreakdownTitle: {
-    color: "#244E5A",
-    fontSize: 14,
-    fontWeight: "800",
-  },
-  debtBreakdownRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#D7ECEF",
-    paddingTop: 8,
-  },
-  debtBreakdownTextArea: {
-    flex: 1,
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  debtBreakdownName: {
-    color: "#12343F",
-    fontSize: 15,
-    fontWeight: "800",
-    flexShrink: 1,
-  },
-  debtBreakdownMeta: {
-    color: "#5B767D",
-    fontSize: 12,
-    fontWeight: "600",
-    marginTop: 2,
-    flexShrink: 1,
-  },
-  debtBreakdownAmount: {
-    fontSize: 15,
-    fontWeight: "900",
-    textAlign: "right",
-    flexShrink: 0,
-  },
-  balanceRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "#F3FBFC",
-    borderWidth: 1,
-    borderColor: "#D8EEF1",
-    borderRadius: 12,
-    padding: 12,
-  },
-  globalBreakdownItem: {
-    gap: 4,
-  },
-  groupBreakdownList: {
-    paddingLeft: 24,
-    gap: 2,
-    marginBottom: 8,
-  },
-  groupBreakdownRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  groupBreakdownName: {
-    color: "#5B767D",
-    fontSize: 13,
-    fontWeight: "600",
-    flex: 1,
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  groupBreakdownAmount: {
-    fontSize: 13,
-    fontWeight: "700",
-    flexShrink: 0,
-    textAlign: "right",
-  },
-  balanceName: {
-    color: "#12343F",
-    fontSize: 16,
-    fontWeight: "700",
-    flex: 1,
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  balanceAmount: {
-    color: "#5B767D",
-    fontSize: 15,
-    fontWeight: "800",
-    textAlign: "right",
-    flexShrink: 0,
-  },
-  positiveBalance: {
-    color: "#11845B",
-  },
-  negativeBalance: {
-    color: "#B42318",
-  },
-  settlementBox: {
-    marginTop: 12,
-    backgroundColor: "#F2FBFA",
-    borderRadius: 12,
-    padding: 12,
-    gap: 6,
-    borderWidth: 1,
-    borderColor: "#D8EEF1",
-  },
-  settlementTitle: {
-    color: "#244E5A",
-    fontSize: 14,
-    fontWeight: "800",
-  },
-  settlementText: {
-    color: "#5B767D",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  recurrenceSection: {
-    gap: 8,
-    marginTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#D8EEF1",
-    paddingTop: 8,
-  },
-  form: {
-    marginTop: 18,
-    backgroundColor: "#F2FBFA",
-    borderRadius: 18,
-    padding: 16,
-    gap: 9,
-    borderWidth: 1,
-    borderColor: "#D3ECEF",
-  },
-  formTitle: {
-    color: "#12343F",
-    fontSize: 24,
-    fontWeight: "800",
-    marginBottom: 2,
-  },
-  formLabel: {
-    color: "#244E5A",
-    fontSize: 16,
-    fontWeight: "700",
-    marginTop: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CDE8ED",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: "#12343F",
-    backgroundColor: "#FAFEFF",
+    gap: 10,
+    marginTop: 20,
   },
   payerRow: {
     flexDirection: "row",
-    gap: 8,
     flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12,
+    marginBottom: 16,
   },
   payerChip: {
-    borderRadius: 999,
+    backgroundColor: "#F7FEFF",
     borderWidth: 1,
-    borderColor: "#BFE1E4",
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-    backgroundColor: "#FAFEFF",
+    borderColor: "#D1EFF2",
+    borderRadius: 999,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   payerChipSelected: {
     backgroundColor: "#137F86",
     borderColor: "#137F86",
   },
   payerChipText: {
-    color: "#244E5A",
+    color: "#12626C",
+    fontSize: 13,
     fontWeight: "700",
   },
   payerChipTextSelected: {
     color: "#FFFFFF",
   },
-  participantsCard: {
-    backgroundColor: "#FAFEFF",
-    borderRadius: 12,
+  form: {
+    marginTop: 20,
+    gap: 16,
+    backgroundColor: "#F8FAFB",
+    borderRadius: 24,
+    padding: 20,
     borderWidth: 1,
-    borderColor: "#D3ECEF",
-    padding: 12,
-    gap: 8,
+    borderColor: "#EEF2F6",
+  },
+  formTitle: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#103C4A",
+    marginBottom: 4,
+  },
+  formLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#496973",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    marginTop: 8,
+  },
+  input: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    borderRadius: 16,
+    padding: 16,
+    fontSize: 16,
+    color: "#103C4A",
+  },
+  datePickerTrigger: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    borderRadius: 16,
+    padding: 16,
+    gap: 12,
+  },
+  datePickerText: {
+    fontSize: 16,
+    color: "#103C4A",
+    fontWeight: "500",
+  },
+  participantsCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 16,
+    gap: 12,
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
   },
   participantRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: 10,
   },
   checkboxRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 12,
     flex: 1,
   },
   checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: "#8FCED1",
-    alignItems: "center",
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "#CBD5E1",
     justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#FFFFFF",
   },
   checkboxSelected: {
-    backgroundColor: "#159296",
-    borderColor: "#159296",
+    backgroundColor: "#137F86",
+    borderColor: "#137F86",
   },
   checkboxTick: {
     color: "#FFFFFF",
-    fontSize: 11,
-    fontWeight: "800",
+    fontSize: 12,
+    fontWeight: "900",
   },
   participantName: {
-    color: "#12343F",
     fontSize: 16,
     fontWeight: "600",
+    color: "#103C4A",
   },
   weightContainer: {
     flexDirection: "row",
@@ -2277,334 +2242,512 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   weightInput: {
-    width: 66,
-    borderWidth: 1,
-    borderColor: "#CDE8ED",
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    textAlign: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F8FAFB",
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    width: 70,
+    textAlign: "right",
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#103C4A",
   },
   percentLabel: {
-    color: "#5B767D",
+    fontSize: 14,
     fontWeight: "700",
+    color: "#64748B",
   },
   notSelectedText: {
-    color: "#9AA7B7",
     fontSize: 13,
+    color: "#94A3B8",
+    fontStyle: "italic",
   },
   totalRow: {
-    marginTop: 4,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#D8EEF1",
     flexDirection: "row",
     justifyContent: "space-between",
+    marginTop: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#E2E8F0",
   },
   totalLabel: {
-    color: "#244E5A",
-    fontWeight: "700",
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#496973",
   },
   totalValue: {
-    color: "#12343F",
-    fontWeight: "800",
-  },
-  errorText: {
-    color: "#B42318",
-    fontSize: 14,
-    fontWeight: "600",
-    backgroundColor: "#FFF1F0",
-    borderRadius: 12,
-    padding: 12,
-    marginTop: 8,
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#137F86",
   },
   actionsRow: {
     flexDirection: "row",
-    gap: 10,
-    marginTop: 12,
-  },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: "#E7F8F8",
-    borderWidth: 1,
-    borderColor: "#BFE7E8",
-    borderRadius: 12,
-    paddingVertical: 13,
-    alignItems: "center",
-  },
-  cancelButtonText: {
-    color: "#12626C",
-    fontSize: 16,
-    fontWeight: "700",
+    gap: 12,
+    marginTop: 16,
   },
   saveButton: {
-    flex: 1,
+    flex: 2,
     backgroundColor: "#137F86",
-    borderRadius: 12,
-    paddingVertical: 13,
+    borderRadius: 18,
+    paddingVertical: 16,
     alignItems: "center",
+    shadowColor: "#137F86",
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
   },
   saveButtonText: {
     color: "#FFFFFF",
-    fontSize: 16,
     fontWeight: "800",
+    fontSize: 16,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: "#F1F5F9",
+    borderRadius: 18,
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: "#475569",
+    fontWeight: "700",
+    fontSize: 16,
   },
   list: {
     marginTop: 20,
-    gap: 12,
+    gap: 16,
   },
   expenseItem: {
+    backgroundColor: "#F8FAFB",
+    borderRadius: 24,
+    padding: 20,
     flexDirection: "row",
-    alignItems: "flex-start",
     justifyContent: "space-between",
-    borderRadius: 16,
-    padding: 14,
-    backgroundColor: "#F3FBFC",
     borderWidth: 1,
-    borderColor: "#D8EEF1",
-    gap: 10,
+    borderColor: "#EEF2F6",
   },
   expenseTextArea: {
     flex: 1,
+    gap: 4,
   },
   expenseName: {
-    color: "#12343F",
-    fontSize: 16,
-    fontWeight: "700",
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#103C4A",
   },
   categoryBadge: {
     backgroundColor: "#DDF7F0",
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
     alignSelf: "flex-start",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
     marginTop: 4,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   categoryBadgeText: {
+    fontSize: 10,
+    fontWeight: "800",
     color: "#12626C",
-    fontSize: 11,
-    fontWeight: "700",
+    letterSpacing: 0.5,
     textTransform: "uppercase",
   },
   expenseMeta: {
-    color: "#5B767D",
-    marginTop: 3,
     fontSize: 13,
+    color: "#64748B",
+    fontWeight: "500",
   },
   expenseCreatedBy: {
-    color: "#7A8A99",
-    marginTop: 6,
-    fontSize: 12,
+    fontSize: 11,
+    color: "#94A3B8",
+    marginTop: 8,
   },
   expenseUpdatedBy: {
-    color: "#7A8A99",
+    fontSize: 11,
+    color: "#94A3B8",
     marginTop: 2,
-    fontSize: 12,
-  },
-  expenseAmount: {
-    color: "#12626C",
-    fontSize: 17,
-    fontWeight: "800",
-    textAlign: "right",
   },
   expenseActions: {
     alignItems: "flex-end",
-    gap: 8,
+    justifyContent: "space-between",
+  },
+  expenseAmount: {
+    fontSize: 20,
+    fontWeight: "900",
+    color: "#103C4A",
   },
   editButton: {
-    backgroundColor: "#E7F8F8",
-    borderWidth: 1,
-    borderColor: "#BFE7E8",
-    borderRadius: 10,
-    paddingHorizontal: 12,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
     paddingVertical: 8,
+    paddingHorizontal: 16,
   },
   editButtonText: {
-    color: "#12626C",
+    color: "#137F86",
     fontSize: 13,
     fontWeight: "800",
   },
-  confirmBox: {
-    marginTop: 16,
-    backgroundColor: "#FEF5F1",
-    borderRadius: 16,
-    padding: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: "#B42318",
+  balanceList: {
+    marginTop: 20,
+    gap: 12,
   },
-  confirmTitle: {
-    color: "#12343F",
+  balanceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+    backgroundColor: "#F8FAFB",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#EEF2F6",
+  },
+  balanceName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#103C4A",
+    flex: 1,
+  },
+  balanceAmount: {
     fontSize: 16,
     fontWeight: "800",
+  },
+  positiveBalance: {
+    color: "#15803D",
+  },
+  negativeBalance: {
+    color: "#C53030",
+  },
+  settlementBox: {
+    marginTop: 24,
+    backgroundColor: "#F0F9FA",
+    borderRadius: 22,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#D1EFF2",
+  },
+  settlementTitle: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: "#12626C",
+    marginBottom: 10,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  settlementText: {
+    fontSize: 14,
+    color: "#103C4A",
+    fontWeight: "600",
+    lineHeight: 22,
+  },
+  errorText: {
+    color: "#C53030",
+    fontSize: 14,
+    fontWeight: "700",
+    backgroundColor: "#FFF1F1",
+    padding: 16,
+    borderRadius: 16,
+    marginTop: 8,
+  },
+  infoText: {
+    color: "#64748B",
+    fontSize: 15,
+    fontWeight: "600",
+    fontStyle: "italic",
+    textAlign: "center",
+    marginTop: 12,
+    padding: 16,
+    backgroundColor: "#F8FAFB",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#EEF2F6",
+  },
+  confirmBox: {
+    backgroundColor: "#FEF2F2",
+    borderRadius: 24,
+    padding: 24,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: "#FEE2E2",
+  },
+  confirmTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#991B1B",
     marginBottom: 8,
   },
   confirmMessage: {
-    color: "#5B767D",
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 16,
+    fontSize: 15,
+    color: "#991B1B",
+    marginBottom: 20,
+    lineHeight: 22,
+    opacity: 0.8,
   },
   confirmActions: {
     flexDirection: "row",
     gap: 12,
   },
-  dangerButton: {
-    minWidth: "45%",
-    backgroundColor: "#B42318",
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dangerButtonText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "800",
-  },
   memberItem: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: 16,
-    padding: 14,
-    backgroundColor: "#F3FBFC",
+    alignItems: "center",
+    backgroundColor: "#F8FAFB",
+    padding: 18,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#D8EEF1",
-    gap: 10,
+    borderColor: "#EEF2F6",
   },
   memberInfo: {
     flex: 1,
+    gap: 4,
   },
   memberName: {
-    color: "#12343F",
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "800",
+    color: "#103C4A",
   },
   memberBalance: {
-    color: "#5B767D",
     fontSize: 14,
-    marginTop: 4,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   removeButton: {
-    backgroundColor: "#FEE6E1",
-    borderRadius: 10,
-    paddingHorizontal: 12,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#FEE2E2",
     paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
   },
   removeButtonText: {
-    color: "#B42318",
+    color: "#C53030",
     fontSize: 13,
     fontWeight: "800",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(16, 60, 74, 0.6)",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
   calendarContainer: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: 32,
+    padding: 24,
     width: "100%",
-    maxWidth: 340,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 5,
+    maxWidth: 360,
+    shadowColor: "#103C4A",
+    shadowOpacity: 0.25,
+    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 15 },
   },
   calendarHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
-  },
-  calendarNavButton: {
-    padding: 8,
-    borderRadius: 12,
-    backgroundColor: "#E7F8F8",
+    marginBottom: 24,
   },
   calendarTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: "#12343F",
+    fontSize: 20,
+    fontWeight: "900",
+    color: "#103C4A",
+  },
+  calendarNavButton: {
+    padding: 10,
+    backgroundColor: "#F0F9FA",
+    borderRadius: 14,
   },
   calendarGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
   },
   calendarDayHeaderBox: {
-    width: "14%",
+    width: "14.28%",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   calendarDayHeader: {
     fontSize: 12,
-    fontWeight: "700",
-    color: "#8B95A7",
+    fontWeight: "900",
+    color: "#94A3B8",
+    textTransform: "uppercase",
   },
   calendarDay: {
-    width: "14%",
+    width: "14.28%",
     aspectRatio: 1,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 12,
+    borderRadius: 14,
     marginBottom: 4,
   },
   calendarDaySelected: {
     backgroundColor: "#137F86",
   },
   calendarDayText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#12343F",
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#103C4A",
   },
   calendarDayTextSelected: {
     color: "#FFFFFF",
+    fontWeight: "900",
   },
   calendarFooter: {
-    marginTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#D8EEF1",
-    paddingTop: 16,
+    marginTop: 24,
     alignItems: "center",
   },
   calendarCloseButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: "#F1F5F9",
+    borderRadius: 16,
   },
   calendarCloseButtonText: {
+    color: "#475569",
+    fontWeight: "800",
     fontSize: 15,
-    fontWeight: "700",
-    color: "#5B767D",
   },
-  datePickerTrigger: {
+  inlineForm: {
+    marginTop: 20,
+    gap: 12,
+    padding: 20,
+    backgroundColor: "#F8FAFB",
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#EEF2F6",
+  },
+  switchRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1.5,
-    borderColor: "#CDE8ED",
-    borderRadius: 12,
-    paddingHorizontal: 14,
+    gap: 16,
     paddingVertical: 12,
-    gap: 10,
   },
-  datePickerText: {
+  switchLabel: {
     fontSize: 16,
-    color: "#12343F",
-    fontWeight: "500",
+    fontWeight: "800",
+    color: "#103C4A",
   },
-  checkboxRowContainer: {
+  switchDescription: {
+    fontSize: 13,
+    color: "#64748B",
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  toggleButton: {
+    width: 52,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#E2E8F0",
+    padding: 3,
+  },
+  toggleButtonActive: {
+    backgroundColor: "#137F86",
+  },
+  toggleKnob: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  toggleKnobActive: {
+    transform: [{ translateX: 22 }],
+  },
+  debtBreakdownBox: {
+    backgroundColor: "#F8FAFB",
+    borderRadius: 22,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#EEF2F6",
+  },
+  debtBreakdownTitle: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: "#496973",
+    marginBottom: 16,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  debtBreakdownRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEF2F6",
+  },
+  debtBreakdownTextArea: {
+    flex: 1,
+    gap: 4,
+  },
+  debtBreakdownName: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#103C4A",
+  },
+  debtBreakdownMeta: {
+    fontSize: 12,
+    color: "#64748B",
+    fontWeight: "600",
+  },
+  debtBreakdownAmount: {
+    fontSize: 15,
+    fontWeight: "900",
+  },
+  globalBreakdownItem: {
+    backgroundColor: "#F8FAFB",
+    borderRadius: 22,
+    padding: 20,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#EEF2F6",
+  },
+  groupBreakdownList: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#EEF2F6",
+    gap: 8,
+  },
+  groupBreakdownRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  groupBreakdownName: {
+    fontSize: 13,
+    color: "#64748B",
+    fontWeight: "600",
+  },
+  groupBreakdownAmount: {
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  recurrenceSection: {
+    gap: 16,
+    padding: 20,
+    backgroundColor: "rgba(19, 127, 134, 0.04)",
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "rgba(19, 127, 134, 0.15)",
+    marginTop: 8,
+  },
+  helperText: {
+    fontSize: 12,
+    color: "#64748B",
+    fontStyle: "italic",
+    lineHeight: 18,
+  },
+  checkboxRowContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginTop: 8,
   },
   checkboxRowSmall: {
@@ -2615,62 +2758,21 @@ const styles = StyleSheet.create({
   checkboxSmall: {
     width: 20,
     height: 20,
-    borderWidth: 2,
-    borderColor: "#CDE8ED",
     borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "#CBD5E1",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
   },
   checkboxTickSmall: {
-    fontSize: 12,
-    fontWeight: "900",
     color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "900",
   },
   checkboxLabelSmall: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#5B767D",
-  },
-  helperText: {
     fontSize: 13,
-    color: "#8B95A7",
-    fontStyle: "italic",
-    marginTop: 4,
-  },
-  switchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-  },
-  switchLabel: {
-    fontSize: 16,
     fontWeight: "700",
-    color: "#12343F",
-  },
-  switchDescription: {
-    fontSize: 13,
-    color: "#5B767D",
-    marginTop: 2,
-  },
-  toggleButton: {
-    width: 50,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#CDE8ED",
-    padding: 3,
-  },
-  toggleButtonActive: {
-    backgroundColor: "#137F86",
-  },
-  toggleKnob: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "#FFFFFF",
-  },
-  toggleKnobActive: {
-    transform: [{ translateX: 22 }],
+    color: "#64748B",
   },
 });
