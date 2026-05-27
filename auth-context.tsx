@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { auth, hasRequiredConfig } from "./firebase";
+import { auth, db, hasRequiredConfig } from "./firebase";
 
 type FirebaseUser = {
   uid: string;
