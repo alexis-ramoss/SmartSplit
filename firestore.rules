@@ -43,11 +43,11 @@ service cloud.firestore {
 
       match /expenses/{expenseId} {
         allow read: if signedIn() && (groupOwner(groupId) || groupMember(groupId));
-        allow create, update, delete: if signedIn() && groupOwner(groupId);
+        allow create, update, delete: if signedIn() && (groupOwner(groupId) || groupMember(groupId));
 
         match /participants/{participantId} {
           allow read: if signedIn() && (groupOwner(groupId) || groupMember(groupId));
-          allow create, update, delete: if signedIn() && groupOwner(groupId);
+          allow create, update, delete: if signedIn() && (groupOwner(groupId) || groupMember(groupId));
         }
       }
     }

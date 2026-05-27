@@ -4,6 +4,9 @@ import {
   calculateSettlementSuggestions,
   createExpenseEntry,
   validateExpenseInput,
+  getNextRunDate,
+  generateDueRecurringExpenses,
+  stopRecurringExpense,
 } from "../lib/_expense-utils";
 
 const baseInput = {
@@ -140,5 +143,115 @@ describe("Feature: Validate and calculate expenses", () => {
         direction: "minus",
       },
     ]);
+  });
+});
+
+describe("Feature: Recurring Expenses", () => {
+  it("Scenario: should calculate next run date correctly", () => {
+    expect(getNextRunDate("01/01/2026", "Daily", 1)).toBe("02/01/2026");
+    expect(getNextRunDate("01/01/2026", "Weekly", 1)).toBe("08/01/2026");
+    expect(getNextRunDate("01/01/2026", "Monthly", 1)).toBe("01/02/2026");
+  });
+
+  it("Scenario: should create recurring expense with correct schedule", () => {
+    const input = {
+      ...baseInput,
+      recurrence: {
+        enabled: true,
+        frequency: "Monthly" as const,
+        every: "1",
+        startDate: "08/04/2026",
+      },
+      userId: "user-1",
+      userName: "User 1",
+    };
+    const result = createExpenseEntry(input);
+    expect(result.expense?.recurrence).toMatchObject({
+      frequency: "Monthly",
+      every: 1,
+      startDate: "08/04/2026",
+      active: true,
+      nextRunDate: "08/04/2026",
+    });
+  });
+
+  it("Scenario: should generate due recurring expenses", () => {
+    const template: any = {
+      id: "template-1",
+      name: "Rent",
+      amount: 1000,
+      date: "01/04/2026",
+      payer: "Person 1",
+      participants: [{ name: "Person 1", percentage: 100 }],
+      recurrence: {
+        frequency: "Monthly",
+        every: 1,
+        startDate: "01/04/2026",
+        active: true,
+        nextRunDate: "01/04/2026",
+      },
+    };
+
+    const today = "05/04/2026";
+    const result = generateDueRecurringExpenses([template], today);
+
+    expect(result.generatedExpenses).toHaveLength(1);
+    expect(result.generatedExpenses[0].name).toBe("Rent");
+    expect(result.generatedExpenses[0].date).toBe("01/04/2026");
+    expect(result.generatedExpenses[0].recurringSourceId).toBe("template-1");
+    
+    expect(result.updatedTemplates).toHaveLength(1);
+    expect(result.updatedTemplates[0].recurrence?.nextRunDate).toBe("01/05/2026");
+  });
+
+  it("Scenario: should handle multiple due instances", () => {
+    const template: any = {
+      id: "template-1",
+      name: "Daily Task",
+      amount: 10,
+      date: "01/04/2026",
+      payer: "Person 1",
+      participants: [{ name: "Person 1", percentage: 100 }],
+      recurrence: {
+        frequency: "Daily",
+        every: 1,
+        startDate: "01/04/2026",
+        active: true,
+        nextRunDate: "01/04/2026",
+      },
+    };
+
+    const today = "03/04/2026";
+    const result = generateDueRecurringExpenses([template], today);
+
+    expect(result.generatedExpenses).toHaveLength(3); // 01, 02, 03
+    expect(result.generatedExpenses.map(e => e.date)).toEqual(["01/04/2026", "02/04/2026", "03/04/2026"]);
+    expect(result.updatedTemplates[0].recurrence?.nextRunDate).toBe("04/04/2026");
+  });
+
+  it("Scenario: should stop generating when active is false", () => {
+    const template: any = {
+      id: "template-1",
+      recurrence: {
+        frequency: "Daily",
+        every: 1,
+        startDate: "01/04/2026",
+        active: false,
+        nextRunDate: "01/04/2026",
+      },
+    };
+
+    const result = generateDueRecurringExpenses([template], "05/04/2026");
+    expect(result.generatedExpenses).toHaveLength(0);
+  });
+
+  it("Scenario: should stop recurring expense", () => {
+    const expense: any = {
+      recurrence: { active: true, nextRunDate: "01/01/2026" }
+    };
+    const stopped = stopRecurringExpense(expense);
+    expect(stopped.recurrence?.active).toBe(false);
+    expect(stopped.recurrence?.nextRunDate).toBeNull();
+    expect(stopped.recurrence?.stoppedAt).toBeDefined();
   });
 });

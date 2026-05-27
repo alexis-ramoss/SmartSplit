@@ -1,4 +1,25 @@
 export type ParticipantInput = { name: string; selected: boolean; percentage: string };
+export type RecurrenceFrequency = 'Daily' | 'Weekly' | 'Monthly';
+
+export type RecurrenceRule = {
+  frequency: RecurrenceFrequency;
+  every: number;
+  startDate: string;
+  endDate?: string;
+  active: boolean;
+  nextRunDate: string | null;
+  lastGeneratedAt?: string;
+  stoppedAt?: string;
+};
+
+export type RecurrenceInput = {
+  enabled: boolean;
+  frequency: RecurrenceFrequency;
+  every: string;
+  startDate: string;
+  endDate?: string;
+};
+
 export type ExpenseEntry = {
   id: string;
   groupId: string;
@@ -13,7 +34,112 @@ export type ExpenseEntry = {
   updatedAt?: string;
   updatedBy?: string;
   updatedByName?: string;
+  recurrence?: RecurrenceRule | null;
+  recurringSourceId?: string | null;
 };
+
+export function parseDate(dateStr: string): Date {
+  const [day, month, year] = dateStr.split('/').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+export function formatDate(date: Date): string {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+export function getNextRunDate(currentRunDate: string, frequency: RecurrenceFrequency, every: number): string {
+  const date = parseDate(currentRunDate);
+  if (frequency === 'Daily') {
+    date.setDate(date.getDate() + every);
+  } else if (frequency === 'Weekly') {
+    date.setDate(date.getDate() + 7 * every);
+  } else if (frequency === 'Monthly') {
+    date.setMonth(date.getMonth() + every);
+  }
+  return formatDate(date);
+}
+
+export function generateRecurringExpenseInstance(sourceExpense: ExpenseEntry, runDate: string): ExpenseEntry {
+  return {
+    ...sourceExpense,
+    id: `exp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    date: runDate,
+    createdAt: new Date().toISOString(),
+    recurrence: null,
+    recurringSourceId: sourceExpense.id,
+  };
+}
+
+export function generateDueRecurringExpenses(expenses: ExpenseEntry[], todayStr: string) {
+  const generatedExpenses: ExpenseEntry[] = [];
+  const updatedTemplates: ExpenseEntry[] = [];
+  const today = parseDate(todayStr);
+
+  expenses.forEach((expense) => {
+    if (expense.recurrence && expense.recurrence.active && expense.recurrence.nextRunDate) {
+      let nextRun = parseDate(expense.recurrence.nextRunDate);
+      let currentTemplate = { ...expense, recurrence: { ...expense.recurrence } };
+      let templateUpdated = false;
+
+      while (nextRun <= today && currentTemplate.recurrence && currentTemplate.recurrence.active) {
+        const instance = generateRecurringExpenseInstance(expense, formatDate(nextRun));
+        generatedExpenses.push(instance);
+
+        const nextRunStr = getNextRunDate(
+          formatDate(nextRun),
+          currentTemplate.recurrence.frequency,
+          currentTemplate.recurrence.every
+        );
+        
+        currentTemplate.recurrence.nextRunDate = nextRunStr;
+        currentTemplate.recurrence.lastGeneratedAt = new Date().toISOString();
+
+        if (currentTemplate.recurrence.endDate) {
+          const endDate = parseDate(currentTemplate.recurrence.endDate);
+          if (parseDate(nextRunStr) > endDate) {
+            currentTemplate.recurrence.active = false;
+            currentTemplate.recurrence.nextRunDate = null;
+            currentTemplate.recurrence.stoppedAt = new Date().toISOString();
+          }
+        }
+
+        nextRun = parseDate(currentTemplate.recurrence.nextRunDate || '');
+        templateUpdated = true;
+      }
+
+      if (templateUpdated) {
+        updatedTemplates.push(currentTemplate);
+      }
+    }
+  });
+
+  return { generatedExpenses, updatedTemplates };
+}
+
+export function stopRecurringExpense(expense: ExpenseEntry): ExpenseEntry {
+  if (!expense.recurrence) return expense;
+  return {
+    ...expense,
+    recurrence: {
+      ...expense.recurrence,
+      active: false,
+      nextRunDate: null,
+      stoppedAt: new Date().toISOString(),
+    },
+  };
+}
+
+export function updateRecurringExpenseTemplate(expense: ExpenseEntry, changes: Partial<ExpenseEntry>): ExpenseEntry {
+  return {
+    ...expense,
+    ...changes,
+    id: expense.id, // Ensure ID doesn't change
+    recurrence: expense.recurrence ? { ...expense.recurrence, ...(changes.recurrence || {}) } : null,
+  };
+}
 
 export function validateExpenseInput(input: {
   name: string;
@@ -42,9 +168,19 @@ export function createExpenseEntry(input: {
   participants: ParticipantInput[];
   userId: string;
   userName: string;
+  recurrence?: RecurrenceInput;
 }) {
   const error = validateExpenseInput(input);
   if (error) return { error, expense: null };
+
+  const recurrenceRule: RecurrenceRule | null = input.recurrence?.enabled ? {
+    frequency: input.recurrence.frequency,
+    every: Number(input.recurrence.every) || 1,
+    startDate: input.recurrence.startDate,
+    endDate: input.recurrence.endDate || undefined,
+    active: true,
+    nextRunDate: input.recurrence.startDate,
+  } : null;
 
   const expense: ExpenseEntry = {
     id: `exp-${Date.now()}`,
@@ -59,6 +195,8 @@ export function createExpenseEntry(input: {
     createdAt: new Date().toISOString(),
     createdBy: input.userId,
     createdByName: input.userName,
+    recurrence: recurrenceRule,
+    recurringSourceId: null,
   };
 
   return { error: null, expense };
