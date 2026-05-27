@@ -389,6 +389,26 @@ An ongoing puzzle is how we should best handle the scope definition for automate
 * Establish clear UI/UX guidelines for background automation processes so developers know exactly how to display automated actions to the user.
 * Break down multi-layered epics (like global cross-group features) into smaller, more granular sub-tasks to avoid oversized pull requests.
 
+#### Sprint Review
+
+Here is a **Sprint Review** section tailored for your README, perfectly capturing the required repository notes and the specific feedback from your instructor:
+
+---
+
+## Sprint Review
+
+All user stories committed for Sprint 3 were fully implemented, tested, and demonstrated directly from the active build. This includes:
+
+* **Recurring Expense Ecosystem:** Users can now add recurring expenses and customize repetition frequencies.
+* **Multi-Group Workspaces:** Implemented seamless switching between distinct user groups along with a consolidated global balance overview across all groups.
+* **Automation & Organization:** Rolled out automated transaction confirmation triggers and an expense categorization system.
+* **Global Balance:** Each user can now check their balance over all the group he belongs to.
+
+During the sprint review presentation, the teacher noted that:
+
+* **General Status:** The overall implementation is solid, and all demonstrated features appear to work correctly and smoothly.
+* **UX Friction Point:** The user experience surrounding the **Automatic Transaction Confirmation** action requires refinement. Specifically, the exact functionality, system impact, and state change of toggling this button are not immediately clear from a user's perspective.
+
 #### Scumboard at the begining of Sprint 3
 ![Scrumboard begining sprint 3](docs/scrumboard_sprint3-begining.png)
 
