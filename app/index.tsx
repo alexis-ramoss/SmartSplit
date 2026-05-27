@@ -22,6 +22,7 @@ import {
     formatDate,
     ParticipantInput,
     RecurrenceFrequency,
+    aggregateGlobalBalances,
     stopRecurringExpense,
     updateRecurringExpenseTemplate,
 } from "../lib/_expense-utils";
@@ -180,11 +181,11 @@ function CalendarPicker({
         <View style={styles.calendarContainer}>
           <View style={styles.calendarHeader}>
             <Pressable onPress={() => changeMonth(-1)} style={styles.calendarNavButton}>
-              <Ionicons name="chevron-back" size={24} color="#020427" />
+              <Ionicons name="chevron-back" size={24} color="#12626C" />
             </Pressable>
             <Text style={styles.calendarTitle}>{monthNames[month]} {year}</Text>
             <Pressable onPress={() => changeMonth(1)} style={styles.calendarNavButton}>
-              <Ionicons name="chevron-forward" size={24} color="#020427" />
+              <Ionicons name="chevron-forward" size={24} color="#12626C" />
             </Pressable>
           </View>
           <View style={styles.calendarGrid}>
@@ -897,12 +898,20 @@ export default function Index() {
               testID="toggle-global-overview"
               style={({ pressed }) => [
                 styles.signOutButton,
-                { marginTop: 0, backgroundColor: showGlobalOverview ? "#2B6CB0" : "rgba(255,255,255,0.12)" },
+                {
+                  marginTop: 0,
+                  backgroundColor: showGlobalOverview ? "#137F86" : "#F7FEFF",
+                },
                 pressed && styles.buttonPressed,
               ]}
               onPress={() => setShowGlobalOverview(!showGlobalOverview)}
             >
-              <Text style={styles.signOutButtonText}>
+              <Text
+                style={[
+                  styles.signOutButtonText,
+                  showGlobalOverview && { color: "#FFFFFF" },
+                ]}
+              >
                 {showGlobalOverview ? "Hide Global" : "Global Balances"}
               </Text>
             </Pressable>
@@ -1415,7 +1424,7 @@ export default function Index() {
                 onPress={() => setShowMainDatePicker(true)}
                 style={styles.datePickerTrigger}
               >
-                <Ionicons name="calendar-outline" size={20} color="#5F6C7B" />
+                <Ionicons name="calendar-outline" size={20} color="#5B767D" />
                 <Text style={styles.datePickerText}>{date}</Text>
               </Pressable>
 
@@ -1599,7 +1608,7 @@ export default function Index() {
                     onPress={() => setShowRecurrenceStartDatePicker(true)}
                     style={styles.datePickerTrigger}
                   >
-                    <Ionicons name="calendar-outline" size={20} color="#5F6C7B" />
+                    <Ionicons name="calendar-outline" size={20} color="#5B767D" />
                     <Text style={styles.datePickerText}>{recurrenceStartDate}</Text>
                   </Pressable>
 
@@ -1649,7 +1658,7 @@ export default function Index() {
                         onPress={() => setShowRecurrenceEndDatePicker(true)}
                         style={styles.datePickerTrigger}
                       >
-                        <Ionicons name="calendar-outline" size={20} color="#5F6C7B" />
+                        <Ionicons name="calendar-outline" size={20} color="#5B767D" />
                         <Text style={styles.datePickerText}>{recurrenceEndDate || "Select end date"}</Text>
                       </Pressable>
 
@@ -1874,45 +1883,54 @@ export default function Index() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F4F7FB",
+    backgroundColor: "#EEF9FA",
   },
   container: {
-    padding: 20,
-    gap: 16,
+    padding: 18,
+    gap: 18,
   },
   headerCard: {
-    backgroundColor: "#12324C",
+    backgroundColor: "#DDF7F0",
     borderRadius: 24,
     padding: 24,
+    borderWidth: 1,
+    borderColor: "#B8E8EA",
+    shadowColor: "#0E6E78",
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
   },
   signOutButton: {
     alignSelf: "flex-start",
     marginTop: 14,
-    backgroundColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "#F7FEFF",
+    borderWidth: 1,
+    borderColor: "#BEE7E9",
     borderRadius: 999,
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
   signOutButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "700",
+    color: "#12626C",
+    fontWeight: "800",
   },
   kicker: {
-    color: "#B7C9D8",
+    color: "#159296",
     fontSize: 13,
     fontWeight: "700",
     letterSpacing: 1.4,
     textTransform: "uppercase",
   },
   title: {
-    color: "#FFFFFF",
+    color: "#103C4A",
     fontSize: 27,
     fontWeight: "800",
     marginTop: 10,
     lineHeight: 33,
   },
   subtitle: {
-    color: "#D8E5EF",
+    color: "#496973",
     fontSize: 15,
     lineHeight: 22,
     marginTop: 10,
@@ -1924,27 +1942,31 @@ const styles = StyleSheet.create({
   },
   summaryItem: {
     flex: 1,
-    backgroundColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "#F7FEFF",
     borderRadius: 16,
     padding: 14,
+    borderWidth: 1,
+    borderColor: "#C6ECEB",
   },
   summaryLabel: {
-    color: "#B7C9D8",
+    color: "#52828A",
     fontSize: 13,
   },
   summaryValue: {
-    color: "#FFFFFF",
+    color: "#12343F",
     fontSize: 24,
     fontWeight: "800",
     marginTop: 8,
   },
   sectionCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 24,
+    borderRadius: 22,
     padding: 20,
-    shadowColor: "#000",
+    borderWidth: 1,
+    borderColor: "#D8EEF1",
+    shadowColor: "#0F5F6B",
     shadowOpacity: 0.06,
-    shadowRadius: 16,
+    shadowRadius: 18,
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
   },
@@ -1952,19 +1974,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
+    flexWrap: "wrap",
     gap: 12,
   },
   sectionTitle: {
-    color: "#152B3C",
+    color: "#12343F",
     fontSize: 22,
     fontWeight: "800",
   },
   sectionSubtitle: {
-    color: "#5F6C7B",
+    color: "#5B767D",
     marginTop: 4,
   },
   primaryButton: {
-    backgroundColor: "#2B6CB0",
+    backgroundColor: "#159296",
     borderRadius: 999,
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -1977,7 +2000,9 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     minWidth: "45%",
-    backgroundColor: "#E9F1F8",
+    backgroundColor: "#E7F8F8",
+    borderWidth: 1,
+    borderColor: "#BFE7E8",
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -1985,7 +2010,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   secondaryButtonText: {
-    color: "#12324C",
+    color: "#12626C",
     fontSize: 14,
     fontWeight: "800",
   },
@@ -2004,10 +2029,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   infoText: {
-    color: "#12324C",
+    color: "#12626C",
     fontSize: 14,
     fontWeight: "700",
-    backgroundColor: "#E9F1F8",
+    backgroundColor: "#E7F8F8",
+    borderWidth: 1,
+    borderColor: "#BFE7E8",
     borderRadius: 12,
     padding: 12,
     marginTop: 12,
@@ -2017,13 +2044,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   debtBreakdownBox: {
-    backgroundColor: "#F7F8FA",
+    backgroundColor: "#F2FBFA",
     borderRadius: 12,
     padding: 12,
     gap: 8,
   },
   debtBreakdownTitle: {
-    color: "#34495E",
+    color: "#244E5A",
     fontSize: 14,
     fontWeight: "800",
   },
@@ -2033,34 +2060,41 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: "#E4EAF1",
+    borderTopColor: "#D7ECEF",
     paddingTop: 8,
   },
   debtBreakdownTextArea: {
     flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
   },
   debtBreakdownName: {
-    color: "#152B3C",
+    color: "#12343F",
     fontSize: 15,
     fontWeight: "800",
+    flexShrink: 1,
   },
   debtBreakdownMeta: {
-    color: "#5F6C7B",
+    color: "#5B767D",
     fontSize: 12,
     fontWeight: "600",
     marginTop: 2,
+    flexShrink: 1,
   },
   debtBreakdownAmount: {
     fontSize: 15,
     fontWeight: "900",
     textAlign: "right",
+    flexShrink: 0,
   },
   balanceRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     gap: 12,
-    backgroundColor: "#F7FAFD",
+    backgroundColor: "#F3FBFC",
+    borderWidth: 1,
+    borderColor: "#D8EEF1",
     borderRadius: 12,
     padding: 12,
   },
@@ -2078,45 +2112,56 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   groupBreakdownName: {
-    color: "#5F6C7B",
+    color: "#5B767D",
     fontSize: 13,
     fontWeight: "600",
+    flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
   },
   groupBreakdownAmount: {
     fontSize: 13,
     fontWeight: "700",
+    flexShrink: 0,
+    textAlign: "right",
   },
   balanceName: {
-    color: "#152B3C",
+    color: "#12343F",
     fontSize: 16,
     fontWeight: "700",
+    flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
   },
   balanceAmount: {
-    color: "#5F6C7B",
+    color: "#5B767D",
     fontSize: 15,
     fontWeight: "800",
     textAlign: "right",
+    flexShrink: 0,
   },
   positiveBalance: {
-    color: "#087443",
+    color: "#11845B",
   },
   negativeBalance: {
     color: "#B42318",
   },
   settlementBox: {
     marginTop: 12,
-    backgroundColor: "#F7F8FA",
+    backgroundColor: "#F2FBFA",
     borderRadius: 12,
     padding: 12,
     gap: 6,
+    borderWidth: 1,
+    borderColor: "#D8EEF1",
   },
   settlementTitle: {
-    color: "#34495E",
+    color: "#244E5A",
     fontSize: 14,
     fontWeight: "800",
   },
   settlementText: {
-    color: "#5F6C7B",
+    color: "#5B767D",
     fontSize: 13,
     fontWeight: "600",
   },
@@ -2124,37 +2169,39 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 8,
     borderTopWidth: 1,
-    borderTopColor: "#E1E8EF",
+    borderTopColor: "#D8EEF1",
     paddingTop: 8,
   },
   form: {
     marginTop: 18,
-    backgroundColor: "#F7F8FA",
+    backgroundColor: "#F2FBFA",
     borderRadius: 18,
-    padding: 14,
-    gap: 8,
+    padding: 16,
+    gap: 9,
+    borderWidth: 1,
+    borderColor: "#D3ECEF",
   },
   formTitle: {
-    color: "#152B3C",
-    fontSize: 32,
+    color: "#12343F",
+    fontSize: 24,
     fontWeight: "800",
     marginBottom: 2,
   },
   formLabel: {
-    color: "#34495E",
+    color: "#244E5A",
     fontSize: 16,
     fontWeight: "700",
     marginTop: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#D7E0EA",
+    borderColor: "#CDE8ED",
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#152B3C",
-    backgroundColor: "#FFFFFF",
+    color: "#12343F",
+    backgroundColor: "#FAFEFF",
   },
   payerRow: {
     flexDirection: "row",
@@ -2164,27 +2211,27 @@ const styles = StyleSheet.create({
   payerChip: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#C8D4E1",
-    paddingVertical: 8,
+    borderColor: "#BFE1E4",
+    paddingVertical: 9,
     paddingHorizontal: 12,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FAFEFF",
   },
   payerChipSelected: {
-    backgroundColor: "#0A0D2D",
-    borderColor: "#0A0D2D",
+    backgroundColor: "#137F86",
+    borderColor: "#137F86",
   },
   payerChipText: {
-    color: "#25384D",
+    color: "#244E5A",
     fontWeight: "700",
   },
   payerChipTextSelected: {
     color: "#FFFFFF",
   },
   participantsCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FAFEFF",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E1E8EF",
+    borderColor: "#D3ECEF",
     padding: 12,
     gap: 8,
   },
@@ -2205,14 +2252,14 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 7,
     borderWidth: 1,
-    borderColor: "#9AA7B7",
+    borderColor: "#8FCED1",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#FFFFFF",
   },
   checkboxSelected: {
-    backgroundColor: "#596477",
-    borderColor: "#596477",
+    backgroundColor: "#159296",
+    borderColor: "#159296",
   },
   checkboxTick: {
     color: "#FFFFFF",
@@ -2220,7 +2267,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   participantName: {
-    color: "#152B3C",
+    color: "#12343F",
     fontSize: 16,
     fontWeight: "600",
   },
@@ -2232,7 +2279,7 @@ const styles = StyleSheet.create({
   weightInput: {
     width: 66,
     borderWidth: 1,
-    borderColor: "#D7E0EA",
+    borderColor: "#CDE8ED",
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 6,
@@ -2240,7 +2287,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   percentLabel: {
-    color: "#5F6C7B",
+    color: "#5B767D",
     fontWeight: "700",
   },
   notSelectedText: {
@@ -2251,16 +2298,16 @@ const styles = StyleSheet.create({
     marginTop: 4,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: "#E9EEF5",
+    borderTopColor: "#D8EEF1",
     flexDirection: "row",
     justifyContent: "space-between",
   },
   totalLabel: {
-    color: "#34495E",
+    color: "#244E5A",
     fontWeight: "700",
   },
   totalValue: {
-    color: "#152B3C",
+    color: "#12343F",
     fontWeight: "800",
   },
   errorText: {
@@ -2279,26 +2326,28 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: "#DDE2E8",
+    backgroundColor: "#E7F8F8",
+    borderWidth: 1,
+    borderColor: "#BFE7E8",
     borderRadius: 12,
     paddingVertical: 13,
     alignItems: "center",
   },
   cancelButtonText: {
-    color: "#1E2A39",
-    fontSize: 18,
+    color: "#12626C",
+    fontSize: 16,
     fontWeight: "700",
   },
   saveButton: {
     flex: 1,
-    backgroundColor: "#020427",
+    backgroundColor: "#137F86",
     borderRadius: 12,
     paddingVertical: 13,
     alignItems: "center",
   },
   saveButtonText: {
     color: "#FFFFFF",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "800",
   },
   list: {
@@ -2311,19 +2360,21 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     borderRadius: 16,
     padding: 14,
-    backgroundColor: "#F7FAFD",
+    backgroundColor: "#F3FBFC",
+    borderWidth: 1,
+    borderColor: "#D8EEF1",
     gap: 10,
   },
   expenseTextArea: {
     flex: 1,
   },
   expenseName: {
-    color: "#152B3C",
+    color: "#12343F",
     fontSize: 16,
     fontWeight: "700",
   },
   categoryBadge: {
-    backgroundColor: "#E2E8F0",
+    backgroundColor: "#DDF7F0",
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -2332,13 +2383,13 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   categoryBadgeText: {
-    color: "#475569",
+    color: "#12626C",
     fontSize: 11,
     fontWeight: "700",
     textTransform: "uppercase",
   },
   expenseMeta: {
-    color: "#5F6C7B",
+    color: "#5B767D",
     marginTop: 3,
     fontSize: 13,
   },
@@ -2353,7 +2404,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   expenseAmount: {
-    color: "#12324C",
+    color: "#12626C",
     fontSize: 17,
     fontWeight: "800",
     textAlign: "right",
@@ -2363,13 +2414,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   editButton: {
-    backgroundColor: "#E9F1F8",
+    backgroundColor: "#E7F8F8",
+    borderWidth: 1,
+    borderColor: "#BFE7E8",
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   editButtonText: {
-    color: "#12324C",
+    color: "#12626C",
     fontSize: 13,
     fontWeight: "800",
   },
@@ -2382,13 +2435,13 @@ const styles = StyleSheet.create({
     borderLeftColor: "#B42318",
   },
   confirmTitle: {
-    color: "#152B3C",
+    color: "#12343F",
     fontSize: 16,
     fontWeight: "800",
     marginBottom: 8,
   },
   confirmMessage: {
-    color: "#5F6C7B",
+    color: "#5B767D",
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 16,
@@ -2417,19 +2470,21 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     borderRadius: 16,
     padding: 14,
-    backgroundColor: "#F7FAFD",
+    backgroundColor: "#F3FBFC",
+    borderWidth: 1,
+    borderColor: "#D8EEF1",
     gap: 10,
   },
   memberInfo: {
     flex: 1,
   },
   memberName: {
-    color: "#152B3C",
+    color: "#12343F",
     fontSize: 16,
     fontWeight: "700",
   },
   memberBalance: {
-    color: "#5F6C7B",
+    color: "#5B767D",
     fontSize: 14,
     marginTop: 4,
     fontWeight: "600",
@@ -2473,12 +2528,12 @@ const styles = StyleSheet.create({
   calendarNavButton: {
     padding: 8,
     borderRadius: 12,
-    backgroundColor: "#F7F8FA",
+    backgroundColor: "#E7F8F8",
   },
   calendarTitle: {
     fontSize: 18,
     fontWeight: "800",
-    color: "#020427",
+    color: "#12343F",
   },
   calendarGrid: {
     flexDirection: "row",
@@ -2504,12 +2559,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   calendarDaySelected: {
-    backgroundColor: "#020427",
+    backgroundColor: "#137F86",
   },
   calendarDayText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#152B3C",
+    color: "#12343F",
   },
   calendarDayTextSelected: {
     color: "#FFFFFF",
@@ -2517,7 +2572,7 @@ const styles = StyleSheet.create({
   calendarFooter: {
     marginTop: 20,
     borderTopWidth: 1,
-    borderTopColor: "#E1E8EF",
+    borderTopColor: "#D8EEF1",
     paddingTop: 16,
     alignItems: "center",
   },
@@ -2528,14 +2583,14 @@ const styles = StyleSheet.create({
   calendarCloseButtonText: {
     fontSize: 15,
     fontWeight: "700",
-    color: "#5F6C7B",
+    color: "#5B767D",
   },
   datePickerTrigger: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderWidth: 1.5,
-    borderColor: "#E1E8EF",
+    borderColor: "#CDE8ED",
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -2543,7 +2598,7 @@ const styles = StyleSheet.create({
   },
   datePickerText: {
     fontSize: 16,
-    color: "#152B3C",
+    color: "#12343F",
     fontWeight: "500",
   },
   checkboxRowContainer: {
@@ -2561,7 +2616,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 2,
-    borderColor: "#E1E8EF",
+    borderColor: "#CDE8ED",
     borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",
@@ -2575,7 +2630,7 @@ const styles = StyleSheet.create({
   checkboxLabelSmall: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#5F6C7B",
+    color: "#5B767D",
   },
   helperText: {
     fontSize: 13,
@@ -2592,22 +2647,22 @@ const styles = StyleSheet.create({
   switchLabel: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#152B3C",
+    color: "#12343F",
   },
   switchDescription: {
     fontSize: 13,
-    color: "#5F6C7B",
+    color: "#5B767D",
     marginTop: 2,
   },
   toggleButton: {
     width: 50,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "#DDE2E8",
+    backgroundColor: "#CDE8ED",
     padding: 3,
   },
   toggleButtonActive: {
-    backgroundColor: "#020427",
+    backgroundColor: "#137F86",
   },
   toggleKnob: {
     width: 22,
