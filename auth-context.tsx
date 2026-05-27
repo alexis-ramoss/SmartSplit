@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       firebaseReady: hasRequiredConfig,
-      firestoreWritable: hasRequiredConfig,
+      firestoreWritable: !!db,
       signOutUser: async () => {
         if (!auth) {
           return;
