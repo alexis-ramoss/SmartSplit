@@ -9,7 +9,16 @@ import {
     TextInput,
     View,
 } from "react-native";
-import Animated, { FadeIn, FadeOut, Layout } from "react-native-reanimated";
+import Animated, { 
+  FadeIn, 
+  FadeOut, 
+  Layout, 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withTiming,
+  interpolateColor,
+  Easing,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../auth-context";
@@ -68,6 +77,53 @@ const EMPTY_GROUP: Group = {
   members: [],
   expenses: [],
 };
+
+interface ToggleProps {
+  value: boolean;
+  onValueChange: (value: boolean) => void;
+  testID?: string;
+  accessibilityLabel?: string;
+}
+
+function Toggle({ value, onValueChange, testID, accessibilityLabel }: ToggleProps) {
+  const transition = useSharedValue(value ? 1 : 0);
+
+  useEffect(() => {
+    transition.value = withTiming(value ? 1 : 0, {
+      duration: 200,
+      easing: Easing.out(Easing.quad),
+    });
+  }, [value]);
+
+  const animatedContainerStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      transition.value,
+      [0, 1],
+      ["#E2E8F0", "#6366F1"]
+    );
+    return {
+      backgroundColor,
+    };
+  });
+
+  const animatedKnobStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: transition.value * 22 }],
+    };
+  });
+
+  return (
+    <Pressable
+      accessibilityLabel={accessibilityLabel}
+      testID={testID}
+      onPress={() => onValueChange(!value)}
+    >
+      <Animated.View style={[styles.toggleButton, animatedContainerStyle]}>
+        <Animated.View style={[styles.toggleKnob, animatedKnobStyle]} />
+      </Animated.View>
+    </Pressable>
+  );
+}
 
 function getTestSeedGroups(): Group[] {
   const getter = (globalThis as { __SMARTSPLIT_TEST_GROUPS__?: () => Group[] }).__SMARTSPLIT_TEST_GROUPS__;
@@ -182,11 +238,11 @@ function CalendarPicker({
         <View style={styles.calendarContainer}>
           <View style={styles.calendarHeader}>
             <Pressable onPress={() => changeMonth(-1)} style={styles.calendarNavButton}>
-              <Ionicons name="chevron-back" size={24} color="#12626C" />
+              <Ionicons name="chevron-back" size={24} color="#4338CA" />
             </Pressable>
             <Text style={styles.calendarTitle}>{monthNames[month]} {year}</Text>
             <Pressable onPress={() => changeMonth(1)} style={styles.calendarNavButton}>
-              <Ionicons name="chevron-forward" size={24} color="#12626C" />
+              <Ionicons name="chevron-forward" size={24} color="#4338CA" />
             </Pressable>
           </View>
           <View style={styles.calendarGrid}>
@@ -506,6 +562,10 @@ export default function Index() {
 
   function getCategoryIcon(label: string): string {
     return EXPENSE_CATEGORIES.find((c) => c.label === label)?.icon || "📦";
+  }
+
+  function getCategoryColor(label: string): string {
+    return (EXPENSE_CATEGORIES.find((c) => c.label === label) as any)?.color || "#64748B";
   }
 
   function handleEditExpense(expense: ExpenseEntry) {
@@ -901,7 +961,7 @@ export default function Index() {
                 styles.signOutButton,
                 {
                   marginTop: 0,
-                  backgroundColor: showGlobalOverview ? "#137F86" : "#F7FEFF",
+                  backgroundColor: showGlobalOverview ? "#6366F1" : "#E0E7FF",
                 },
                 pressed && styles.buttonPressed,
               ]}
@@ -919,13 +979,13 @@ export default function Index() {
           </View>
 
           <View style={styles.summaryRow}>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Group total</Text>
-              <Text style={styles.summaryValue}>EUR {totalSpent.toFixed(2)}</Text>
+            <View style={[styles.summaryItem, { backgroundColor: "#EEF2FF", borderColor: "#C7D2FE" }]}>
+              <Text style={[styles.summaryLabel, { color: "#4F46E5" }]}>Group total</Text>
+              <Text style={[styles.summaryValue, { color: "#4338CA" }]}>EUR {totalSpent.toFixed(2)}</Text>
             </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Recorded</Text>
-              <Text style={styles.summaryValue}>{activeExpenses.length}</Text>
+            <View style={[styles.summaryItem, { backgroundColor: "#FDF2F8", borderColor: "#FBCFE8" }]}>
+              <Text style={[styles.summaryLabel, { color: "#DB2777" }]}>Recorded</Text>
+              <Text style={[styles.summaryValue, { color: "#BE185D" }]}>{activeExpenses.length}</Text>
             </View>
           </View>
         </View>
@@ -934,7 +994,7 @@ export default function Index() {
           <Animated.View 
             entering={FadeIn.duration(400)} 
             exiting={FadeOut.duration(300)}
-            layout={Layout.springify()}
+            layout={Layout.duration(250).easing(Easing.out(Easing.quad))}
             style={styles.sectionCard} 
             testID="global-overview-card"
           >
@@ -946,13 +1006,13 @@ export default function Index() {
             </View>
 
             <View style={[styles.summaryRow, { marginTop: 16 }]}>
-              <View style={[styles.summaryItem, { backgroundColor: "#F0F9FF" }]}>
-                <Text style={[styles.summaryLabel, { color: "#0369A1" }]}>Total Owed</Text>
-                <Text style={[styles.summaryValue, { color: "#0369A1" }]}>
+              <View style={[styles.summaryItem, { backgroundColor: "#FFE4E6", borderColor: "#FECACA" }]}>
+                <Text style={[styles.summaryLabel, { color: "#E11D48" }]}>Total Owed</Text>
+                <Text style={[styles.summaryValue, { color: "#B91C1C" }]}>
                   EUR {globalSummary.totalOwed.toFixed(2)}
                 </Text>
               </View>
-              <View style={[styles.summaryItem, { backgroundColor: "#F0FDF4" }]}>
+              <View style={[styles.summaryItem, { backgroundColor: "#DCFCE7", borderColor: "#BBF7D0" }]}>
                 <Text style={[styles.summaryLabel, { color: "#15803D" }]}>Total Receivable</Text>
                 <Text style={[styles.summaryValue, { color: "#15803D" }]}>
                   EUR {globalSummary.totalReceivable.toFixed(2)}
@@ -1119,7 +1179,7 @@ export default function Index() {
             <Animated.View 
               entering={FadeIn} 
               exiting={FadeOut} 
-              layout={Layout.springify()} 
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
               style={styles.confirmBox}
             >
               <Text style={styles.confirmTitle}>
@@ -1159,7 +1219,7 @@ export default function Index() {
             <Animated.View 
               entering={FadeIn} 
               exiting={FadeOut} 
-              layout={Layout.springify()} 
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
               style={styles.inlineForm}
             >
               <Text style={styles.formLabel}>Group name</Text>
@@ -1193,7 +1253,7 @@ export default function Index() {
             <Animated.View 
               entering={FadeIn} 
               exiting={FadeOut} 
-              layout={Layout.springify()} 
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
               style={styles.inlineForm}
             >
               <Text style={styles.formLabel}>Invite code</Text>
@@ -1228,7 +1288,7 @@ export default function Index() {
             <Animated.View 
               entering={FadeIn} 
               exiting={FadeOut} 
-              layout={Layout.springify()} 
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
               style={styles.inlineForm}
             >
               <Text style={styles.formLabel}>Group Settings</Text>
@@ -1239,22 +1299,12 @@ export default function Index() {
                     New transactions will be automatically confirmed.
                   </Text>
                 </View>
-                <Pressable
+                <Toggle
                   accessibilityLabel="Toggle automatic confirmation"
                   testID="toggle-auto-confirm"
-                  style={[
-                    styles.toggleButton,
-                    activeGroup.autoConfirmExpenses && styles.toggleButtonActive,
-                  ]}
-                  onPress={() => handleUpdateGroupSettings({ autoConfirmExpenses: !activeGroup.autoConfirmExpenses })}
-                >
-                  <View
-                    style={[
-                      styles.toggleKnob,
-                      activeGroup.autoConfirmExpenses && styles.toggleKnobActive,
-                    ]}
-                  />
-                </Pressable>
+                  value={activeGroup.autoConfirmExpenses}
+                  onValueChange={(newValue) => handleUpdateGroupSettings({ autoConfirmExpenses: newValue })}
+                />
               </View>
             </Animated.View>
           ) : null}
@@ -1270,7 +1320,7 @@ export default function Index() {
           <Animated.View 
             entering={FadeIn} 
             exiting={FadeOut} 
-            layout={Layout.springify()} 
+            layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
             style={styles.sectionCard}
           >
             <View style={styles.sectionHeader}>
@@ -1311,7 +1361,7 @@ export default function Index() {
           <Animated.View 
             entering={FadeIn} 
             exiting={FadeOut} 
-            layout={Layout.springify()} 
+            layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
             style={styles.sectionCard}
           >
             <View style={styles.sectionHeader}>
@@ -1420,7 +1470,7 @@ export default function Index() {
             <Animated.View 
               entering={FadeIn} 
               exiting={FadeOut} 
-              layout={Layout.springify()} 
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
               style={styles.form}
             >
               <Text style={styles.formTitle}>
@@ -1762,13 +1812,13 @@ export default function Index() {
               <Animated.View 
                 key={expense.id} 
                 entering={FadeIn} 
-                layout={Layout.springify()} 
+                layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
                 style={styles.expenseItem}
               >
                 <View style={styles.expenseTextArea}>
                   <Text style={styles.expenseName}>{expense.name}</Text>
-                  <View style={styles.categoryBadge}>
-                    <Text style={styles.categoryBadgeText}>
+                  <View style={[styles.categoryBadge, { backgroundColor: getCategoryColor(expense.category) + "15" }]}>
+                    <Text style={[styles.categoryBadgeText, { color: getCategoryColor(expense.category) }]}>
                       {getCategoryIcon(expense.category)} {(expense.category || "General").toUpperCase()}
                     </Text>
                   </View>
@@ -1841,7 +1891,7 @@ export default function Index() {
             <Animated.View 
               entering={FadeIn} 
               exiting={FadeOut} 
-              layout={Layout.springify()} 
+              layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
               style={styles.list}
             >
               {removeError ? (
@@ -1854,7 +1904,7 @@ export default function Index() {
                 <Animated.View 
                   entering={FadeIn} 
                   exiting={FadeOut} 
-                  layout={Layout.springify()} 
+                  layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
                   style={styles.confirmBox}
                 >
                   <Text style={styles.confirmTitle}>Remove {memberToRemove}?</Text>
@@ -1898,7 +1948,7 @@ export default function Index() {
                     <Animated.View 
                       key={member.userId} 
                       entering={FadeIn} 
-                      layout={Layout.springify()} 
+                      layout={Layout.duration(250).easing(Easing.out(Easing.quad))} 
                       style={styles.memberItem}
                     >
                       <View style={styles.memberInfo}>
@@ -1945,130 +1995,124 @@ export default function Index() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F0F9FA",
+    backgroundColor: "#F5F7FF",
   },
   container: {
     padding: 20,
-    gap: 20,
+    gap: 24,
     paddingBottom: 40,
   },
   headerCard: {
-    backgroundColor: "#DDF7F0",
-    borderRadius: 28,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: "rgba(184, 232, 234, 0.5)",
-    shadowColor: "#0E6E78",
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 32,
+    padding: 28,
+    shadowColor: "#6366F1",
+    shadowOpacity: 0.1,
+    shadowRadius: 30,
     shadowOffset: { width: 0, height: 12 },
-    elevation: 6,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#E0E7FF",
   },
   signOutButton: {
     alignSelf: "flex-start",
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#BEE7E9",
+    backgroundColor: "#E0E7FF",
     borderRadius: 999,
     paddingVertical: 10,
-    paddingHorizontal: 16,
-    shadowColor: "#0E6E78",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+    paddingHorizontal: 20,
   },
   signOutButtonText: {
-    color: "#12626C",
+    color: "#475569",
     fontWeight: "800",
-    fontSize: 14,
+    fontSize: 13,
   },
   kicker: {
-    color: "#159296",
-    fontSize: 12,
+    color: "#6366F1",
+    fontSize: 11,
     fontWeight: "800",
-    letterSpacing: 1.6,
+    letterSpacing: 2,
     textTransform: "uppercase",
   },
   title: {
-    color: "#103C4A",
-    fontSize: 28,
+    color: "#0F172A",
+    fontSize: 30,
     fontWeight: "900",
-    marginTop: 10,
-    lineHeight: 34,
+    marginTop: 12,
+    lineHeight: 38,
   },
   subtitle: {
-    color: "#496973",
+    color: "#64748B",
     fontSize: 15,
-    marginTop: 10,
-    lineHeight: 22,
+    marginTop: 12,
+    lineHeight: 24,
     fontWeight: "500",
   },
   summaryRow: {
     flexDirection: "row",
-    gap: 12,
-    marginTop: 24,
+    gap: 16,
+    marginTop: 28,
   },
   summaryItem: {
     flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.6)",
+    backgroundColor: "#F5F7FF",
     borderRadius: 20,
-    padding: 16,
+    padding: 18,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.8)",
+    borderColor: "#E0E7FF",
   },
   summaryLabel: {
-    color: "#5B767D",
-    fontSize: 12,
-    fontWeight: "700",
+    color: "#64748B",
+    fontSize: 11,
+    fontWeight: "800",
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   summaryValue: {
-    color: "#103C4A",
-    fontSize: 22,
+    color: "#0F172A",
+    fontSize: 24,
     fontWeight: "900",
-    marginTop: 4,
+    marginTop: 6,
   },
   sectionCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 28,
-    padding: 24,
-    shadowColor: "#12626C",
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
+    borderRadius: 32,
+    padding: 28,
+    shadowColor: "#000000",
+    shadowOpacity: 0.04,
+    shadowRadius: 24,
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
     borderWidth: 1,
-    borderColor: "#F0F9FA",
+    borderColor: "#E0E7FF",
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 20,
+    marginBottom: 24,
     flexWrap: "wrap",
     gap: 12,
   },
   sectionTitle: {
-    color: "#103C4A",
-    fontSize: 20,
-    fontWeight: "800",
+    color: "#0F172A",
+    fontSize: 22,
+    fontWeight: "900",
   },
   sectionSubtitle: {
-    color: "#5B767D",
+    color: "#64748B",
     fontSize: 14,
     marginTop: 4,
     fontWeight: "500",
   },
   primaryButton: {
-    backgroundColor: "#137F86",
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    shadowColor: "#137F86",
+    backgroundColor: "#6366F1",
+    borderRadius: 999,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    shadowColor: "#6366F1",
     shadowOpacity: 0.25,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
     alignItems: "center",
     justifyContent: "center",
   },
@@ -2078,36 +2122,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   secondaryButton: {
-    backgroundColor: "#F0F9FA",
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: "#D1EFF2",
+    backgroundColor: "#EEF2FF",
+    borderRadius: 999,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     minWidth: "45%",
     alignItems: "center",
     justifyContent: "center",
   },
   secondaryButtonText: {
-    color: "#12626C",
-    fontWeight: "700",
-    fontSize: 13,
+    color: "#4F46E5",
+    fontWeight: "800",
+    fontSize: 14,
   },
   dangerButton: {
-    backgroundColor: "#FFF1F1",
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: "#FFE0E0",
+    backgroundColor: "#FFF1F2",
+    borderRadius: 999,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     minWidth: "45%",
     alignItems: "center",
     justifyContent: "center",
   },
   dangerButtonText: {
-    color: "#C53030",
-    fontWeight: "700",
-    fontSize: 13,
+    color: "#E11D48",
+    fontWeight: "800",
+    fontSize: 14,
   },
   buttonPressed: {
     opacity: 0.7,
@@ -2135,11 +2175,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   payerChipSelected: {
-    backgroundColor: "#137F86",
-    borderColor: "#137F86",
+    backgroundColor: "#6366F1",
+    borderColor: "#6366F1",
   },
   payerChipText: {
-    color: "#12626C",
+    color: "#4338CA",
     fontSize: 13,
     fontWeight: "700",
   },
@@ -2147,42 +2187,46 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   form: {
-    marginTop: 20,
-    gap: 16,
-    backgroundColor: "#F8FAFB",
-    borderRadius: 24,
-    padding: 20,
+    marginTop: 24,
+    gap: 20,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 32,
+    padding: 28,
     borderWidth: 1,
-    borderColor: "#EEF2F6",
+    borderColor: "#E0E7FF",
+    shadowColor: "#000000",
+    shadowOpacity: 0.05,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
   },
   formTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "900",
-    color: "#103C4A",
-    marginBottom: 4,
+    color: "#0F172A",
+    marginBottom: 6,
   },
   formLabel: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#496973",
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#64748B",
     textTransform: "uppercase",
-    letterSpacing: 0.6,
+    letterSpacing: 1,
     marginTop: 8,
   },
   input: {
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1.5,
+    backgroundColor: "#F5F7FF",
+    borderWidth: 1,
     borderColor: "#E2E8F0",
     borderRadius: 16,
     padding: 16,
     fontSize: 16,
-    color: "#103C4A",
+    color: "#0F172A",
   },
   datePickerTrigger: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1.5,
+    backgroundColor: "#F5F7FF",
+    borderWidth: 1,
     borderColor: "#E2E8F0",
     borderRadius: 16,
     padding: 16,
@@ -2190,15 +2234,15 @@ const styles = StyleSheet.create({
   },
   datePickerText: {
     fontSize: 16,
-    color: "#103C4A",
+    color: "#0F172A",
     fontWeight: "500",
   },
   participantsCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F5F7FF",
     borderRadius: 20,
-    padding: 16,
-    gap: 12,
-    borderWidth: 1.5,
+    padding: 20,
+    gap: 16,
+    borderWidth: 1,
     borderColor: "#E2E8F0",
   },
   participantRow: {
@@ -2213,9 +2257,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   checkbox: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 6,
     borderWidth: 2,
     borderColor: "#CBD5E1",
     justifyContent: "center",
@@ -2223,8 +2267,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   checkboxSelected: {
-    backgroundColor: "#137F86",
-    borderColor: "#137F86",
+    backgroundColor: "#6366F1",
+    borderColor: "#6366F1",
   },
   checkboxTick: {
     color: "#FFFFFF",
@@ -2234,7 +2278,7 @@ const styles = StyleSheet.create({
   participantName: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#103C4A",
+    color: "#0F172A",
   },
   weightContainer: {
     flexDirection: "row",
@@ -2242,17 +2286,17 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   weightInput: {
-    backgroundColor: "#F8FAFB",
-    borderWidth: 1.5,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
     borderColor: "#E2E8F0",
     borderRadius: 10,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    width: 70,
+    width: 75,
     textAlign: "right",
     fontSize: 15,
     fontWeight: "700",
-    color: "#103C4A",
+    color: "#0F172A",
   },
   percentLabel: {
     fontSize: 14,
@@ -2268,35 +2312,35 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 8,
-    paddingTop: 12,
+    paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: "#E2E8F0",
   },
   totalLabel: {
     fontSize: 14,
     fontWeight: "800",
-    color: "#496973",
+    color: "#64748B",
   },
   totalValue: {
     fontSize: 18,
     fontWeight: "900",
-    color: "#137F86",
+    color: "#6366F1",
   },
   actionsRow: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 16,
+    marginTop: 20,
   },
   saveButton: {
     flex: 2,
-    backgroundColor: "#137F86",
-    borderRadius: 18,
+    backgroundColor: "#6366F1",
+    borderRadius: 999,
     paddingVertical: 16,
     alignItems: "center",
-    shadowColor: "#137F86",
-    shadowOpacity: 0.3,
+    shadowColor: "#6366F1",
+    shadowOpacity: 0.25,
     shadowRadius: 12,
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 6 },
   },
   saveButtonText: {
     color: "#FFFFFF",
@@ -2305,14 +2349,14 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: "#F1F5F9",
-    borderRadius: 18,
+    backgroundColor: "#E0E7FF",
+    borderRadius: 999,
     paddingVertical: 16,
     alignItems: "center",
   },
   cancelButtonText: {
     color: "#475569",
-    fontWeight: "700",
+    fontWeight: "800",
     fontSize: 16,
   },
   list: {
@@ -2320,52 +2364,56 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   expenseItem: {
-    backgroundColor: "#F8FAFB",
-    borderRadius: 24,
-    padding: 20,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 28,
+    padding: 24,
     flexDirection: "row",
     justifyContent: "space-between",
     borderWidth: 1,
-    borderColor: "#EEF2F6",
+    borderColor: "#E0E7FF",
+    shadowColor: "#000000",
+    shadowOpacity: 0.03,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
   },
   expenseTextArea: {
     flex: 1,
-    gap: 4,
+    gap: 6,
   },
   expenseName: {
     fontSize: 18,
     fontWeight: "800",
-    color: "#103C4A",
+    color: "#0F172A",
   },
   categoryBadge: {
-    backgroundColor: "#DDF7F0",
+    backgroundColor: "#E0E7FF",
     alignSelf: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
     marginTop: 4,
     marginBottom: 6,
   },
   categoryBadgeText: {
     fontSize: 10,
     fontWeight: "800",
-    color: "#12626C",
+    color: "#64748B",
     letterSpacing: 0.5,
     textTransform: "uppercase",
   },
   expenseMeta: {
     fontSize: 13,
-    color: "#64748B",
+    color: "#94A3B8",
     fontWeight: "500",
   },
   expenseCreatedBy: {
     fontSize: 11,
-    color: "#94A3B8",
+    color: "#CBD5E1",
     marginTop: 8,
   },
   expenseUpdatedBy: {
     fontSize: 11,
-    color: "#94A3B8",
+    color: "#CBD5E1",
     marginTop: 2,
   },
   expenseActions: {
@@ -2373,20 +2421,20 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   expenseAmount: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "900",
-    color: "#103C4A",
+    color: "#0F172A",
   },
   editButton: {
     backgroundColor: "#FFFFFF",
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 12,
+    borderRadius: 999,
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
   editButtonText: {
-    color: "#137F86",
+    color: "#6366F1",
     fontSize: 13,
     fontWeight: "800",
   },
@@ -2398,22 +2446,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 12,
-    backgroundColor: "#F8FAFB",
-    borderRadius: 16,
-    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    paddingHorizontal: 20,
     borderWidth: 1,
-    borderColor: "#EEF2F6",
+    borderColor: "#E0E7FF",
+    shadowColor: "#000000",
+    shadowOpacity: 0.02,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
   balanceName: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "700",
-    color: "#103C4A",
+    color: "#0F172A",
     flex: 1,
   },
   balanceAmount: {
-    fontSize: 16,
-    fontWeight: "800",
+    fontSize: 17,
+    fontWeight: "900",
   },
   positiveBalance: {
     color: "#15803D",
@@ -2432,7 +2484,7 @@ const styles = StyleSheet.create({
   settlementTitle: {
     fontSize: 14,
     fontWeight: "900",
-    color: "#12626C",
+    color: "#4338CA",
     marginBottom: 10,
     textTransform: "uppercase",
     letterSpacing: 0.8,
@@ -2584,7 +2636,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   calendarDaySelected: {
-    backgroundColor: "#137F86",
+    backgroundColor: "#6366F1",
   },
   calendarDayText: {
     fontSize: 15,
@@ -2602,7 +2654,7 @@ const styles = StyleSheet.create({
   calendarCloseButton: {
     paddingVertical: 12,
     paddingHorizontal: 24,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: "#E0E7FF",
     borderRadius: 16,
   },
   calendarCloseButtonText: {
@@ -2611,13 +2663,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   inlineForm: {
-    marginTop: 20,
-    gap: 12,
-    padding: 20,
-    backgroundColor: "#F8FAFB",
-    borderRadius: 24,
+    marginTop: 24,
+    gap: 16,
+    padding: 24,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 28,
     borderWidth: 1,
-    borderColor: "#EEF2F6",
+    borderColor: "#E0E7FF",
+    shadowColor: "#000000",
+    shadowOpacity: 0.03,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
   },
   switchRow: {
     flexDirection: "row",
@@ -2627,32 +2683,32 @@ const styles = StyleSheet.create({
   },
   switchLabel: {
     fontSize: 16,
-    fontWeight: "800",
-    color: "#103C4A",
+    fontWeight: "700",
+    color: "#0F172A",
   },
   switchDescription: {
     fontSize: 13,
     color: "#64748B",
     marginTop: 4,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   toggleButton: {
     width: 52,
     height: 30,
-    borderRadius: 15,
+    borderRadius: 999,
     backgroundColor: "#E2E8F0",
     padding: 3,
   },
   toggleButtonActive: {
-    backgroundColor: "#137F86",
+    backgroundColor: "#6366F1",
   },
   toggleKnob: {
     width: 24,
     height: 24,
-    borderRadius: 12,
+    borderRadius: 999,
     backgroundColor: "#FFFFFF",
     shadowColor: "#000",
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -2660,61 +2716,69 @@ const styles = StyleSheet.create({
     transform: [{ translateX: 22 }],
   },
   debtBreakdownBox: {
-    backgroundColor: "#F8FAFB",
-    borderRadius: 22,
-    padding: 20,
-    marginBottom: 16,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 28,
+    padding: 24,
+    marginBottom: 20,
     borderWidth: 1,
-    borderColor: "#EEF2F6",
+    borderColor: "#E0E7FF",
+    shadowColor: "#000000",
+    shadowOpacity: 0.03,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
   },
   debtBreakdownTitle: {
-    fontSize: 14,
-    fontWeight: "900",
-    color: "#496973",
-    marginBottom: 16,
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#64748B",
+    marginBottom: 20,
     textTransform: "uppercase",
-    letterSpacing: 0.8,
+    letterSpacing: 1,
   },
   debtBreakdownRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#EEF2F6",
+    borderBottomColor: "#E0E7FF",
   },
   debtBreakdownTextArea: {
     flex: 1,
     gap: 4,
   },
   debtBreakdownName: {
-    fontSize: 15,
-    fontWeight: "800",
-    color: "#103C4A",
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#0F172A",
   },
   debtBreakdownMeta: {
     fontSize: 12,
-    color: "#64748B",
+    color: "#94A3B8",
     fontWeight: "600",
   },
   debtBreakdownAmount: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "900",
   },
   globalBreakdownItem: {
-    backgroundColor: "#F8FAFB",
-    borderRadius: 22,
-    padding: 20,
-    marginBottom: 12,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 28,
+    padding: 24,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#EEF2F6",
+    borderColor: "#E0E7FF",
+    shadowColor: "#000000",
+    shadowOpacity: 0.03,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
   },
   groupBreakdownList: {
-    marginTop: 12,
-    paddingTop: 12,
+    marginTop: 16,
+    paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: "#EEF2F6",
-    gap: 8,
+    borderTopColor: "#E0E7FF",
+    gap: 10,
   },
   groupBreakdownRow: {
     flexDirection: "row",
@@ -2730,13 +2794,13 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   recurrenceSection: {
-    gap: 16,
-    padding: 20,
-    backgroundColor: "rgba(19, 127, 134, 0.04)",
-    borderRadius: 24,
+    gap: 20,
+    padding: 24,
+    backgroundColor: "#F5F7FF",
+    borderRadius: 28,
     borderWidth: 1,
-    borderColor: "rgba(19, 127, 134, 0.15)",
-    marginTop: 8,
+    borderColor: "#E2E8F0",
+    marginTop: 12,
   },
   helperText: {
     fontSize: 12,

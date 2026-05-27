@@ -53,11 +53,11 @@ function createExpenseId() {
 }
 
 export const EXPENSE_CATEGORIES = [
-  { label: "General", icon: "📦" },
-  { label: "Food", icon: "🍴" },
-  { label: "Transport", icon: "🚗" },
-  { label: "Rent", icon: "🏠" },
-  { label: "Leisure", icon: "🎨" },
+  { label: "General", icon: "📦", color: "#6366F1" }, // Indigo
+  { label: "Food", icon: "🍴", color: "#F59E0B" },    // Amber
+  { label: "Transport", icon: "🚗", color: "#3B82F6" }, // Blue
+  { label: "Rent", icon: "🏠", color: "#EF4444" },    // Red
+  { label: "Leisure", icon: "🎨", color: "#EC4899" },   // Pink
 ] as const;
 
 export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number]["label"];
