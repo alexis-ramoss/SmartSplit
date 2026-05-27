@@ -3,13 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import {
     Modal,
     Pressable,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
     TextInput,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../auth-context";
 import {
@@ -18,14 +18,11 @@ import {
     calculateMemberBalances,
     calculateSettlementSuggestions,
     createExpenseEntry,
-    aggregateGlobalBalances,
     EXPENSE_CATEGORIES,
-    ExpenseCategory,
     ExpenseEntry,
     formatDate,
     ParticipantInput,
     RecurrenceFrequency,
-    RecurrenceRule,
     stopRecurringExpense,
     updateRecurringExpenseTemplate,
 } from "../lib/_expense-utils";
@@ -279,7 +276,7 @@ export default function Index() {
       }
 
       try {
-        const remoteGroups = await loadAccessibleGroups(currentUser.uid);
+        const remoteGroups = await loadAccessibleGroups(user.uid);
 
         if (cancelled) {
           return;
@@ -290,7 +287,7 @@ export default function Index() {
           remoteGroups.map((group) => processDueRecurringExpensesForGroup(group.id))
         );
 
-        const refreshedGroups = await loadAccessibleGroups(currentUser.uid);
+        const refreshedGroups = await loadAccessibleGroups(user.uid);
 
         if (cancelled) {
           return;
@@ -321,7 +318,7 @@ export default function Index() {
     return () => {
       cancelled = true;
     };
-  }, [firestoreWritable, user]);
+  }, [activeGroupId, firestoreWritable, user]);
 
   const activeGroup = groups.find((group) => group.id === activeGroupId) || EMPTY_GROUP;
   const activeExpenses = useMemo(
@@ -391,7 +388,7 @@ export default function Index() {
     setExpenses(activeGroup.expenses);
     setParticipants(buildDefaultParticipants(activeGroup.members.map((member) => member.name)));
     setPayer(activeGroup.members[0]?.name || currentUserName);
-  }, [activeGroup]);
+  }, [activeGroup, currentUserName]);
 
   if (loading) {
     return <SafeAreaView style={styles.safeArea} />;
@@ -540,7 +537,7 @@ export default function Index() {
   }
 
   async function refreshActiveGroups(preferredGroupId?: string | null) {
-    if (!user || !firestoreWritable) {
+    if (!firestoreWritable) {
       return;
     }
 
@@ -579,6 +576,7 @@ export default function Index() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       archivedAt: null,
+      autoConfirmExpenses: false,
       members: [
         {
           userId: currentUser.uid,
@@ -691,7 +689,7 @@ export default function Index() {
         );
         setGroupMessage("Settings updated successfully.");
       }
-    } catch (err) {
+    } catch {
       setGroupMessage("Failed to update settings. Please try again.");
     }
   }

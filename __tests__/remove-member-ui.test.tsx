@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react-native";
 import Index from "../app/index";
+import type { LoadedGroup } from "../lib/_group-utils";
 
 const currentUser = {
   uid: "test-user",
@@ -7,7 +8,9 @@ const currentUser = {
   displayName: "Person 1",
 };
 
-function mockCreateGroupFixture(overrides: Partial<any> = {}) {
+type TestGroup = LoadedGroup & { joinRequests?: string[] };
+
+function mockCreateGroupFixture(overrides: Partial<TestGroup> = {}): TestGroup {
   return {
     id: "group-1",
     name: "Household",
@@ -17,6 +20,7 @@ function mockCreateGroupFixture(overrides: Partial<any> = {}) {
     createdAt: "2026-05-12T00:00:00.000Z",
     updatedAt: "2026-05-12T00:00:00.000Z",
     archivedAt: null,
+    autoConfirmExpenses: false,
     members: [
       {
         userId: "test-user",
@@ -53,8 +57,10 @@ function mockCreateGroupFixture(overrides: Partial<any> = {}) {
           { name: "Person 2", percentage: 50 },
         ],
         createdAt: "2026-05-12T00:00:00.000Z",
+        category: "General",
         createdBy: "test-user",
         createdByName: "Person 1",
+        confirmed: false,
         updatedAt: "2026-05-12T00:00:00.000Z",
         updatedBy: "test-user",
         updatedByName: "Person 1",
@@ -64,11 +70,11 @@ function mockCreateGroupFixture(overrides: Partial<any> = {}) {
   };
 }
 
-function mockCloneGroup(group: any) {
+function mockCloneGroup(group: TestGroup): TestGroup {
   return JSON.parse(JSON.stringify(group));
 }
 
-let mockGroups: any[] = [];
+let mockGroups: TestGroup[] = [];
 
 jest.mock("../auth-context", () => ({
   useAuth: () => ({
@@ -302,6 +308,10 @@ describe("Group flows with Firebase-backed data", () => {
                 { name: "Person 2", percentage: 50 },
               ],
               createdAt: "2026-05-12T00:00:00.000Z",
+              category: "General",
+              createdBy: "test-user",
+              createdByName: "Person 1",
+              confirmed: false,
             },
           ],
         }),
@@ -347,6 +357,10 @@ describe("Group flows with Firebase-backed data", () => {
                 { name: "Person 2", percentage: 50 },
               ],
               createdAt: "2026-05-12T00:00:00.000Z",
+              category: "General",
+              createdBy: "member-2",
+              createdByName: "Person 2",
+              confirmed: false,
             },
           ],
         }),
@@ -398,6 +412,10 @@ describe("Group flows with Firebase-backed data", () => {
                 { name: "Person 2", percentage: 50 },
               ],
               createdAt: "2026-05-12T00:00:00.000Z",
+              category: "General",
+              createdBy: "member-2",
+              createdByName: "Person 2",
+              confirmed: false,
             },
           ],
         }),

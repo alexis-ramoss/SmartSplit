@@ -50,12 +50,14 @@ type MemberDoc = {
 type ExpenseDoc = {
   name?: string;
   amount?: number;
+  category?: string;
   date?: string;
   payer?: string;
   participants?: ExpenseEntry["participants"];
   createdAt?: string;
   createdBy?: string;
   createdByName?: string;
+  confirmed?: boolean;
   updatedAt?: string;
   updatedBy?: string;
   updatedByName?: string;
@@ -120,12 +122,14 @@ async function loadGroupDetails(groupId: string): Promise<LoadedGroup | null> {
       groupId,
       name: expenseData.name || "",
       amount: Number(expenseData.amount || 0),
+      category: expenseData.category || "General",
       date: expenseData.date || "",
       payer: expenseData.payer || "",
       participants: expenseData.participants || [],
       createdAt: expenseData.createdAt || new Date().toISOString(),
       createdBy: expenseData.createdBy || "",
       createdByName: expenseData.createdByName || "",
+      confirmed: expenseData.confirmed ?? false,
       updatedAt: expenseData.updatedAt,
       updatedBy: expenseData.updatedBy,
       updatedByName: expenseData.updatedByName,

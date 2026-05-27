@@ -42,6 +42,16 @@ export type ExpenseEntry = {
   recurringSourceId?: string | null;
 };
 
+type BalanceExpense = Pick<ExpenseEntry, "amount" | "payer" | "participants">;
+type DebtBreakdownExpense = BalanceExpense & Pick<ExpenseEntry, "id" | "name">;
+
+let expenseIdSequence = 0;
+
+function createExpenseId() {
+  expenseIdSequence += 1;
+  return `exp-${Date.now()}-${expenseIdSequence}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
 export const EXPENSE_CATEGORIES = [
   { label: "General", icon: "📦" },
   { label: "Food", icon: "🍴" },
@@ -78,7 +88,7 @@ export function getNextRunDate(currentRunDate: string, frequency: RecurrenceFreq
 export function generateRecurringExpenseInstance(sourceExpense: ExpenseEntry, runDate: string): ExpenseEntry {
   return {
     ...sourceExpense,
-    id: `exp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: createExpenseId(),
     date: runDate,
     createdAt: new Date().toISOString(),
     recurrence: null,
@@ -185,8 +195,8 @@ export function createExpenseEntry(input: {
   date: string;
   payer: string;
   participants: ParticipantInput[];
-  userId: string;
-  userName: string;
+  userId?: string;
+  userName?: string;
   category?: string;
   recurrence?: RecurrenceInput;
   confirmed?: boolean;
@@ -204,7 +214,7 @@ export function createExpenseEntry(input: {
   } : null;
 
   const expense: ExpenseEntry = {
-    id: `exp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: createExpenseId(),
     groupId: 'home',
     name: input.name,
     amount: Number(input.amount),
@@ -215,8 +225,8 @@ export function createExpenseEntry(input: {
       .filter((p) => p.selected)
       .map((p) => ({ name: p.name, percentage: Number(p.percentage) || 0 })),
     createdAt: new Date().toISOString(),
-    createdBy: input.userId,
-    createdByName: input.userName,
+    createdBy: input.userId || "",
+    createdByName: input.userName || "",
     confirmed: input.confirmed ?? false,
     recurrence: recurrenceRule,
     recurringSourceId: null,
@@ -225,7 +235,7 @@ export function createExpenseEntry(input: {
   return { error: null, expense };
 }
 
-export function calculateMemberBalances(expenses: ExpenseEntry[], members: string[]) {
+export function calculateMemberBalances<T extends BalanceExpense>(expenses: T[], members: string[]) {
   const balances = members.map((m) => ({ name: m, balance: 0 }));
 
   expenses.forEach((e) => {
@@ -312,7 +322,7 @@ export function calculateSettlementSuggestions(balances: { name: string; balance
   return suggestions;
 }
 
-export function calculateDebtBreakdownForMember(expenses: ExpenseEntry[], memberId: string) {
+export function calculateDebtBreakdownForMember<T extends DebtBreakdownExpense>(expenses: T[], memberId: string) {
   const breakdown: Array<{ id: string; expenseName: string; payer: string; amount: number; direction: 'plus' | 'minus' }> = [];
 
   expenses.forEach((e) => {
