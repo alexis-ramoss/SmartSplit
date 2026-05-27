@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useAuth } from "../auth-context";
 import {
+    aggregateGlobalBalances,
     calculateDebtBreakdownForMember,
     calculateMemberBalances,
     calculateSettlementSuggestions,
@@ -125,6 +126,7 @@ export default function Index() {
   const [error, setError] = useState<string | null>(null);
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [showMembers, setShowMembers] = useState(false);
+  const [showGlobalOverview, setShowGlobalOverview] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
   const [groupActionToConfirm, setGroupActionToConfirm] = useState<"leave" | "delete" | null>(null);
@@ -202,12 +204,20 @@ export default function Index() {
     () => calculateSettlementSuggestions(visibleMemberBalances),
     [visibleMemberBalances]
   );
+  const myNameInActiveGroup = useMemo(
+    () => activeGroup.members.find((m) => m.userId === user?.uid)?.name || currentUserName,
+    [activeGroup, user, currentUserName]
+  );
   const currentUserDebtBreakdown = useMemo(
-    () => calculateDebtBreakdownForMember(activeExpenses, currentUserName),
-    [activeExpenses, currentUserName]
+    () => calculateDebtBreakdownForMember(activeExpenses, myNameInActiveGroup),
+    [activeExpenses, myNameInActiveGroup]
+  );
+  const globalSummary = useMemo(
+    () => aggregateGlobalBalances(groups, user?.uid || ""),
+    [groups, user?.uid]
   );
   const currentUserBalance =
-    visibleMemberBalances.find((balance) => balance.name === currentUserName)?.balance || 0;
+    visibleMemberBalances.find((balance) => balance.name === myNameInActiveGroup)?.balance || 0;
   const shouldShowBalanceBreakdown = Boolean(activeGroup && visibleMemberBalances.length > 0);
 
   const totalSpent = useMemo(
@@ -434,35 +444,35 @@ export default function Index() {
 
     const matchingGroup = groups.find((group) => group.inviteCode === normalizedCode) || null;
 
-    if (!matchingGroup) {
-      setGroupMessage(`No group found with code ${normalizedCode}.`);
-      return;
-    }
-
-    setGroups((current) => [matchingGroup, ...current.filter((group) => group.id !== matchingGroup.id)]);
-    setActiveGroupId(matchingGroup.id);
-    setExpenses(matchingGroup.expenses || []);
-    setParticipants(buildDefaultParticipants(matchingGroup.members.map((member) => member.name)));
-
-    if (matchingGroup.members.some((m) => m.userId === currentUser.uid)) {
+    if (matchingGroup) {
+      setGroups((current) => [matchingGroup, ...current.filter((group) => group.id !== matchingGroup.id)]);
       setActiveGroupId(matchingGroup.id);
+      setExpenses(matchingGroup.expenses || []);
+      setParticipants(buildDefaultParticipants(matchingGroup.members.map((member) => member.name)));
+
+      if (matchingGroup.members.some((m) => m.userId === currentUser.uid)) {
+        setActiveGroupId(matchingGroup.id);
+        setJoinCode("");
+        setShowJoinGroup(false);
+        setGroupMessage(`Joined ${matchingGroup.name}.`);
+        return;
+      }
+
+      setGroups((current) =>
+        current.map((g) =>
+          g.id === matchingGroup.id
+            ? { ...g, joinRequests: [...new Set([...(g.joinRequests || []), currentUserName])] }
+            : g
+        )
+      );
+
       setJoinCode("");
       setShowJoinGroup(false);
-      setGroupMessage(`Joined ${matchingGroup.name}.`);
+      setGroupMessage(`Requested to join ${matchingGroup.name}. Waiting for approval.`);
       return;
     }
 
-    setGroups((current) =>
-      current.map((g) =>
-        g.id === matchingGroup.id
-          ? { ...g, joinRequests: [...new Set([...(g.joinRequests || []), currentUserName])] }
-          : g
-      )
-    );
-
-    setJoinCode("");
-    setShowJoinGroup(false);
-    setGroupMessage(`Requested to join ${matchingGroup.name}. Waiting for approval.`);
+    setGroupMessage("Invalid invite code.");
   }
 
   function handleAcceptJoinRequest(requester: string) {
@@ -654,22 +664,40 @@ export default function Index() {
             Create or join a household group, record shared expenses, and see balances.
           </Text>
 
-          <Pressable
-            accessibilityLabel="Sign out"
-            style={({ pressed }) => [
-              styles.signOutButton,
-              pressed && styles.buttonPressed,
-            ]}
-            onPress={async () => {
-              try {
-                await signOutUser();
-              } catch {
-                setGroupMessage("Could not sign out. Please try again.");
-              }
-            }}
-          >
-            <Text style={styles.signOutButtonText}>Sign out</Text>
-          </Pressable>
+          <View style={[styles.groupActionsRow, { marginTop: 14 }]}>
+            <Pressable
+              accessibilityLabel="Sign out"
+              style={({ pressed }) => [
+                styles.signOutButton,
+                { marginTop: 0 },
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={async () => {
+                try {
+                  await signOutUser();
+                } catch {
+                  setGroupMessage("Could not sign out. Please try again.");
+                }
+              }}
+            >
+              <Text style={styles.signOutButtonText}>Sign out</Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityLabel="Global balances"
+              testID="toggle-global-overview"
+              style={({ pressed }) => [
+                styles.signOutButton,
+                { marginTop: 0, backgroundColor: showGlobalOverview ? "#2B6CB0" : "rgba(255,255,255,0.12)" },
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={() => setShowGlobalOverview(!showGlobalOverview)}
+            >
+              <Text style={styles.signOutButtonText}>
+                {showGlobalOverview ? "Hide Global" : "Global Balances"}
+              </Text>
+            </Pressable>
+          </View>
 
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
@@ -682,6 +710,53 @@ export default function Index() {
             </View>
           </View>
         </View>
+
+        {showGlobalOverview ? (
+          <View style={styles.sectionCard} testID="global-overview-card">
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text style={styles.sectionTitle}>Global Balance Overview</Text>
+                <Text style={styles.sectionSubtitle}>Across all your groups.</Text>
+              </View>
+            </View>
+
+            <View style={[styles.summaryRow, { marginTop: 16 }]}>
+              <View style={[styles.summaryItem, { backgroundColor: "#FFF5F5" }]}>
+                <Text style={[styles.summaryLabel, { color: "#C53030" }]}>Total Owed</Text>
+                <Text style={[styles.summaryValue, { color: "#C53030" }]}>
+                  EUR {globalSummary.totalOwed.toFixed(2)}
+                </Text>
+              </View>
+              <View style={[styles.summaryItem, { backgroundColor: "#F0FFF4" }]}>
+                <Text style={[styles.summaryLabel, { color: "#2F855A" }]}>Total Receivable</Text>
+                <Text style={[styles.summaryValue, { color: "#2F855A" }]}>
+                  EUR {globalSummary.totalReceivable.toFixed(2)}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.balanceList} testID="global-balance-list">
+              {globalSummary.breakdown.length > 0 ? (
+                globalSummary.breakdown.map((item) => (
+                  <View key={item.name} style={styles.balanceRow}>
+                    <Text style={styles.balanceName}>{item.name}</Text>
+                    <Text
+                      style={[
+                        styles.balanceAmount,
+                        item.balance > 0.01 && styles.positiveBalance,
+                        item.balance < -0.01 && styles.negativeBalance,
+                      ]}
+                    >
+                      {formatSignedCurrency(item.balance)}
+                    </Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.infoText}>No outstanding balances.</Text>
+              )}
+            </View>
+          </View>
+        ) : null}
 
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>

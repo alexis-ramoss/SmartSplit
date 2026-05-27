@@ -1,3 +1,5 @@
+import { type LoadedGroup } from "./_group-utils";
+
 export type ParticipantInput = { name: string; selected: boolean; percentage: string };
 export type ExpenseEntry = {
   id: string;
@@ -68,16 +70,47 @@ export function calculateMemberBalances(expenses: ExpenseEntry[], members: strin
   const balances = members.map((m) => ({ name: m, balance: 0 }));
 
   expenses.forEach((e) => {
-    const share = e.amount / e.participants.length;
     e.participants.forEach((p) => {
       const entry = balances.find((b) => b.name === p.name);
-      if (entry) entry.balance -= share;
+      if (entry) {
+        entry.balance -= e.amount * (p.percentage / 100);
+      }
     });
     const payerEntry = balances.find((b) => b.name === e.payer);
     if (payerEntry) payerEntry.balance += e.amount;
   });
 
   return balances;
+}
+
+export function aggregateGlobalBalances(groups: LoadedGroup[], currentUserId: string) {
+  const globalBalances: Record<string, number> = {};
+
+  groups.forEach((group) => {
+    const me = group.members.find((m) => m.userId === currentUserId);
+    if (!me) return;
+
+    const myNameInGroup = me.name;
+    const groupBalances = calculateMemberBalances(group.expenses, group.members.map((m) => m.name));
+    const suggestions = calculateSettlementSuggestions(groupBalances);
+
+    suggestions.forEach((s) => {
+      if (s.from === myNameInGroup) {
+        globalBalances[s.to] = (globalBalances[s.to] || 0) - s.amount;
+      } else if (s.to === myNameInGroup) {
+        globalBalances[s.from] = (globalBalances[s.from] || 0) + s.amount;
+      }
+    });
+  });
+
+  const breakdown = Object.entries(globalBalances)
+    .map(([name, balance]) => ({ name, balance }))
+    .filter((b) => Math.abs(b.balance) > 0.01);
+
+  const totalOwed = breakdown.filter((b) => b.balance < 0).reduce((sum, b) => sum - b.balance, 0);
+  const totalReceivable = breakdown.filter((b) => b.balance > 0).reduce((sum, b) => sum + b.balance, 0);
+
+  return { totalOwed, totalReceivable, breakdown };
 }
 
 export function calculateSettlementSuggestions(balances: { name: string; balance: number }[]) {
