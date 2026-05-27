@@ -245,4 +245,13 @@ jest.mock("./lib/_group-utils", () => ({
     }
     return mockCloneGroup(group);
   }),
+  updateGroupSettings: jest.fn(async (groupId, settings) => {
+    const group = mockGroups.find((item) => item.id === groupId);
+    if (!group) {
+      throw new Error("Group not found.");
+    }
+    Object.assign(group, settings);
+    group.updatedAt = new Date().toISOString();
+    return mockCloneGroup(group);
+  }),
 }));

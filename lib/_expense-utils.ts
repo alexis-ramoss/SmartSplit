@@ -31,6 +31,7 @@ export type ExpenseEntry = {
   createdAt: string;
   createdBy: string;
   createdByName: string;
+  confirmed: boolean;
   updatedAt?: string;
   updatedBy?: string;
   updatedByName?: string;
@@ -70,6 +71,7 @@ export function generateRecurringExpenseInstance(sourceExpense: ExpenseEntry, ru
     createdAt: new Date().toISOString(),
     recurrence: null,
     recurringSourceId: sourceExpense.id,
+    confirmed: sourceExpense.confirmed,
   };
 }
 
@@ -169,6 +171,7 @@ export function createExpenseEntry(input: {
   userId: string;
   userName: string;
   recurrence?: RecurrenceInput;
+  confirmed?: boolean;
 }) {
   const error = validateExpenseInput(input);
   if (error) return { error, expense: null };
@@ -195,6 +198,7 @@ export function createExpenseEntry(input: {
     createdAt: new Date().toISOString(),
     createdBy: input.userId,
     createdByName: input.userName,
+    confirmed: input.confirmed ?? false,
     recurrence: recurrenceRule,
     recurringSourceId: null,
   };
