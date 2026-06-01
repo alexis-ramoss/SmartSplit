@@ -16,6 +16,7 @@ jest.mock("../lib/_group-utils", () => ({
   leaveGroupFromGroup: jest.fn(),
   removeMemberFromGroup: jest.fn(),
   saveExpenseToGroup: jest.fn(),
+  deleteExpenseFromGroup: jest.fn(),
 }));
 
 describe("Switch Between Groups Acceptance Tests", () => {

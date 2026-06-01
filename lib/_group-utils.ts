@@ -328,6 +328,25 @@ export async function saveExpenseToGroup(input: {
   return loadGroupDetails(input.groupId);
 }
 
+export async function deleteExpenseFromGroup(input: {
+  groupId: string;
+  expenseId: string;
+}) {
+  const firestore = requireDb();
+  const groupRef = firestore.collection("groups").doc(input.groupId);
+  const expenseRef = groupRef.collection("expenses").doc(input.expenseId);
+  const expenseSnapshot = await expenseRef.get();
+
+  if (!expenseSnapshot.exists) {
+    throw new Error("Expense not found.");
+  }
+
+  const now = new Date().toISOString();
+  await expenseRef.delete();
+  await groupRef.set({ updatedAt: now }, { merge: true });
+  return loadGroupDetails(input.groupId);
+}
+
 export async function processDueRecurringExpensesForGroup(groupId: string) {
   const group = await loadGroupDetails(groupId);
   if (!group) return null;

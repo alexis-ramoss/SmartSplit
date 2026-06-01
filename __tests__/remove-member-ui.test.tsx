@@ -247,6 +247,18 @@ jest.mock("../lib/_group-utils", () => ({
     }
     return mockCloneGroup(group);
   }),
+  deleteExpenseFromGroup: jest.fn(async ({ groupId, expenseId }) => {
+    const group = mockGroups.find((item) => item.id === groupId);
+    if (!group) {
+      throw new Error("Group not found.");
+    }
+    const index = group.expenses.findIndex((item: any) => item.id === expenseId);
+    if (index < 0) {
+      throw new Error("Expense not found.");
+    }
+    group.expenses.splice(index, 1);
+    return mockCloneGroup(group);
+  }),
 }));
 
 describe("Group flows with Firebase-backed data", () => {

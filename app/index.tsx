@@ -39,6 +39,7 @@ import {
 import {
     canRemoveMember,
     createGroup,
+    deleteExpenseFromGroup,
     deleteGroup,
     leaveGroupFromGroup,
     loadAccessibleGroups,
@@ -309,6 +310,7 @@ export default function Index() {
   const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
   const [groupActionToConfirm, setGroupActionToConfirm] = useState<"leave" | "delete" | null>(null);
+  const [expenseToDelete, setExpenseToDelete] = useState<ExpenseEntry | null>(null);
 
   const [recurrenceEnabled, setRecurrenceEnabled] = useState(false);
   const [recurrenceFrequency, setRecurrenceFrequency] = useState<RecurrenceFrequency>("Monthly");
@@ -376,6 +378,10 @@ export default function Index() {
   const activeExpenses = useMemo(
     () => (activeGroup.id ? expenses.filter((expense) => expense.groupId === activeGroup.id) : []),
     [activeGroup, expenses]
+  );
+  const editingExpense = useMemo(
+    () => activeExpenses.find((expense) => expense.id === editingExpenseId) || null,
+    [activeExpenses, editingExpenseId]
   );
   const activeMemberNames = useMemo(
     () => activeGroup?.members.map((member) => member.name) || [],
@@ -467,6 +473,7 @@ export default function Index() {
     );
     setError(null);
     setEditingExpenseId(null);
+    setExpenseToDelete(null);
     setRecurrenceEnabled(false);
     setRecurrenceFrequency("Monthly");
     setRecurrenceEvery("1");
@@ -855,6 +862,47 @@ export default function Index() {
       void refreshActiveGroups(activeGroup.id);
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Could not save expense.");
+    }
+  }
+
+  async function handleDeleteExpense(expense: ExpenseEntry) {
+    if (!activeGroup.id) {
+      setGroupMessage("No active group selected.");
+      return;
+    }
+
+    const currentGroup = groups.find((group) => group.id === activeGroup.id) || null;
+    const currentExpenses = expenses;
+
+    setExpenses((current) =>
+      current.filter((item) => !(item.groupId === activeGroup.id && item.id === expense.id))
+    );
+    setGroups((current) =>
+      current.map((group) =>
+        group.id === activeGroup.id
+          ? { ...group, expenses: group.expenses.filter((item) => item.id !== expense.id) }
+          : group
+      )
+    );
+    setShowForm(false);
+    setExpenseToDelete(null);
+    resetForm();
+    setGroupMessage(`${expense.name} deleted.`);
+
+    try {
+      await deleteExpenseFromGroup({
+        groupId: activeGroup.id,
+        expenseId: expense.id,
+      });
+      void refreshActiveGroups(activeGroup.id);
+    } catch (deleteError) {
+      setGroupMessage(deleteError instanceof Error ? deleteError.message : "Could not delete expense.");
+      setExpenses(currentExpenses);
+      if (currentGroup) {
+        setGroups((current) =>
+          current.map((group) => (group.id === currentGroup.id ? currentGroup : group))
+        );
+      }
     }
   }
 
@@ -1760,6 +1808,44 @@ export default function Index() {
                   </Text>
                 </Pressable>
               </View>
+
+              {editingExpense ? (
+                <>
+                  <Pressable
+                    accessibilityLabel={`Delete ${editingExpense.name}`}
+                    testID="delete-expense-button"
+                    style={({ pressed }) => [styles.deleteFormButton, pressed && styles.buttonPressed]}
+                    onPress={() => setExpenseToDelete(editingExpense)}
+                  >
+                    <Text style={styles.deleteExpenseButtonText}>Delete expense</Text>
+                  </Pressable>
+
+                  {expenseToDelete ? (
+                    <View style={styles.confirmBox}>
+                      <Text style={styles.confirmTitle}>Delete {expenseToDelete.name}?</Text>
+                      <Text style={styles.confirmMessage}>
+                        This will remove the expense from the group and recalculate balances.
+                      </Text>
+                      <View style={styles.confirmActions}>
+                        <Pressable
+                          style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
+                          onPress={() => setExpenseToDelete(null)}
+                          testID="cancel-delete-expense"
+                        >
+                          <Text style={styles.secondaryButtonText}>Cancel</Text>
+                        </Pressable>
+                        <Pressable
+                          style={({ pressed }) => [styles.dangerButton, pressed && styles.buttonPressed]}
+                          onPress={() => handleDeleteExpense(expenseToDelete)}
+                          testID="confirm-delete-expense"
+                        >
+                          <Text style={styles.dangerButtonText}>Delete</Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  ) : null}
+                </>
+              ) : null}
             </Animated.View>
           ) : null}
 
@@ -2483,6 +2569,19 @@ const styles = StyleSheet.create({
   },
   editButtonText: {
     color: "#12626C",
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  deleteFormButton: {
+    backgroundColor: "#FEF3F2",
+    borderWidth: 1,
+    borderColor: "#F8C9C4",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  deleteExpenseButtonText: {
+    color: "#B42318",
     fontSize: 13,
     fontWeight: "800",
   },
