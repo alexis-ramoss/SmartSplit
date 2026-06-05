@@ -417,4 +417,6 @@ During the sprint review presentation, the teacher noted that:
 
 ### Final Release
 
+[Download the latest release](https://github.com/alexis-ramoss/SmartSplit/releases/latest)
+
 ---
